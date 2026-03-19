@@ -1113,17 +1113,17 @@
     </div>
 
     <div id="upload">
-      <div class="upload-box" onclick="requireAuth(function(){ document.getElementById('fileInput').click(); })">
-        <span class="upload-icon">📸</span>
-        <div class="upload-title">Suba sua foto aqui</div>
-        <div class="upload-sub">JPG, PNG ou WEBP · Funciona com selfie do celular</div>
-        <div class="style-picker" onclick="event.stopPropagation()">
-          <button class="style-btn active" onclick="setStyle(this)">⚽ Jogador</button>
-          <button class="style-btn" onclick="setStyle(this)">🐶 Pet</button>
-          <button class="style-btn" onclick="setStyle(this)">👨‍👩‍👧 Família</button>
-          <button class="style-btn" onclick="setStyle(this)">✨ Rara</button>
+      <div class="upload-box" id="uploadBox" onclick="requireAuth(function(){ document.getElementById('fileInput').click(); })">
+        <span class="upload-icon" id="uploadIcon">📸</span>
+        <div class="upload-title" id="uploadTitle">Suba sua foto aqui</div>
+        <div class="upload-sub" id="uploadSub">JPG, PNG ou WEBP · Funciona com selfie do celular</div>
+        <div class="style-picker" id="stylePicker" onclick="event.stopPropagation()">
+          <button class="style-btn active" data-style="jogador" onclick="setStyle(this)">⚽ Jogador</button>
+          <button class="style-btn" data-style="pet" onclick="setStyle(this)">🐶 Pet</button>
+          <button class="style-btn" data-style="familia" onclick="setStyle(this)">👨‍👩‍👧 Família</button>
+          <button class="style-btn" data-style="rara" onclick="setStyle(this)">✨ Rara</button>
         </div>
-        <button class="btn-upload" onclick="event.stopPropagation(); requireAuth(function(){ document.getElementById('fileInput').click(); })">
+        <button class="btn-upload" id="btnUpload" onclick="event.stopPropagation(); requireAuth(function(){ document.getElementById('fileInput').click(); })">
           ⚽ Gerar minha figurinha grátis
         </button>
         <input type="file" id="fileInput" class="upload-input" accept="image/*">
@@ -1133,6 +1133,19 @@
           <span class="credits-text-logged"></span>
           <div class="credits-progress"><div class="credits-progress-fill" id="creditsFill"></div></div>
         </div>
+      </div>
+      <!-- Preview result -->
+      <div id="previewResult" style="display:none; margin-top:24px; text-align:center;">
+        <img id="previewImage" src="" alt="Sua figurinha" style="max-width:320px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.4); margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif; color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:12px;">
+          Preview com marca d'água · Pague para baixar em alta resolução
+        </div>
+        <button onclick="resetUpload()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:10px 22px; border-radius:4px; cursor:pointer; margin-right:8px;">
+          ↩ Gerar outra
+        </button>
+        <button onclick="buySticker()" style="background:var(--verde); border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:10px 22px; border-radius:4px; cursor:pointer;">
+          💳 Comprar sem marca d'água — R$19,90
+        </button>
       </div>
     </div>
   </div>
@@ -1672,19 +1685,113 @@
   }
 
   // ── FILE UPLOAD — require auth ──
-  document.getElementById('fileInput').addEventListener('change',function(e){
-    if(e.target.files.length>0){
-      if (!isLoggedIn) {
+  let currentImageId = null;
+
+  document.getElementById('fileInput').addEventListener('change', async function(e) {
+    if (e.target.files.length === 0) return;
+
+    if (!isLoggedIn) {
+      openLogin();
+      e.target.value = '';
+      return;
+    }
+
+    const file = e.target.files[0];
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Arquivo muito grande. Máximo 10MB.');
+      e.target.value = '';
+      return;
+    }
+
+    const box = document.getElementById('uploadBox');
+    const title = document.getElementById('uploadTitle');
+    const sub = document.getElementById('uploadSub');
+    const icon = document.getElementById('uploadIcon');
+    const btnUp = document.getElementById('btnUpload');
+    const picker = document.getElementById('stylePicker');
+
+    // Show loading state
+    icon.textContent = '⏳';
+    title.textContent = 'Gerando sua figurinha...';
+    sub.textContent = 'Isso pode levar até 60 segundos. Não feche a página.';
+    box.style.borderColor = 'var(--verde-neon)';
+    box.style.pointerEvents = 'none';
+    btnUp.disabled = true;
+    btnUp.textContent = '⏳ Gerando...';
+    picker.style.pointerEvents = 'none';
+    picker.style.opacity = '0.5';
+
+    try {
+      // Get selected style
+      const activeBtn = document.querySelector('.style-btn.active');
+      const style = activeBtn?.getAttribute('data-style') || 'jogador';
+
+      // Get auth token
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
         openLogin();
-        e.target.value = '';
+        resetUpload();
         return;
       }
-      const box=document.querySelector('.upload-box');
-      box.querySelector('.upload-title').textContent='✅ '+e.target.files[0].name;
-      box.querySelector('.upload-sub').textContent='Gerando seu preview... aguarde 30 segundos';
-      box.style.borderColor='var(--verde-neon)';
+
+      // Send to API
+      const formData = new FormData();
+      formData.append('photo', file);
+      formData.append('style', style);
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + session.access_token },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao gerar figurinha');
+      }
+
+      // Show preview
+      currentImageId = data.imageId;
+      document.getElementById('previewImage').src = data.previewUrl;
+      document.getElementById('previewResult').style.display = 'block';
+      box.style.display = 'none';
+
+      // Update credits
+      if (data.creditsUsed !== undefined) {
+        creditsUsed = data.creditsUsed;
+        const loggedText = document.querySelector('.credits-text-logged');
+        loggedText.textContent = creditsUsed + ' de ' + creditsTotal + ' usados';
+        document.getElementById('creditsFill').style.width = ((creditsUsed / creditsTotal) * 100) + '%';
+      }
+    } catch (err) {
+      alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
+      resetUpload();
     }
+
+    e.target.value = '';
   });
+
+  function resetUpload() {
+    const box = document.getElementById('uploadBox');
+    box.style.display = '';
+    box.style.borderColor = '';
+    box.style.pointerEvents = '';
+    document.getElementById('uploadIcon').textContent = '📸';
+    document.getElementById('uploadTitle').textContent = 'Suba sua foto aqui';
+    document.getElementById('uploadSub').textContent = 'JPG, PNG ou WEBP · Funciona com selfie do celular';
+    document.getElementById('btnUpload').disabled = false;
+    document.getElementById('btnUpload').textContent = '⚽ Gerar minha figurinha grátis';
+    document.getElementById('stylePicker').style.pointerEvents = '';
+    document.getElementById('stylePicker').style.opacity = '';
+    document.getElementById('previewResult').style.display = 'none';
+    currentImageId = null;
+  }
+
+  function buySticker() {
+    // TODO: integrar checkout Pagar.me
+    alert('Checkout em breve! ID da figurinha: ' + currentImageId);
+  }
 
   // ── SCROLL ANIMATIONS ──
   const obs=new IntersectionObserver(entries=>{
