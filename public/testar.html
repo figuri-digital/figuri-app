@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIGURI IA — Teste de Engines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Bebas+Neue&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      --dark: #0D0D0B;
+      --verde: #00A651;
+      --ouro-claro: #F5C518;
+      --verde-neon: #00E05A;
+      --flux-blue: #3B82F6;
+      --nano-purple: #8B5CF6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--dark);
+      color: #E5E5E5;
+      font-family: 'Barlow Condensed', sans-serif;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 { font-family: 'Bebas Neue', cursive; }
+
+    .note {
+      background: #1a1a17;
+      color: var(--ouro-claro);
+      text-align: center;
+      padding: 6px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #333;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      color: var(--verde-neon);
+      text-align: center;
+      margin-bottom: 24px;
+      letter-spacing: 2px;
+    }
+
+    /* Auth gate */
+    #auth-gate {
+      text-align: center;
+      padding: 80px 16px;
+    }
+
+    #auth-gate p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #aaa;
+    }
+
+    .btn-google {
+      background: #fff;
+      color: #333;
+      border: none;
+      padding: 12px 32px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-google:hover { background: #e0e0e0; }
+
+    /* Upload */
+    .upload-area {
+      border: 2px dashed #444;
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .upload-area:hover, .upload-area.has-file {
+      border-color: var(--verde);
+    }
+
+    .upload-area input { display: none; }
+
+    .upload-area .label {
+      font-size: 1.1rem;
+      color: #888;
+    }
+
+    .upload-area .label.active { color: var(--verde-neon); }
+
+    .upload-preview {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+
+    .form-group label {
+      font-size: 0.85rem;
+      color: #888;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: #1a1a17;
+      border: 1px solid #333;
+      color: #E5E5E5;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--verde);
+    }
+
+    /* Buttons */
+    .buttons-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 200px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      color: #fff;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-flux { background: var(--flux-blue); }
+    .btn-nano { background: var(--nano-purple); }
+    .btn-both { background: var(--verde); }
+
+    /* Results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .result-card {
+      background: #1a1a17;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: #ccc;
+      letter-spacing: 1px;
+    }
+
+    .result-card.flux h3 { color: var(--flux-blue); }
+    .result-card.nano h3 { color: var(--nano-purple); }
+
+    .result-placeholder {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .result-img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .result-meta {
+      width: 100%;
+      font-size: 0.85rem;
+      color: #888;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .result-meta span { display: block; }
+
+    .btn-melhor {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid var(--ouro-claro);
+      color: var(--ouro-claro);
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .btn-melhor:hover {
+      background: var(--ouro-claro);
+      color: var(--dark);
+    }
+
+    .btn-melhor.selected {
+      background: var(--ouro-claro);
+      color: var(--dark);
+    }
+
+    /* Spinner */
+    .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 0;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #333;
+      border-top-color: var(--verde-neon);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .timer { font-size: 0.9rem; color: #888; font-variant-numeric: tabular-nums; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .buttons-row { flex-direction: column; }
+      .btn { min-width: unset; }
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="note">Pagina de teste interno — nao visivel para clientes</div>
+
+<div class="container">
+  <h1>FIGURI IA — Teste de Engines</h1>
+
+  <!-- Auth gate -->
+  <div id="auth-gate" style="display:none;">
+    <p>Login necessario para acessar esta pagina.</p>
+    <button class="btn-google" onclick="loginGoogle()">Entrar com Google</button>
+  </div>
+
+  <!-- Main content -->
+  <div id="main-content" style="display:none;">
+
+    <!-- Upload -->
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('photo-input').click()">
+      <input type="file" id="photo-input" accept="image/*">
+      <div class="label" id="upload-label">Clique para enviar uma foto</div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Pais</label>
+        <select id="field-country">
+          <option value="">Selecionar...</option>
+          <option value="Brasil">Brasil</option>
+          <option value="Argentina">Argentina</option>
+          <option value="Franca">Franca</option>
+          <option value="Alemanha">Alemanha</option>
+          <option value="Espanha">Espanha</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Uruguai">Uruguai</option>
+          <option value="Colombia">Colombia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="field-name" placeholder="Nome completo">
+      </div>
+      <div class="form-group">
+        <label>Data de nascimento</label>
+        <input type="date" id="field-birth">
+      </div>
+      <div class="form-group">
+        <label>Altura (cm)</label>
+        <input type="number" id="field-height" placeholder="175">
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="buttons-row">
+      <button class="btn btn-flux" onclick="generate('flux')">Gerar com Flux 2 Pro</button>
+      <button class="btn btn-nano" onclick="generate('nano')">Gerar com Nano Banana</button>
+    </div>
+    <div class="buttons-row">
+      <button class="btn btn-both" onclick="generateBoth()">Gerar com AMBOS</button>
+    </div>
+
+    <!-- Results -->
+    <div class="results-grid">
+      <div class="result-card flux" id="result-flux">
+        <h3>Flux 2 Pro</h3>
+        <div class="result-placeholder" id="flux-placeholder">Aguardando...</div>
+        <div id="flux-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+      <div class="result-card nano" id="result-nano">
+        <h3>Nano Banana</h3>
+        <div class="result-placeholder" id="nano-placeholder">Aguardando...</div>
+        <div id="nano-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentFile = null;
+  let accessToken = null;
+
+  // Auth
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      accessToken = session.access_token;
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    } else {
+      document.getElementById('auth-gate').style.display = 'block';
+      document.getElementById('main-content').style.display = 'none';
+    }
+  }
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      accessToken = session.access_token;
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    }
+  });
+
+  function loginGoogle() {
+    supabase.auth.signInWithOAuth({ provider: 'google' });
+  }
+
+  checkAuth();
+
+  // File upload
+  const photoInput = document.getElementById('photo-input');
+  const uploadArea = document.getElementById('upload-area');
+  const uploadLabel = document.getElementById('upload-label');
+
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentFile = file;
+    uploadArea.classList.add('has-file');
+    uploadLabel.classList.add('active');
+    uploadLabel.textContent = file.name;
+
+    // Remove old preview
+    const old = uploadArea.querySelector('.upload-preview');
+    if (old) old.remove();
+
+    const img = document.createElement('img');
+    img.className = 'upload-preview';
+    img.src = URL.createObjectURL(file);
+    uploadArea.appendChild(img);
+  });
+
+  // Build FormData
+  function buildFormData() {
+    if (!currentFile) { alert('Selecione uma foto.'); return null; }
+    const fd = new FormData();
+    fd.append('photo', currentFile);
+    fd.append('style', 'figurinha');
+    fd.append('name', document.getElementById('field-name').value);
+    fd.append('birth', document.getElementById('field-birth').value);
+    fd.append('height', document.getElementById('field-height').value);
+    fd.append('country', document.getElementById('field-country').value);
+    return fd;
+  }
+
+  // Timer helper
+  function startTimer(el) {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+      el.textContent = elapsed + 's';
+    }, 100);
+    return { interval, start };
+  }
+
+  // Show loading state
+  function showLoading(engine) {
+    const placeholder = document.getElementById(engine + '-placeholder');
+    const output = document.getElementById(engine + '-output');
+    output.style.display = 'none';
+    output.innerHTML = '';
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="timer" id="${engine}-timer">0.0s</div>
+      </div>
+    `;
+    return startTimer(document.getElementById(engine + '-timer'));
+  }
+
+  // Show result
+  function showResult(engine, imageUrl, timeTaken) {
+    const placeholder = document.getElementById(engine + '-placeholder');
+    const output = document.getElementById(engine + '-output');
+    placeholder.style.display = 'none';
+    output.style.display = 'block';
+
+    const engineLabel = engine === 'flux' ? 'Flux 2 Pro' : 'Nano Banana';
+
+    output.innerHTML = `
+      <img class="result-img" src="${imageUrl}" onload="this.nextElementSibling.querySelector('.dims').textContent = this.naturalWidth + ' x ' + this.naturalHeight + 'px'">
+      <div class="result-meta">
+        <span><strong>Engine:</strong> ${engineLabel}</span>
+        <span><strong>Tempo:</strong> ${timeTaken}s</span>
+        <span class="dims"><strong>Dimensoes:</strong> carregando...</span>
+      </div>
+      <button class="btn-melhor" onclick="markBest('${engine}', this)">Melhor</button>
+    `;
+  }
+
+  // Show error
+  function showError(engine, msg) {
+    const placeholder = document.getElementById(engine + '-placeholder');
+    const output = document.getElementById(engine + '-output');
+    placeholder.style.display = 'none';
+    output.style.display = 'block';
+    output.innerHTML = `<div style="color:#f87171;padding:12px;">Erro: ${msg}</div>`;
+  }
+
+  function markBest(engine, btn) {
+    document.querySelectorAll('.btn-melhor').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    console.log('Melhor engine:', engine);
+  }
+
+  // Flux 2 Pro (async polling)
+  async function generateFlux(fd) {
+    const timer = showLoading('flux');
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: fd
+      });
+      if (!res.ok) throw new Error('Status ' + res.status);
+      const data = await res.json();
+      const { taskId, imageId, userId } = data;
+
+      // Poll
+      while (true) {
+        await new Promise(r => setTimeout(r, 3000));
+        const pollRes = await fetch(`/api/generate/status?taskId=${taskId}&imageId=${imageId}&userId=${userId}`, {
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        if (!pollRes.ok) throw new Error('Poll status ' + pollRes.status);
+        const pollData = await pollRes.json();
+        if (pollData.status === 'completed') {
+          clearInterval(timer.interval);
+          const elapsed = ((Date.now() - timer.start) / 1000).toFixed(1);
+          showResult('flux', pollData.previewUrl, elapsed);
+          return;
+        }
+        if (pollData.status === 'failed' || pollData.status === 'error') {
+          throw new Error(pollData.error || 'Generation failed');
+        }
+      }
+    } catch (err) {
+      clearInterval(timer.interval);
+      showError('flux', err.message);
+    }
+  }
+
+  // Nano Banana (synchronous)
+  async function generateNano(fd) {
+    const timer = showLoading('nano');
+    try {
+      const res = await fetch('/api/generate-nano', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: fd
+      });
+      if (!res.ok) throw new Error('Status ' + res.status);
+      const data = await res.json();
+      clearInterval(timer.interval);
+      const elapsed = ((Date.now() - timer.start) / 1000).toFixed(1);
+      showResult('nano', data.previewUrl, elapsed);
+    } catch (err) {
+      clearInterval(timer.interval);
+      showError('nano', err.message);
+    }
+  }
+
+  // Generate
+  function generate(engine) {
+    const fd = buildFormData();
+    if (!fd) return;
+    if (engine === 'flux') generateFlux(fd);
+    else generateNano(fd);
+  }
+
+  function generateBoth() {
+    const fd = buildFormData();
+    if (!fd) return;
+    // Need separate FormData for each request
+    const fd2 = buildFormData();
+    generateFlux(fd);
+    generateNano(fd2);
+  }
+</script>
+
+</body>
+</html>
