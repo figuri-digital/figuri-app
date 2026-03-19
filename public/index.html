@@ -1676,6 +1676,25 @@
     });
   })();
 
+  async function pollGeneration(taskId, imageId, userId, token) {
+    const maxAttempts = 40; // ~80 seconds max
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+
+      const res = await fetch(
+        '/api/generate/status?taskId=' + taskId + '&imageId=' + imageId + '&userId=' + userId,
+        { headers: { 'Authorization': 'Bearer ' + token } }
+      );
+
+      const data = await res.json();
+
+      if (data.status === 'completed') return data;
+      if (data.status === 'failed') return data;
+      // else still processing, continue polling
+    }
+    throw new Error('Timeout: a geração demorou demais. Tente novamente.');
+  }
+
   function requireAuth(callback) {
     if (!isLoggedIn) {
       openLogin();
@@ -1734,7 +1753,7 @@
         return;
       }
 
-      // Send to API
+      // Send to API — step 1: start generation
       const formData = new FormData();
       formData.append('photo', file);
       formData.append('style', style);
@@ -1751,15 +1770,23 @@
         throw new Error(data.error || 'Erro ao gerar figurinha');
       }
 
+      // Step 2: poll for result
+      sub.textContent = 'A IA está criando sua figurinha... aguarde.';
+      const result = await pollGeneration(data.taskId, data.imageId, data.userId, session.access_token);
+
+      if (result.status === 'failed') {
+        throw new Error(result.error || 'Geração falhou. Tente outra foto.');
+      }
+
       // Show preview
-      currentImageId = data.imageId;
-      document.getElementById('previewImage').src = data.previewUrl;
+      currentImageId = result.imageId;
+      document.getElementById('previewImage').src = result.previewUrl;
       document.getElementById('previewResult').style.display = 'block';
       box.style.display = 'none';
 
       // Update credits
-      if (data.creditsUsed !== undefined) {
-        creditsUsed = data.creditsUsed;
+      if (result.creditsUsed !== undefined) {
+        creditsUsed = result.creditsUsed;
         const loggedText = document.querySelector('.credits-text-logged');
         loggedText.textContent = creditsUsed + ' de ' + creditsTotal + ' usados';
         document.getElementById('creditsFill').style.width = ((creditsUsed / creditsTotal) * 100) + '%';

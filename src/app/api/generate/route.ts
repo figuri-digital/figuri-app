@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createGeneration, pollTask, getPrompt } from '@/lib/freepik';
-import { applyWatermark } from '@/lib/watermark';
+import { createGeneration, getPrompt } from '@/lib/freepik';
 import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -9,7 +8,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth: get user from token
+    // Auth
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
@@ -38,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     if (credits.credits_used >= credits.credits_limit) {
       return NextResponse.json({
-        error: 'Você usou todos os previews gratuitos. Adquira créditos para continuar.',
+        error: 'Você usou todos os previews gratuitos.',
       }, { status: 403 });
     }
 
@@ -69,66 +68,31 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Call Freepik API
+    // Start Freepik generation (async — returns immediately)
     const prompt = getPrompt(style, name);
     const taskId = await createGeneration(base64, prompt);
-    const generatedImageUrl = await pollTask(taskId);
 
-    // Download generated image
-    const genRes = await fetch(generatedImageUrl);
-    const genBuffer = Buffer.from(await genRes.arrayBuffer());
-
-    // Upload hi-res (clean) to storage
-    const hiresPath = `generated/${user.id}/${imageId}.jpg`;
-    await supabase.storage.from('images').upload(hiresPath, genBuffer, {
-      contentType: 'image/jpeg',
-    });
-
-    const { data: hiresUrlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(hiresPath);
-
-    // Apply watermark
-    const watermarkedBuffer = await applyWatermark(genBuffer);
-
-    // Upload watermarked preview
-    const previewPath = `previews/${user.id}/${imageId}.jpg`;
-    await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, {
-      contentType: 'image/jpeg',
-    });
-
-    const { data: previewUrlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(previewPath);
-
-    // Save image record
+    // Save image record with pending status
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase.from('images').insert({
       id: imageId,
       user_id: user.id,
       original_url: originalUrlData.publicUrl,
-      generated_url: hiresUrlData.publicUrl,
-      watermark_url: previewUrlData.publicUrl,
+      generated_url: '',
+      watermark_url: '',
       style,
       prompt,
-      status: 'completed',
+      status: 'processing',
       expires_at: expiresAt,
       cart_status: 'preview',
     });
 
-    // Decrement credits
-    const newCreditsUsed = credits.credits_used + 1;
-    await supabase
-      .from('usage_credits')
-      .update({ credits_used: newCreditsUsed })
-      .eq('user_id', user.id);
-
+    // Return task info immediately — frontend will poll /api/generate/status
     return NextResponse.json({
       success: true,
-      previewUrl: previewUrlData.publicUrl,
+      taskId,
       imageId,
-      creditsUsed: newCreditsUsed,
-      creditsLimit: credits.credits_limit,
+      userId: user.id,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';
