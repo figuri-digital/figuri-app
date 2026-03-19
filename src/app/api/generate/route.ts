@@ -233,14 +233,14 @@ async function getTemplateBase64(country: string, req: NextRequest): Promise<str
     const baseUrl = `${protocol}://${host}`;
 
     const countryFile: Record<string, string> = {
-      brasil: 'brasil.png',
-      argentina: 'argentina.png',
-      franca: 'franca.png',
-      alemanha: 'alemanha.png',
-      espanha: 'espanha.png',
-      portugal: 'portugal.png',
-      uruguai: 'uruguai.png',
-      colombia: 'colombia.png',
+      brasil: 'brasil.jpg',
+      argentina: 'argentina.jpg',
+      franca: 'franca.jpg',
+      alemanha: 'alemanha.jpg',
+      espanha: 'espanha.jpg',
+      portugal: 'portugal.jpg',
+      uruguai: 'uruguai.jpg',
+      colombia: 'colombia.jpg',
     };
 
     const file = countryFile[country] || countryFile.brasil;
