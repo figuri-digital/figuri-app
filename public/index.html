@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIGURI IA — Vire Jogador da Copa em 30 Segundos</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
     /* Luz */
@@ -262,6 +263,23 @@
     text-decoration: none;
   }
   .login-link:hover { text-decoration: underline; }
+  .login-error {
+    display: none;
+    background: #FFF0F0;
+    border: 1px solid #E8AAAA;
+    color: #C33;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .login-error.show { display: block; }
+  .btn-login-submit:disabled, .btn-google:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   /* Barra de créditos */
   .credits-bar {
@@ -1383,16 +1401,18 @@
 <div class="login-overlay" id="loginOverlay" onclick="if(event.target===this) closeLogin()">
   <div class="login-modal">
     <button class="login-close" onclick="closeLogin()">&times;</button>
-    <div class="login-title">Crie sua conta grátis para ver seu resultado</div>
-    <button class="btn-google" onclick="loginWithGoogle()">
+    <div class="login-title" id="loginTitle">Crie sua conta grátis para ver seu resultado</div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-google" id="btnGoogle" onclick="loginWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
       Entrar com Google
     </button>
     <div class="login-sep">ou</div>
+    <input type="text" class="login-field" id="loginName" placeholder="Seu nome" style="display:none">
     <input type="email" class="login-field" id="loginEmail" placeholder="E-mail">
     <input type="password" class="login-field" id="loginPassword" placeholder="Senha">
-    <button class="btn-login-submit" onclick="loginWithEmail()">Entrar</button>
-    <a href="#" class="login-link" onclick="event.preventDefault()">Ainda não tem conta? Cadastre-se</a>
+    <button class="btn-login-submit" id="btnEmailSubmit" onclick="loginWithEmail()">Entrar</button>
+    <a href="#" class="login-link" id="loginToggle" onclick="event.preventDefault(); toggleLoginMode()">Ainda não tem conta? Cadastre-se</a>
   </div>
 </div>
 
@@ -1411,7 +1431,12 @@
 </footer>
 
 <script>
-  // COUNTDOWN
+  // ── SUPABASE CLIENT ──
+  const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── COUNTDOWN ──
   function updateCountdown(){
     const copa = new Date('2026-06-11T17:00:00');
     const diff = copa - new Date();
@@ -1427,7 +1452,7 @@
   }
   updateCountdown(); setInterval(updateCountdown,1000);
 
-  // FAQ
+  // ── FAQ ──
   function toggleFaq(btn){
     const item=btn.parentElement;
     const was=item.classList.contains('open');
@@ -1435,38 +1460,72 @@
     if(!was) item.classList.add('open');
   }
 
-  // STYLE PICKER
+  // ── STYLE PICKER ──
   function setStyle(btn){
     document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
   }
 
-  // AUTH STATE
+  // ── AUTH STATE ──
   let isLoggedIn = false;
   let userName = '';
   let creditsUsed = 0;
   const creditsTotal = 5;
+  let isSignUpMode = false;
 
   function openLogin() {
+    hideLoginError();
     document.getElementById('loginOverlay').classList.add('open');
   }
   function closeLogin() {
     document.getElementById('loginOverlay').classList.remove('open');
+    hideLoginError();
+    // Reset to login mode
+    if (isSignUpMode) toggleLoginMode();
   }
   function toggleUserMenu() {
     document.getElementById('userDropdown').classList.toggle('open');
   }
-  // Close dropdown on outside click
   document.addEventListener('click', function(e) {
     const menu = document.getElementById('userMenu');
-    if (!menu.contains(e.target)) {
+    if (menu && !menu.contains(e.target)) {
       document.getElementById('userDropdown').classList.remove('open');
     }
   });
 
-  function setLoggedIn(name) {
+  function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  function hideLoginError() {
+    document.getElementById('loginError').classList.remove('show');
+  }
+
+  function toggleLoginMode() {
+    isSignUpMode = !isSignUpMode;
+    hideLoginError();
+    const nameField = document.getElementById('loginName');
+    const title = document.getElementById('loginTitle');
+    const btn = document.getElementById('btnEmailSubmit');
+    const link = document.getElementById('loginToggle');
+    if (isSignUpMode) {
+      nameField.style.display = 'block';
+      title.textContent = 'Crie sua conta grátis';
+      btn.textContent = 'Criar conta';
+      link.textContent = 'Já tem conta? Entrar';
+    } else {
+      nameField.style.display = 'none';
+      title.textContent = 'Crie sua conta grátis para ver seu resultado';
+      btn.textContent = 'Entrar';
+      link.textContent = 'Ainda não tem conta? Cadastre-se';
+    }
+  }
+
+  function setLoggedIn(name, credits) {
     isLoggedIn = true;
     userName = name;
+    creditsUsed = credits || 0;
     document.getElementById('btnEntrar').style.display = 'none';
     const menuBtn = document.getElementById('userMenuBtn');
     menuBtn.style.display = 'block';
@@ -1481,9 +1540,10 @@
     document.getElementById('creditsFill').style.width = ((creditsUsed / creditsTotal) * 100) + '%';
   }
 
-  function doLogout() {
+  function resetUI() {
     isLoggedIn = false;
     userName = '';
+    creditsUsed = 0;
     document.getElementById('btnEntrar').style.display = '';
     document.getElementById('userMenuBtn').style.display = 'none';
     document.getElementById('userDropdown').classList.remove('open');
@@ -1492,19 +1552,116 @@
     document.querySelector('.credits-progress').style.display = 'none';
   }
 
-  function loginWithGoogle() {
-    // TODO: integrar com Supabase Auth Google
-    setLoggedIn('Usuário');
-    closeLogin();
-  }
-  function loginWithEmail() {
-    // TODO: integrar com Supabase Auth Email
-    const email = document.getElementById('loginEmail').value;
-    if (email) {
-      setLoggedIn(email.split('@')[0]);
-      closeLogin();
+  // ── SUPABASE AUTH FUNCTIONS ──
+  async function loginWithGoogle() {
+    document.getElementById('btnGoogle').disabled = true;
+    hideLoginError();
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) {
+      showLoginError(error.message);
+      document.getElementById('btnGoogle').disabled = false;
     }
   }
+
+  async function loginWithEmail() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('btnEmailSubmit');
+    hideLoginError();
+
+    if (!email || !password) {
+      showLoginError('Preencha e-mail e senha.');
+      return;
+    }
+    if (password.length < 6) {
+      showLoginError('A senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
+    btn.disabled = true;
+
+    if (isSignUpMode) {
+      // CADASTRO
+      const name = document.getElementById('loginName').value.trim();
+      const { data, error } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { name: name || email.split('@')[0] } }
+      });
+      if (error) {
+        showLoginError(error.message);
+        btn.disabled = false;
+        return;
+      }
+      if (data.user && !data.session) {
+        showLoginError('Verifique seu e-mail para confirmar o cadastro.');
+        btn.disabled = false;
+        return;
+      }
+      // Auto-login after signup
+      closeLogin();
+    } else {
+      // LOGIN
+      const { error } = await sb.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+      if (error) {
+        if (error.message === 'Invalid login credentials') {
+          showLoginError('E-mail ou senha incorretos.');
+        } else {
+          showLoginError(error.message);
+        }
+        btn.disabled = false;
+        return;
+      }
+      closeLogin();
+    }
+    btn.disabled = false;
+  }
+
+  async function doLogout() {
+    await sb.auth.signOut();
+    resetUI();
+  }
+
+  async function loadCredits(userId) {
+    const { data } = await sb.from('usage_credits')
+      .select('credits_used, credits_limit')
+      .eq('user_id', userId)
+      .single();
+    return data;
+  }
+
+  async function handleSession(session) {
+    if (!session) {
+      resetUI();
+      return;
+    }
+    const user = session.user;
+    const name = user.user_metadata?.name
+      || user.user_metadata?.full_name
+      || user.email?.split('@')[0]
+      || 'Usuário';
+
+    // Load credits
+    const credits = await loadCredits(user.id);
+    setLoggedIn(name, credits?.credits_used || 0);
+  }
+
+  // ── INIT: check session on page load ──
+  (async function() {
+    const { data: { session } } = await sb.auth.getSession();
+    await handleSession(session);
+
+    // Listen for auth changes (login, logout, token refresh)
+    sb.auth.onAuthStateChange(async (event, session) => {
+      await handleSession(session);
+    });
+  })();
 
   function requireAuth(callback) {
     if (!isLoggedIn) {
@@ -1514,7 +1671,7 @@
     if (callback) callback();
   }
 
-  // FILE UPLOAD — require auth
+  // ── FILE UPLOAD — require auth ──
   document.getElementById('fileInput').addEventListener('change',function(e){
     if(e.target.files.length>0){
       if (!isLoggedIn) {
@@ -1529,7 +1686,7 @@
     }
   });
 
-  // SCROLL ANIMATIONS
+  // ── SCROLL ANIMATIONS ──
   const obs=new IntersectionObserver(entries=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
   },{threshold:0.1});
