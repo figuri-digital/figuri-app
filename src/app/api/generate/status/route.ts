@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
 
     // Poll Freepik Mystic task status
     const freepikRes = await fetch(
-      `https://api.freepik.com/v1/ai/text-to-image/mystic/${taskId}`,
+      `https://api.freepik.com/v1/ai/mystic/${taskId}`,
       {
         headers: {
           'x-freepik-api-key': FREEPIK_API_KEY,

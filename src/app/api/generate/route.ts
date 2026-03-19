@@ -96,8 +96,8 @@ export async function POST(req: NextRequest) {
     // Build prompt with country-specific template
     const prompt = buildPrompt(style, { name, birth, height, country });
 
-    // Get the template image URL for the selected country
-    const templateUrl = getTemplateUrl(country, req);
+    // Get the template image as base64 for structure_reference
+    const templateBase64 = await getTemplateBase64(country, req);
 
     // Create image record
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -116,33 +116,29 @@ export async function POST(req: NextRequest) {
 
     // Call Freepik Mystic API (async — returns task_id)
     console.log('Calling Freepik Mystic API...');
-    console.log('Template URL:', templateUrl);
-    console.log('User photo URL:', originalUrlData.publicUrl);
+    console.log('Country:', country, '| Style:', style);
 
+    // Build request body per Freepik Mystic docs
     const freepikBody: Record<string, unknown> = {
       prompt,
       resolution: '2k',
       aspect_ratio: 'traditional_3_4',
-      realism: true,
-      character_reference: [
-        {
-          strength: 90,
-          image: originalUrlData.publicUrl,
-        },
-      ],
+      model: 'realism',
+      creative_detailing: 50,
+      structure_strength: 80,
     };
 
-    // Add structure reference (country template) if available
-    if (templateUrl) {
-      freepikBody.structure_reference = [
-        {
-          strength: 85,
-          image: templateUrl,
-        },
-      ];
+    // Add structure reference (country template as base64)
+    if (templateBase64) {
+      freepikBody.structure_reference = templateBase64;
     }
 
-    const freepikRes = await fetch('https://api.freepik.com/v1/ai/text-to-image/mystic', {
+    // Add user photo as style reference (closest to face reference in Mystic)
+    const userPhotoBase64 = buffer.toString('base64');
+    freepikBody.style_reference = userPhotoBase64;
+    freepikBody.adherence = 30; // Low adherence = more prompt, less style copy
+
+    const freepikRes = await fetch('https://api.freepik.com/v1/ai/mystic', {
       method: 'POST',
       headers: {
         'x-freepik-api-key': FREEPIK_API_KEY,
@@ -228,26 +224,43 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── Template URLs ──
+// ── Template Base64 ──
 
-function getTemplateUrl(country: string, req: NextRequest): string {
-  const host = req.headers.get('host') || 'figuri-app.vercel.app';
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
+async function getTemplateBase64(country: string, req: NextRequest): Promise<string | null> {
+  try {
+    const host = req.headers.get('host') || 'figuri-app.vercel.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
 
-  const countryFile: Record<string, string> = {
-    brasil: 'brasil.png',
-    argentina: 'argentina.png',
-    franca: 'franca.png',
-    alemanha: 'alemanha.png',
-    espanha: 'espanha.png',
-    portugal: 'portugal.png',
-    uruguai: 'uruguai.png',
-    colombia: 'colombia.png',
-  };
+    const countryFile: Record<string, string> = {
+      brasil: 'brasil.png',
+      argentina: 'argentina.png',
+      franca: 'franca.png',
+      alemanha: 'alemanha.png',
+      espanha: 'espanha.png',
+      portugal: 'portugal.png',
+      uruguai: 'uruguai.png',
+      colombia: 'colombia.png',
+    };
 
-  const file = countryFile[country] || countryFile.brasil;
-  return `${baseUrl}/templates/${file}`;
+    const file = countryFile[country] || countryFile.brasil;
+    const url = `${baseUrl}/templates/${file}`;
+
+    console.log('Fetching template from:', url);
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error('Failed to fetch template:', res.status);
+      return null;
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    console.log('Template base64 length:', base64.length);
+    return base64;
+  } catch (err) {
+    console.error('Error loading template:', err);
+    return null;
+  }
 }
 
 // ── Prompts por país ──
