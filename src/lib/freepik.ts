@@ -1,20 +1,52 @@
 const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY!;
 const BASE_URL = 'https://api.freepik.com/v1/ai';
 
-const PROMPTS: Record<string, (name?: string) => string> = {
-  jogador: (name) =>
-    `Official World Cup 2026 Panini sticker card, photorealistic portrait, wearing green Brazil national team jersey number 10, gold decorative border frame, player name "${name || 'BRASIL'}" at bottom in bold white text, Brazilian flag icon top right, white card background, studio lighting, 2K quality`,
-  pet: () =>
-    `Official World Cup 2026 Panini sticker card, cute animal as team mascot wearing green Brazil national team jersey, gold decorative border frame, team badge, white card background, studio lighting, 2K quality`,
-  familia: () =>
-    `Official World Cup 2026 Panini sticker card, family group photo wearing green Brazil national team jerseys, gold decorative border frame, "FAMÍLIA" text at bottom, Brazilian flag, white card background, studio lighting, 2K quality`,
-  rara: (name) =>
-    `Official World Cup 2026 Panini RARE holographic sticker card, photorealistic portrait, wearing green Brazil national team jersey number 10, silver holographic border with rainbow reflections, RARE badge top left, player name "${name || 'BRASIL'}" at bottom in bold metallic text, Brazilian flag icon, premium card background with sparkle effects, studio lighting, 2K quality`,
+interface StickerData {
+  name?: string;
+  birth?: string;
+  height?: string;
+  country?: string;
+}
+
+const COUNTRY_MAP: Record<string, { jersey: string; flag: string }> = {
+  brasil:    { jersey: 'yellow Brazil national team jersey with green details', flag: 'Brazilian' },
+  argentina: { jersey: 'white and light blue striped Argentina national team jersey', flag: 'Argentine' },
+  franca:    { jersey: 'dark blue France national team jersey', flag: 'French' },
+  alemanha:  { jersey: 'white Germany national team jersey with black details', flag: 'German' },
+  espanha:   { jersey: 'red Spain national team jersey', flag: 'Spanish' },
+  portugal:  { jersey: 'dark red Portugal national team jersey', flag: 'Portuguese' },
+  uruguai:   { jersey: 'light blue Uruguay national team jersey', flag: 'Uruguayan' },
+  colombia:  { jersey: 'yellow Colombia national team jersey', flag: 'Colombian' },
 };
 
-export function getPrompt(style: string, name?: string): string {
+function getCountryInfo(country?: string) {
+  return COUNTRY_MAP[country || 'brasil'] || COUNTRY_MAP.brasil;
+}
+
+const PROMPTS: Record<string, (data: StickerData) => string> = {
+  jogador: (d) => {
+    const c = getCountryInfo(d.country);
+    const info = [d.name, d.height, d.birth].filter(Boolean).join(' · ');
+    return `Official World Cup 2026 Panini sticker card, photorealistic portrait, wearing ${c.jersey} number 10, gold decorative border frame, player name "${d.name || 'JOGADOR'}" at bottom in bold white text, ${c.flag} flag icon top right, player info "${info}" in small text, white card background, studio lighting, 2K quality`;
+  },
+  pet: (d) => {
+    const c = getCountryInfo(d.country);
+    return `Official World Cup 2026 Panini sticker card, cute animal as team mascot wearing ${c.jersey}, gold decorative border frame, name "${d.name || 'MASCOTE'}" at bottom, ${c.flag} flag, team badge, white card background, studio lighting, 2K quality`;
+  },
+  familia: (d) => {
+    const c = getCountryInfo(d.country);
+    return `Official World Cup 2026 Panini sticker card, family group photo wearing ${c.jersey}, gold decorative border frame, "${d.name || 'FAMÍLIA'}" text at bottom, ${c.flag} flag, white card background, studio lighting, 2K quality`;
+  },
+  rara: (d) => {
+    const c = getCountryInfo(d.country);
+    const info = [d.name, d.height, d.birth].filter(Boolean).join(' · ');
+    return `Official World Cup 2026 Panini RARE holographic sticker card, photorealistic portrait, wearing ${c.jersey} number 10, silver holographic border with rainbow reflections, RARE badge top left, player name "${d.name || 'JOGADOR'}" at bottom in bold metallic text, player info "${info}", ${c.flag} flag icon, premium card background with sparkle effects, studio lighting, 2K quality`;
+  },
+};
+
+export function getPrompt(style: string, data: StickerData): string {
   const fn = PROMPTS[style] || PROMPTS.jogador;
-  return fn(name);
+  return fn(data);
 }
 
 export async function createGeneration(imageBase64: string, prompt: string): Promise<string> {
@@ -28,7 +60,7 @@ export async function createGeneration(imageBase64: string, prompt: string): Pro
       image: imageBase64,
       prompt: prompt,
       imagination: 'subtle',
-      aspect_ratio: 'portrait_3_4',
+      aspect_ratio: 'traditional_3_4',
     }),
   });
 
@@ -39,29 +71,6 @@ export async function createGeneration(imageBase64: string, prompt: string): Pro
 
   const data = await res.json();
   return data.data.task_id;
-}
-
-export async function pollTask(taskId: string, maxAttempts = 30): Promise<string> {
-  for (let i = 0; i < maxAttempts; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-
-    const res = await fetch(`${BASE_URL}/beta/text-to-image/reimagine-flux/${taskId}`, {
-      headers: { 'x-freepik-api-key': FREEPIK_API_KEY },
-    });
-
-    if (!res.ok) continue;
-
-    const data = await res.json();
-    const task = data.data;
-
-    if (task.status === 'COMPLETED' && task.generated?.length > 0) {
-      return task.generated[0];
-    }
-    if (task.status === 'FAILED') {
-      throw new Error('Geração falhou. Tente novamente com outra foto.');
-    }
-  }
-  throw new Error('Timeout: a geração demorou muito. Tente novamente.');
 }
 
 export { FREEPIK_API_KEY };

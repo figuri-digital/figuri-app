@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
     const file = formData.get('photo') as File | null;
     const style = (formData.get('style') as string) || 'jogador';
     const name = (formData.get('name') as string) || '';
+    const birth = (formData.get('birth') as string) || '';
+    const height = (formData.get('height') as string) || '';
+    const country = (formData.get('country') as string) || 'brasil';
 
     if (!file) {
       return NextResponse.json({ error: 'Envie uma foto' }, { status: 400 });
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
       .getPublicUrl(originalPath);
 
     // Start Freepik generation (async — returns immediately)
-    const prompt = getPrompt(style, name);
+    const prompt = getPrompt(style, { name, birth, height, country });
     const taskId = await createGeneration(base64, prompt);
 
     // Save image record with pending status
