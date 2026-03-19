@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY!;
+const FAL_KEY = process.env.FAL_KEY!;
+
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
@@ -93,11 +94,14 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Build prompt with country-specific template
-    const prompt = buildPrompt(style, { name, birth, height, country });
+    // Get template URL
+    const host = req.headers.get('host') || 'figuri-app.vercel.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const templateFile = COUNTRY_TEMPLATES[country] || COUNTRY_TEMPLATES.brasil;
+    const templateUrl = `${protocol}://${host}/templates/${templateFile}`;
 
-    // Get the template image as base64 for structure_reference
-    const templateBase64 = await getTemplateBase64(country, req);
+    // Build prompt
+    const prompt = buildPrompt(style, { name, birth, height, country });
 
     // Create image record
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -114,107 +118,56 @@ export async function POST(req: NextRequest) {
       cart_status: 'preview',
     });
 
-    // Call Freepik Mystic API (async — returns task_id)
-    console.log('Calling Freepik Mystic API...');
+    // Call Flux 2 Pro via fal.ai (async queue)
+    console.log('Calling Flux 2 Pro via fal.ai...');
+    console.log('User photo:', originalUrlData.publicUrl);
+    console.log('Template:', templateUrl);
     console.log('Country:', country, '| Style:', style);
 
-    // Build request body per Freepik Mystic docs
-    const freepikBody: Record<string, unknown> = {
-      prompt,
-      resolution: '2k',
-      aspect_ratio: 'traditional_3_4',
-      model: 'realism',
-      creative_detailing: 50,
-      structure_strength: 80,
-    };
-
-    // Add structure reference (country template as base64)
-    if (templateBase64) {
-      freepikBody.structure_reference = templateBase64;
-    }
-
-    // Add user photo as style reference (closest to face reference in Mystic)
-    const userPhotoBase64 = buffer.toString('base64');
-    freepikBody.style_reference = userPhotoBase64;
-    freepikBody.adherence = 30; // Low adherence = more prompt, less style copy
-
-    const freepikRes = await fetch('https://api.freepik.com/v1/ai/mystic', {
+    const falRes = await fetch('https://queue.fal.run/fal-ai/flux-2-pro/edit', {
       method: 'POST',
       headers: {
-        'x-freepik-api-key': FREEPIK_API_KEY,
+        'Authorization': `Key ${FAL_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(freepikBody),
+      body: JSON.stringify({
+        prompt,
+        image_urls: [
+          originalUrlData.publicUrl,  // @image1 = user's face
+          templateUrl,                // @image2 = country template
+        ],
+        image_size: 'portrait_4_3',
+        output_format: 'jpeg',
+        safety_tolerance: '3',
+        enable_safety_checker: true,
+      }),
     });
 
-    if (!freepikRes.ok) {
-      const errText = await freepikRes.text();
-      console.error('Freepik Mystic error:', freepikRes.status, errText);
+    if (!falRes.ok) {
+      const errText = await falRes.text();
+      console.error('fal.ai error:', falRes.status, errText);
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
-      return NextResponse.json({ error: `Freepik API error ${freepikRes.status}: ${errText}` }, { status: 500 });
+      return NextResponse.json({ error: `Erro na geração: ${errText}` }, { status: 500 });
     }
 
-    const freepikData = await freepikRes.json();
-    console.log('Freepik Mystic response:', JSON.stringify(freepikData).slice(0, 500));
+    const falData = await falRes.json();
+    console.log('fal.ai queue response:', JSON.stringify(falData).slice(0, 300));
 
-    // Extract task_id from response
-    const taskId = freepikData.data?.task_id || freepikData.task_id || freepikData.data?.id;
+    const requestId = falData.request_id;
 
-    if (!taskId) {
-      // If Mystic returns the image directly (synchronous response)
-      const generated = freepikData.data?.generated || freepikData.data?.images;
-      if (generated?.length) {
-        const genUrl = typeof generated[0] === 'string' ? generated[0] : generated[0].url || generated[0].base64;
-
-        if (genUrl) {
-          // Download, watermark, save
-          const { applyWatermark } = await import('@/lib/watermark');
-          const genRes = await fetch(genUrl);
-          const genBuffer = Buffer.from(await genRes.arrayBuffer());
-
-          const hiresPath = `generated/${user.id}/${imageId}.jpg`;
-          await supabase.storage.from('images').upload(hiresPath, genBuffer, { contentType: 'image/jpeg' });
-          const { data: hiresUrlData } = supabase.storage.from('images').getPublicUrl(hiresPath);
-
-          const watermarkedBuffer = await applyWatermark(genBuffer);
-          const previewPath = `previews/${user.id}/${imageId}.jpg`;
-          await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, { contentType: 'image/jpeg' });
-          const { data: previewUrlData } = supabase.storage.from('images').getPublicUrl(previewPath);
-
-          await supabase.from('images').update({
-            generated_url: hiresUrlData.publicUrl,
-            watermark_url: previewUrlData.publicUrl,
-            status: 'completed',
-          }).eq('id', imageId);
-
-          const newCreditsUsed = (credits.credits_used || 0) + 1;
-          await supabase.from('usage_credits').update({ credits_used: newCreditsUsed }).eq('user_id', user.id);
-
-          return NextResponse.json({
-            success: true,
-            imageId,
-            userId: user.id,
-            taskId: 'sync',
-            previewUrl: previewUrlData.publicUrl,
-            status: 'completed',
-            creditsUsed: newCreditsUsed,
-            creditsLimit: credits.credits_limit || 5,
-          });
-        }
-      }
-
-      console.error('No taskId in Freepik response:', JSON.stringify(freepikData).slice(0, 500));
+    if (!requestId) {
+      console.error('No request_id from fal.ai:', JSON.stringify(falData).slice(0, 500));
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
-      return NextResponse.json({ error: 'Erro na API Freepik — sem task_id' }, { status: 500 });
+      return NextResponse.json({ error: 'Erro na fila de geração' }, { status: 500 });
     }
 
-    console.log('Freepik task started:', taskId);
+    console.log('fal.ai task queued:', requestId);
 
     return NextResponse.json({
       success: true,
       imageId,
       userId: user.id,
-      taskId,
+      taskId: requestId,
       status: 'processing',
     });
   } catch (err: unknown) {
@@ -224,46 +177,20 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── Template Base64 ──
+// ── Country templates ──
 
-async function getTemplateBase64(country: string, req: NextRequest): Promise<string | null> {
-  try {
-    const host = req.headers.get('host') || 'figuri-app.vercel.app';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
+const COUNTRY_TEMPLATES: Record<string, string> = {
+  brasil: 'brasil.jpg',
+  argentina: 'argentina.jpg',
+  franca: 'franca.jpg',
+  alemanha: 'alemanha.jpg',
+  espanha: 'espanha.jpg',
+  portugal: 'portugal.jpg',
+  uruguai: 'uruguai.jpg',
+  colombia: 'colombia.jpg',
+};
 
-    const countryFile: Record<string, string> = {
-      brasil: 'brasil.jpg',
-      argentina: 'argentina.jpg',
-      franca: 'franca.jpg',
-      alemanha: 'alemanha.jpg',
-      espanha: 'espanha.jpg',
-      portugal: 'portugal.jpg',
-      uruguai: 'uruguai.jpg',
-      colombia: 'colombia.jpg',
-    };
-
-    const file = countryFile[country] || countryFile.brasil;
-    const url = `${baseUrl}/templates/${file}`;
-
-    console.log('Fetching template from:', url);
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.error('Failed to fetch template:', res.status);
-      return null;
-    }
-
-    const arrayBuffer = await res.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
-    console.log('Template base64 length:', base64.length);
-    return base64;
-  } catch (err) {
-    console.error('Error loading template:', err);
-    return null;
-  }
-}
-
-// ── Prompts por país ──
+// ── Prompts ──
 
 interface StickerData {
   name?: string;
@@ -272,157 +199,65 @@ interface StickerData {
   country?: string;
 }
 
-const COUNTRY_PROMPTS: Record<string, (data: StickerData) => string> = {
-  brasil: (d) => `Create a high-quality sports poster identical in layout and style to the reference image provided.
-Keep ALL design elements exactly the same, including:
-Green background with layered shapes
-FIFA World Cup trophy icon on the left
-Brazil 2026 badge on the top right
-Large white number "2" in the background
-Clean, modern, minimal sports card layout
-Typography style, spacing, and alignment
-Replace ONLY the following elements:
-The central player photo: use the uploaded image of a different person, cropped from chest up, centered, wearing a Brazil national team jersey (yellow shirt with green details)
-Player name: replace "NEYMAR JR" with "${d.name || 'JOGADOR'}"
-Height: replace "M 1,75" with "M ${d.height || '1,75'}"
-Date of birth: replace "5-2-1992" with "${d.birth || '1-1-2000'}"
-Keep lighting, shadows, and color grading consistent with the original image. The final result must look like an official FIFA-style player card, realistic and professionally designed.
-Ensure the face blends naturally with the jersey and background, maintaining photorealism.`,
+const COUNTRY_PROMPTS: Record<string, (d: StickerData) => string> = {
+  brasil: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Brazil).
+Keep ALL design elements from @image2 exactly the same: green background with layered shapes, FIFA World Cup trophy icon on the left, Brazil 2026 badge on the top right, large white number "2" in the background, bottom rounded white panel, green stylized "26" on the bottom right.
+The person from @image1 must be wearing a Brazil national team jersey (yellow shirt with green details), cropped from chest up, centered, facing forward.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Maintain photorealism, consistent lighting, and professional sports card quality. The face must look exactly like the person in @image1.`,
 
-  argentina: (d) => `Create a high-quality football player card identical in layout, composition, and style to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Light blue (Argentina-themed) background with geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Argentina badge with flag and "ARG 2026" on the top right
-* Bottom rounded white panel
-* Green stylized "26" on the bottom right
-* Clean, modern, minimal sports card design
-* Same typography, font weight, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing an Argentina national team jersey (white and sky blue stripes, realistic fabric and lighting)
-* Player name: replace "LIONEL MESSI" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,70" with "M ${d.height || '1,75'}"
-* Date of birth: replace "24-6-1987" with "${d.birth || '1-1-2000'}"
-Maintain consistent lighting, shadows, and color grading so the new face blends naturally with the body and background. Ensure photorealism and professional sports branding quality.The final image must look like an official FIFA-style player card, with no layout changes.`,
+  argentina: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Argentina).
+Keep ALL design elements from @image2 exactly the same: light blue background with geometric shapes, FIFA World Cup trophy icon, Argentina badge with "ARG 2026", large white number "2", bottom rounded white panel, green stylized "26".
+The person from @image1 must be wearing an Argentina national team jersey (white and sky blue stripes), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Maintain photorealism and the face must look exactly like @image1.`,
 
-  franca: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Blue background with layered geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* France badge with flag and "FRA 2026" on the top right
-* Bottom rounded white panel
-* Green stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a France national team jersey (dark blue shirt with subtle texture and details, realistic lighting and shadows)
-* Player name: replace "KYLIAN MBAPPÉ" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,78" with "M ${d.height || '1,75'}"
-* Date of birth: replace "20-12-1998" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final result must look like an official FIFA-style player card, photorealistic, with no changes to layout, proportions, or design elements.`,
+  franca: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for France).
+Keep ALL design elements from @image2: blue background with geometric shapes, FIFA World Cup trophy, France badge with "FRA 2026", large white number "2", bottom rounded white panel, green stylized "26".
+The person from @image1 must be wearing a France national team jersey (dark blue), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 
-  alemanha: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Grey background with layered geometric shapes and a dark top-right corner
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Germany badge with flag and "GER 2026" on the top right
-* Bottom rounded white panel
-* Green stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a Germany national team jersey (white shirt with black, red, and yellow gradient shoulder details, realistic texture and lighting)
-* Player name: replace "JAMAL MUSIALA" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,83" with "M ${d.height || '1,75'}"
-* Date of birth: replace "26-02-2003" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final result must look like an official FIFA-style player card, photorealistic, with no changes to layout, proportions, or design elements.`,
+  alemanha: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Germany).
+Keep ALL design elements from @image2: grey background with geometric shapes, FIFA World Cup trophy, Germany badge with "GER 2026", large white number "2", bottom rounded white panel, green stylized "26".
+The person from @image1 must be wearing a Germany national team jersey (white with black, red, yellow details), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 
-  espanha: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Red background with layered geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Spain badge with flag and "ESP 2026" on the top right
-* Bottom rounded white panel
-* Green stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a Spain national team jersey (red shirt with subtle vertical details and yellow accents, realistic texture and lighting)
-* Player name: replace "LAMINE YAMAL" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,81" with "M ${d.height || '1,75'}"
-* Date of birth: replace "13-7-2007" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final result must look like an official FIFA-style player card, photorealistic, with no changes to layout, proportions, or design elements.`,
+  espanha: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Spain).
+Keep ALL design elements from @image2: red background with geometric shapes, FIFA World Cup trophy, Spain badge with "ESP 2026", large white number "2", bottom rounded white panel, green stylized "26".
+The person from @image1 must be wearing a Spain national team jersey (red with yellow accents), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 
-  portugal: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Red background with layered geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Portugal badge with flag and "POR 2026" on the top right
-* Bottom rounded white panel
-* Green stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a Portugal national team jersey (red shirt with green details, realistic texture and lighting)
-* Player name: replace "CRISTIANO RONALDO" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,87" with "M ${d.height || '1,75'}"
-* Date of birth: replace "5-2-1985" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final result must look like an official FIFA-style player card, photorealistic, with no changes to layout, proportions, or design elements.`,
+  portugal: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Portugal).
+Keep ALL design elements from @image2: red background with geometric shapes, FIFA World Cup trophy, Portugal badge with "POR 2026", large white number "2", bottom rounded white panel, green stylized "26".
+The person from @image1 must be wearing a Portugal national team jersey (red with green details), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 
-  uruguai: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Light blue background with layered geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Uruguay badge with flag and "URU 2026" on the top right
-* Bottom rounded white panel
-* Orange stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a Uruguay national team jersey (light blue shirt, subtle texture, realistic lighting and shadows)
-* Player name: replace "GIORGIAN DE ARRASCAETA" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,72" with "M ${d.height || '1,75'}"
-* Date of birth: replace "1-6-1994" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final image must look like an official FIFA-style player card, photorealistic, with no changes to layout, proportions, or design elements.`,
+  uruguai: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Uruguay).
+Keep ALL design elements from @image2: light blue background with geometric shapes, FIFA World Cup trophy, Uruguay badge with "URU 2026", large white number "2", bottom rounded white panel, orange stylized "26".
+The person from @image1 must be wearing a Uruguay national team jersey (light blue), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 
-  colombia: (d) => `Create a high-quality football player card identical in layout, composition, and design to the reference image provided.Keep ALL visual elements exactly the same, including:
-* Yellow/gold background with layered geometric shapes
-* Large white number "2" behind the player
-* FIFA World Cup trophy icon on the left with "FIFA" text
-* Colombia badge with flag and "COL 2026" on the top right
-* Bottom rounded white panel
-* Orange stylized "26" on the bottom right
-* Clean, modern, minimal sports card layout
-* Same typography, font style, sizes, spacing, and alignment
-Replace ONLY the following elements:
-* The central portrait: use the uploaded photo of a different person, cropped from chest up, centered, facing forward
-* The person must be wearing a Colombia national team jersey (yellow shirt with subtle patterns and blue/red details, realistic texture and lighting)
-* Player name: replace "JAMES RODRÍGUEZ" with "${d.name || 'JOGADOR'}"
-* Height: replace "M 1,80" with "M ${d.height || '1,75'}"
-* Date of birth: replace "12-7-1991" with "${d.birth || '1-1-2000'}"
-Maintain identical lighting, shadows, and color grading so the new face blends naturally with the body and background.The final result must look like an official FIFA-style player card, photorealistic, with no changes to layout or design elements.`,
+  colombia: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Colombia).
+Keep ALL design elements from @image2: yellow/gold background with geometric shapes, FIFA World Cup trophy, Colombia badge with "COL 2026", large white number "2", bottom rounded white panel, orange stylized "26".
+The person from @image1 must be wearing a Colombia national team jersey (yellow with blue/red details), cropped from chest up, centered.
+Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
+Photorealistic, face must match @image1 exactly.`,
 };
 
 function buildPrompt(style: string, data: StickerData): string {
   const country = data.country || 'brasil';
 
-  if (style === 'sozinho') {
-    const promptFn = COUNTRY_PROMPTS[country] || COUNTRY_PROMPTS.brasil;
-    return promptFn(data);
-  }
-
   if (style === 'pet') {
-    return `Create a high-quality football player card identical in layout and style to the reference image provided. Keep ALL design elements exactly the same. Replace ONLY the central portrait: use the uploaded image of an animal/pet, dressed as a team mascot wearing the national team jersey, cropped from chest up, centered. Pet name: "${data.name || 'MASCOTE'}", Height: "M ${data.height || '0,50'}", Date: "${data.birth || '1-1-2020'}". Maintain photorealism and professional sports branding quality.`;
+    return `Use the animal/pet from @image1. Place them into the exact layout and design of @image2 (a FIFA World Cup 2026 player card). The pet should be dressed as a team mascot wearing the national team jersey, centered in the card. Replace the name with "${data.name || 'MASCOTE'}", height with "M ${data.height || '0,50'}", date with "${data.birth || '1-1-2020'}". Keep all card elements from @image2. Photorealistic and fun.`;
   }
 
   if (style === 'grupo') {
-    return `Create a high-quality football player card identical in layout and style to the reference image provided. Keep ALL design elements exactly the same. Replace ONLY the central portrait: use the uploaded group photo, all wearing the national team jersey, cropped and centered. Group name: "${data.name || 'FAMÍLIA'}", Info: "M ${data.height || '---'}", Date: "${data.birth || '---'}". Maintain photorealism and professional sports branding quality.`;
+    return `Use the group of people from @image1. Place them into the exact layout and design of @image2 (a FIFA World Cup 2026 player card). All people should be wearing the national team jersey, centered in the card. Replace the name with "${data.name || 'FAMÍLIA'}", info with "M ${data.height || '---'}", date with "${data.birth || '---'}". Keep all card elements from @image2. Photorealistic.`;
   }
 
   const promptFn = COUNTRY_PROMPTS[country] || COUNTRY_PROMPTS.brasil;
