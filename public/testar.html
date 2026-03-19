@@ -312,14 +312,14 @@
         <label>Pais</label>
         <select id="field-country">
           <option value="">Selecionar...</option>
-          <option value="Brasil">Brasil</option>
-          <option value="Argentina">Argentina</option>
-          <option value="Franca">Franca</option>
-          <option value="Alemanha">Alemanha</option>
-          <option value="Espanha">Espanha</option>
-          <option value="Portugal">Portugal</option>
-          <option value="Uruguai">Uruguai</option>
-          <option value="Colombia">Colombia</option>
+          <option value="brasil">Brasil</option>
+          <option value="argentina">Argentina</option>
+          <option value="franca">Franca</option>
+          <option value="alemanha">Alemanha</option>
+          <option value="espanha">Espanha</option>
+          <option value="portugal">Portugal</option>
+          <option value="uruguai">Uruguai</option>
+          <option value="colombia">Colombia</option>
         </select>
       </div>
       <div class="form-group">
@@ -366,37 +366,72 @@
   const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  let sb = null;
   let currentFile = null;
   let accessToken = null;
 
+  try {
+    // supabase-js UMD exposes window.supabase
+    const supabaseLib = window.supabase;
+    if (!supabaseLib || !supabaseLib.createClient) {
+      throw new Error('Supabase SDK nao carregou');
+    }
+    sb = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error('Erro ao inicializar Supabase:', e);
+    // Show main content anyway so the page isn't blank
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('auth-gate').style.display = 'none';
+  }
+
   // Auth
   async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      accessToken = session.access_token;
-      document.getElementById('auth-gate').style.display = 'none';
+    if (!sb) {
       document.getElementById('main-content').style.display = 'block';
-    } else {
+      return;
+    }
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        accessToken = session.access_token;
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+      } else {
+        document.getElementById('auth-gate').style.display = 'block';
+        document.getElementById('main-content').style.display = 'none';
+      }
+    } catch (e) {
+      console.error('Erro no checkAuth:', e);
+      // Fallback: show auth-gate
       document.getElementById('auth-gate').style.display = 'block';
-      document.getElementById('main-content').style.display = 'none';
     }
   }
 
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      accessToken = session.access_token;
-      document.getElementById('auth-gate').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-    }
-  });
+  if (sb) {
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        accessToken = session.access_token;
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+      }
+    });
+  }
 
   function loginGoogle() {
-    supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (!sb) { alert('Erro: SDK nao carregou. Recarregue a pagina.'); return; }
+    sb.auth.signInWithOAuth({ provider: 'google' });
   }
 
   checkAuth();
+
+  // Safety fallback: if after 2s nothing is visible, show auth-gate
+  setTimeout(() => {
+    const authGate = document.getElementById('auth-gate');
+    const mainContent = document.getElementById('main-content');
+    if (authGate.style.display === 'none' && mainContent.style.display === 'none') {
+      authGate.style.display = 'block';
+    }
+  }, 2000);
 
   // File upload
   const photoInput = document.getElementById('photo-input');
@@ -426,7 +461,7 @@
     if (!currentFile) { alert('Selecione uma foto.'); return null; }
     const fd = new FormData();
     fd.append('photo', currentFile);
-    fd.append('style', 'figurinha');
+    fd.append('style', 'sozinho');
     fd.append('name', document.getElementById('field-name').value);
     fd.append('birth', document.getElementById('field-birth').value);
     fd.append('height', document.getElementById('field-height').value);
