@@ -243,8 +243,94 @@
     margin-bottom: 16px;
   }
 
+  /* ── SOCIAL PROOF TOASTS ── */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: rgba(26,26,23,0.92);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--verde);
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 340px;
+  }
+  .toast.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .toast.exit {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  .toast-flag {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .toast-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.3;
+  }
+  .toast-text strong {
+    color: #fff;
+    font-weight: 700;
+  }
+  .toast-text .toast-city {
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+  }
+
+  /* ── LIVE COUNTER ── */
+  .live-counter {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .live-counter .live-dot {
+    width: 6px;
+    height: 6px;
+    background: #ff4444;
+    border-radius: 50%;
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .live-counter .counter-num {
+    color: var(--ouro-claro);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
   @media (max-width: 480px) {
     .scanner-card { width: 240px; height: 320px; }
+    .toast-container { left: 12px; right: 12px; bottom: 16px; }
+    .toast { max-width: 100%; }
   }
 </style>
 </head>
@@ -267,6 +353,11 @@
 
   <div class="gerar-status" id="gerarStatus">Imprimindo sua figurinha...</div>
   <div class="gerar-progress" id="gerarProgress"></div>
+
+  <div class="live-counter" id="liveCounter">
+    <span class="live-dot"></span>
+    <span><span class="counter-num" id="counterNum">847</span> figurinhas geradas hoje</span>
+  </div>
   <div class="gerar-bar">
     <div class="gerar-bar-fill" id="gerarBarFill"></div>
   </div>
@@ -282,6 +373,8 @@
     <a class="btn-back" href="/">&#8617; Voltar e tentar novamente</a>
   </div>
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -414,6 +507,122 @@
   document.getElementById('btnBuy').addEventListener('click', function() {
     alert('Checkout em breve! ID da figurinha: ' + imageId);
   });
+
+  // ── SOCIAL PROOF TOASTS ──
+  var toastNames = [
+    { name: 'Maria S.', city: 'São Paulo' },
+    { name: 'Lucas F.', city: 'Curitiba' },
+    { name: 'Ana P.', city: 'Recife' },
+    { name: 'Pedro M.', city: 'Belo Horizonte' },
+    { name: 'Julia R.', city: 'Porto Alegre' },
+    { name: 'Rafael C.', city: 'Rio de Janeiro' },
+    { name: 'Camila T.', city: 'Salvador' },
+    { name: 'Bruno L.', city: 'Brasília' },
+    { name: 'Fernanda A.', city: 'Fortaleza' },
+    { name: 'Gustavo N.', city: 'Manaus' },
+    { name: 'Isabela V.', city: 'Goiânia' },
+    { name: 'Thiago D.', city: 'Florianópolis' },
+    { name: 'Larissa B.', city: 'Campinas' },
+    { name: 'Matheus G.', city: 'Belém' },
+    { name: 'Carolina H.', city: 'Vitória' },
+    { name: 'Diego O.', city: 'Natal' },
+    { name: 'Amanda K.', city: 'Cuiabá' },
+    { name: 'Felipe E.', city: 'João Pessoa' },
+  ];
+
+  var toastCountries = [
+    { flag: '🇧🇷', name: 'Brasil' },
+    { flag: '🇦🇷', name: 'Argentina' },
+    { flag: '🇫🇷', name: 'França' },
+    { flag: '🇩🇪', name: 'Alemanha' },
+    { flag: '🇪🇸', name: 'Espanha' },
+    { flag: '🇵🇹', name: 'Portugal' },
+    { flag: '🇺🇾', name: 'Uruguai' },
+    { flag: '🇨🇴', name: 'Colômbia' },
+  ];
+
+  var toastMessages = [
+    function(n, c) { return '<strong>' + n.name + '</strong> acabou de gerar sua figurinha! <span class="toast-city">' + n.city + '</span>'; },
+    function(n, c) { return '<strong>' + n.name + '</strong> escolheu ' + c.name + ' <span class="toast-city">' + n.city + '</span>'; },
+    function(n, c) { return '<strong>' + n.name + '</strong> está gerando agora... <span class="toast-city">' + n.city + '</span>'; },
+    function(n, c) { return '<strong>' + n.name + '</strong> comprou sem marca d\'água! <span class="toast-city">' + n.city + '</span>'; },
+    function(n, c) { return '<strong>' + n.name + '</strong> gerou uma figurinha rara! <span class="toast-city">' + n.city + '</span>'; },
+  ];
+
+  var toastUsed = [];
+  var toastIsGenerating = true;
+
+  function getRandomItem(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function showToast() {
+    if (!toastIsGenerating) return;
+
+    var person = getRandomItem(toastNames);
+    var country = getRandomItem(toastCountries);
+    var msgFn = getRandomItem(toastMessages);
+
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<span class="toast-flag">' + country.flag + '</span>' +
+      '<span class="toast-text">' + msgFn(person, country) + '</span>';
+
+    var container = document.getElementById('toastContainer');
+    container.appendChild(toast);
+
+    // Animate in
+    setTimeout(function() { toast.classList.add('visible'); }, 50);
+
+    // Animate out after 4s
+    setTimeout(function() {
+      toast.classList.remove('visible');
+      toast.classList.add('exit');
+      setTimeout(function() {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 400);
+    }, 4000);
+
+    // Keep max 2 toasts visible
+    var toasts = container.querySelectorAll('.toast');
+    if (toasts.length > 2) {
+      var old = toasts[0];
+      old.classList.remove('visible');
+      old.classList.add('exit');
+      setTimeout(function() {
+        if (old.parentNode) old.parentNode.removeChild(old);
+      }, 400);
+    }
+
+    // Schedule next toast (random 4-7 seconds)
+    var nextDelay = 4000 + Math.random() * 3000;
+    setTimeout(showToast, nextDelay);
+  }
+
+  // Start toasts after 2s delay
+  setTimeout(showToast, 2000);
+
+  // ── LIVE COUNTER ──
+  var counterBase = 800 + Math.floor(Math.random() * 200);
+  document.getElementById('counterNum').textContent = counterBase;
+
+  setInterval(function() {
+    if (!toastIsGenerating) return;
+    counterBase += Math.floor(Math.random() * 3) + 1;
+    document.getElementById('counterNum').textContent = counterBase;
+  }, 8000 + Math.random() * 5000);
+
+  // Stop toasts when generation completes or fails
+  var origShowResult = showResult;
+  showResult = function(url) {
+    toastIsGenerating = false;
+    origShowResult(url);
+  };
+  var origShowError = showError;
+  showError = function(msg) {
+    toastIsGenerating = false;
+    origShowError(msg);
+  };
 </script>
 </body>
 </html>
