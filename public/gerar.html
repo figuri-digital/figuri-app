@@ -283,11 +283,23 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  var SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   var params = new URLSearchParams(window.location.search);
+  var taskId = params.get('taskId');
   var imageId = params.get('imageId');
+  var userId = params.get('userId');
   var previewUrl = params.get('previewUrl');
-  var status = params.get('status');
+  var initialStatus = params.get('status');
+
+  var pollCount = 0;
+  var maxPolls = 60; // 60 * 3s = 3 minutes max
+  var fakeProgress = 0;
 
   function showError(msg) {
     document.getElementById('gerarStatus').style.display = 'none';
@@ -301,6 +313,7 @@
 
   function showResult(url) {
     document.getElementById('gerarBarFill').style.width = '100%';
+    document.getElementById('gerarProgress').textContent = '100%';
 
     setTimeout(function() {
       document.getElementById('scannerLine').classList.add('stopped');
@@ -325,23 +338,76 @@
     }, 1500);
   }
 
+  function updateFakeProgress() {
+    // Slow down as it approaches 90%
+    var increment = fakeProgress < 30 ? 3 : fakeProgress < 60 ? 2 : fakeProgress < 80 ? 1 : 0.3;
+    fakeProgress = Math.min(fakeProgress + increment, 90);
+    document.getElementById('gerarBarFill').style.width = Math.round(fakeProgress) + '%';
+    document.getElementById('gerarProgress').textContent = Math.round(fakeProgress) + '%';
+  }
+
+  async function pollStatus() {
+    if (pollCount >= maxPolls) {
+      showError('Timeout: a geracao demorou demais. Tente novamente.');
+      return;
+    }
+    pollCount++;
+    updateFakeProgress();
+
+    try {
+      // Get auth token
+      var session = await sb.auth.getSession();
+      var token = session?.data?.session?.access_token || '';
+
+      var url = '/api/generate/status?taskId=' + encodeURIComponent(taskId) +
+        '&imageId=' + encodeURIComponent(imageId) +
+        '&userId=' + encodeURIComponent(userId);
+
+      var res = await fetch(url, {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+      });
+
+      var data = await res.json();
+      console.log('Poll #' + pollCount + ':', data);
+
+      if (data.status === 'completed' && data.previewUrl) {
+        showResult(data.previewUrl);
+        return;
+      }
+
+      if (data.status === 'failed') {
+        showError(data.error || 'Geracao falhou. Tente outra foto.');
+        return;
+      }
+
+      // Still processing — poll again in 3 seconds
+      setTimeout(pollStatus, 3000);
+    } catch (err) {
+      console.error('Poll error:', err);
+      setTimeout(pollStatus, 3000);
+    }
+  }
+
   // Init
   if (!imageId) {
     showError('Parametros invalidos. Volte e tente gerar novamente.');
-  } else if (status === 'completed' && previewUrl) {
-    // Result came directly from the API
-    var fakeProgress = 0;
-    var interval = setInterval(function() {
+  } else if (initialStatus === 'completed' && previewUrl) {
+    // Result came directly (sync response)
+    var quickInterval = setInterval(function() {
       fakeProgress += Math.random() * 15 + 5;
       fakeProgress = Math.min(fakeProgress, 95);
       document.getElementById('gerarBarFill').style.width = Math.round(fakeProgress) + '%';
+      document.getElementById('gerarProgress').textContent = Math.round(fakeProgress) + '%';
       if (fakeProgress >= 95) {
-        clearInterval(interval);
+        clearInterval(quickInterval);
         showResult(previewUrl);
       }
     }, 200);
+  } else if (taskId && imageId && userId) {
+    // Async — need to poll
+    pollStatus();
   } else {
-    showError('Status desconhecido. Volte e tente novamente.');
+    showError('Parametros invalidos. Volte e tente gerar novamente.');
   }
 
   // Buy button

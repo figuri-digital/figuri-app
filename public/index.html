@@ -2126,10 +2126,12 @@
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
-      // API returns completed result directly — redirect to gerar.html
+      // Redirect to gerar.html with all needed params
       window.location.href = '/gerar.html?imageId=' + encodeURIComponent(data.imageId)
+        + '&taskId=' + encodeURIComponent(data.taskId || '')
+        + '&userId=' + encodeURIComponent(data.userId || '')
         + '&previewUrl=' + encodeURIComponent(data.previewUrl || '')
-        + '&status=' + encodeURIComponent(data.status || 'completed');
+        + '&status=' + encodeURIComponent(data.status || 'processing');
 
     } catch (err) {
       alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
