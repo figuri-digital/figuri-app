@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
+import { applyWatermark } from '@/lib/watermark';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 });
     }
 
-    // Check/create credits (handles case where trigger didn't fire)
+    // Check/create credits
     let { data: credits } = await supabase
       .from('usage_credits')
       .select('credits_used, credits_limit')
@@ -34,7 +35,6 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!credits) {
-      // Create credits row if missing (e.g., Google auth users)
       await supabase.from('usage_credits').insert({
         user_id: user.id,
         credits_used: 0,
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // Also ensure profile exists
+    // Ensure profile exists
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     // Parse form data
     const formData = await req.formData();
     const file = formData.get('photo') as File | null;
-    const style = (formData.get('style') as string) || 'jogador';
+    const style = (formData.get('style') as string) || 'sozinho';
     const name = (formData.get('name') as string) || '';
     const birth = (formData.get('birth') as string) || '';
     const height = (formData.get('height') as string) || '';
@@ -76,12 +76,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Envie uma foto' }, { status: 400 });
     }
 
-    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const imageId = uuidv4();
 
-    // Step 1: Upload to Supabase Storage to get a public URL
+    // Upload original to Supabase Storage
     const originalPath = `originals/${user.id}/${imageId}.jpg`;
     const { error: uploadError } = await supabase.storage
       .from('images')
@@ -96,23 +95,15 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    const publicImageUrl = originalUrlData.publicUrl;
-
-    // Step 2: Build prompt
+    // Build prompt
     const prompt = buildPrompt(style, { name, birth, height, country });
 
-    // Step 3: Start Freepik generation with base64
-    const base64 = buffer.toString('base64');
-    console.log('Starting Freepik generation...');
-    const taskId = await startFreepikGeneration(base64, prompt);
-    console.log('Freepik taskId:', taskId);
-
-    // Step 4: Save image record
+    // Create image record with pending status first
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase.from('images').insert({
       id: imageId,
       user_id: user.id,
-      original_url: publicImageUrl,
+      original_url: originalUrlData.publicUrl,
       generated_url: '',
       watermark_url: '',
       style,
@@ -122,51 +113,108 @@ export async function POST(req: NextRequest) {
       cart_status: 'preview',
     });
 
+    // Call Freepik Reimagine Flux (synchronous — waits for result)
+    const base64 = buffer.toString('base64');
+    console.log('Calling Freepik Reimagine Flux...');
+
+    const freepikRes = await fetch('https://api.freepik.com/v1/ai/beta/text-to-image/reimagine-flux', {
+      method: 'POST',
+      headers: {
+        'x-freepik-api-key': FREEPIK_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image: base64,
+        prompt,
+        imagination: 'subtle',
+        aspect_ratio: 'traditional_3_4',
+      }),
+    });
+
+    if (!freepikRes.ok) {
+      const errText = await freepikRes.text();
+      console.error('Freepik error:', freepikRes.status, errText);
+      await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
+      return NextResponse.json({ error: `Freepik error: ${errText}` }, { status: 500 });
+    }
+
+    const freepikData = await freepikRes.json();
+    console.log('Freepik response:', JSON.stringify(freepikData).slice(0, 500));
+
+    const task = freepikData.data;
+
+    if (task?.status === 'FAILED') {
+      await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
+      return NextResponse.json({ error: 'Geração falhou. Tente outra foto.' }, { status: 500 });
+    }
+
+    // Extract generated image URL
+    let generatedImageUrl: string | null = null;
+
+    if (task?.generated?.length) {
+      generatedImageUrl = typeof task.generated[0] === 'string'
+        ? task.generated[0]
+        : task.generated[0]?.url;
+    }
+
+    if (!generatedImageUrl) {
+      console.error('No generated URL in response:', JSON.stringify(freepikData).slice(0, 500));
+      await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
+      return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 });
+    }
+
+    // Download generated image
+    console.log('Downloading generated image...');
+    const genRes = await fetch(generatedImageUrl);
+    const genBuffer = Buffer.from(await genRes.arrayBuffer());
+
+    // Upload hi-res
+    const hiresPath = `generated/${user.id}/${imageId}.jpg`;
+    await supabase.storage.from('images').upload(hiresPath, genBuffer, {
+      contentType: 'image/jpeg',
+    });
+    const { data: hiresUrlData } = supabase.storage.from('images').getPublicUrl(hiresPath);
+
+    // Apply watermark
+    const watermarkedBuffer = await applyWatermark(genBuffer);
+
+    // Upload preview with watermark
+    const previewPath = `previews/${user.id}/${imageId}.jpg`;
+    await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, {
+      contentType: 'image/jpeg',
+    });
+    const { data: previewUrlData } = supabase.storage.from('images').getPublicUrl(previewPath);
+
+    // Update image record as completed
+    await supabase.from('images').update({
+      generated_url: hiresUrlData.publicUrl,
+      watermark_url: previewUrlData.publicUrl,
+      status: 'completed',
+    }).eq('id', imageId);
+
+    // Decrement credits
+    const newCreditsUsed = (credits.credits_used || 0) + 1;
+    await supabase
+      .from('usage_credits')
+      .update({ credits_used: newCreditsUsed })
+      .eq('user_id', user.id);
+
+    console.log('Generation complete!', imageId);
+
     return NextResponse.json({
       success: true,
-      taskId,
       imageId,
       userId: user.id,
+      previewUrl: previewUrlData.publicUrl,
+      status: 'completed',
+      creditsUsed: newCreditsUsed,
+      creditsLimit: credits.credits_limit || 5,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';
     console.error('Generate error:', err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-// ── Freepik API ──
-
-async function startFreepikGeneration(imageBase64: string, prompt: string): Promise<string> {
-  const res = await fetch('https://api.freepik.com/v1/ai/beta/text-to-image/reimagine-flux', {
-    method: 'POST',
-    headers: {
-      'x-freepik-api-key': FREEPIK_API_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      image: imageBase64,
-      prompt,
-      imagination: 'subtle',
-      aspect_ratio: 'traditional_3_4',
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error('Freepik API response:', res.status, errText);
-    throw new Error(`Freepik API error ${res.status}: ${errText}`);
-  }
-
-  const data = await res.json();
-  console.log('Freepik response:', JSON.stringify(data).slice(0, 300));
-
-  if (data.data?.task_id) {
-    return data.data.task_id;
-  }
-
-  console.error('Unexpected Freepik response:', JSON.stringify(data).slice(0, 500));
-  throw new Error('Resposta inesperada da API Freepik');
 }
 
 // ── Prompts ──

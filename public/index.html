@@ -2103,7 +2103,7 @@
 
     var btn = document.getElementById('btnGenerate');
     btn.disabled = true;
-    btn.textContent = '⏳ Enviando...';
+    btn.innerHTML = '⏳ GERANDO... (até 60s)';
 
     try {
       var session = (await sb.auth.getSession()).data.session;
@@ -2126,10 +2126,10 @@
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
-      // Redirect to gerar.html with params
-      window.location.href = '/gerar.html?taskId=' + encodeURIComponent(data.taskId)
-        + '&imageId=' + encodeURIComponent(data.imageId)
-        + '&userId=' + encodeURIComponent(data.userId);
+      // API returns completed result directly — redirect to gerar.html
+      window.location.href = '/gerar.html?imageId=' + encodeURIComponent(data.imageId)
+        + '&previewUrl=' + encodeURIComponent(data.previewUrl || '')
+        + '&status=' + encodeURIComponent(data.status || 'completed');
 
     } catch (err) {
       alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
