@@ -308,48 +308,269 @@
   .credits-text-logged { display: none; }
   .credits-text-guest { display: inline; }
 
-  /* Formulário de dados da figurinha */
-  .sticker-form {
+  /* ── WIZARD STEPS ── */
+  .wizard-steps-indicator {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
-    margin-bottom: 8px;
-    width: 100%;
-    max-width: 380px;
-    margin-left: auto;
-    margin-right: auto;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
   }
-  .sticker-form input, .sticker-form select {
-    flex: 1 1 45%;
-    min-width: 0;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 6px;
+  .wizard-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 14px;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+  .wizard-dot.active {
     color: #fff;
+    background: var(--verde);
+    border-color: var(--verde-neon);
+    box-shadow: 0 0 12px rgba(0,224,90,0.4);
+  }
+  .wizard-dot.done {
+    color: #fff;
+    background: var(--verde-escuro);
+    border-color: var(--verde);
+  }
+  .wizard-line {
+    width: 28px; height: 2px;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s;
+  }
+  .wizard-line.done { background: var(--verde); }
+
+  .wizard-step {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .wizard-step.active {
+    display: block;
+    opacity: 1;
+  }
+
+  .wizard-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .wizard-back:hover { color: rgba(255,255,255,0.8); }
+
+  .wizard-step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .wizard-step-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* Step 1: Upload dropzone */
+  .wizard-dropzone {
+    border: 2px dashed rgba(201,150,10,0.35);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(255,255,255,0.03);
+  }
+  .wizard-dropzone:hover {
+    border-color: var(--ouro-claro);
+    background: rgba(255,255,255,0.06);
+  }
+  .wizard-dropzone.dragover {
+    border-color: var(--verde-neon);
+    background: rgba(0,224,90,0.06);
+  }
+  .wizard-dropzone-icon { font-size: 48px; margin-bottom: 10px; }
+  .wizard-dropzone-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+  }
+  .wizard-dropzone-text strong { color: var(--ouro-claro); }
+  .wizard-file-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: var(--verde-neon);
+    margin-top: 10px;
+  }
+
+  /* Step 2: Type cards */
+  .wizard-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .wizard-type-card {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 28px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .wizard-type-card:hover {
+    border-color: var(--ouro-claro);
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-3px);
+  }
+  .wizard-type-card.selected {
+    border-color: var(--verde-neon);
+    background: rgba(0,224,90,0.08);
+    box-shadow: 0 0 20px rgba(0,224,90,0.15);
+  }
+  .wizard-type-icon { font-size: 42px; display: block; margin-bottom: 10px; }
+  .wizard-type-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Step 3: Country selection */
+  .wizard-confed-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .wizard-confed-tab {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wizard-confed-tab:hover { color: rgba(255,255,255,0.7); }
+  .wizard-confed-tab.active {
+    background: rgba(201,150,10,0.15);
+    border-color: var(--ouro-claro);
+    color: var(--ouro-claro);
+  }
+  .wizard-country-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .wizard-country-card {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .wizard-country-card:hover {
+    border-color: var(--ouro-claro);
+    background: rgba(255,255,255,0.08);
+  }
+  .wizard-country-card.selected {
+    border-color: var(--verde-neon);
+    background: rgba(0,224,90,0.08);
+  }
+  .wizard-country-flag { font-size: 32px; display: block; margin-bottom: 6px; }
+  .wizard-country-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .wizard-country-group { display: none; }
+  .wizard-country-group.active { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+
+  /* Step 4: Player details */
+  .wizard-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .wizard-form input {
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
     outline: none;
     transition: border-color 0.2s;
   }
-  .sticker-form input::placeholder { color: rgba(255,255,255,0.35); }
-  .sticker-form input:focus, .sticker-form select:focus {
-    border-color: var(--verde-neon);
+  .wizard-form input::placeholder { color: rgba(255,255,255,0.35); }
+  .wizard-form input:focus { border-color: var(--verde-neon); }
+  .wizard-form label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: -6px;
   }
-  .sticker-form select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-  }
-  .sticker-form select option {
-    background: var(--dark);
+
+  .btn-generate {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
     color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,166,81,0.3);
+    margin-top: 8px;
   }
-  .sticker-form .form-full {
-    flex: 1 1 100%;
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,166,81,0.5); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  @media(max-width:480px) {
+    .wizard-type-grid { grid-template-columns: 1fr; }
+    .wizard-country-group.active { grid-template-columns: 1fr; }
   }
 
   @media(max-width:600px){
@@ -500,19 +721,12 @@
   /* ── UPLOAD BOX (no hero escuro) ── */
   .upload-box {
     background: rgba(255,255,255,0.05);
-    border: 1.5px dashed rgba(201,150,10,0.4);
+    border: 1.5px solid rgba(201,150,10,0.2);
     border-radius: 16px;
     padding: 36px 28px;
-    cursor: pointer;
     transition: all 0.3s;
     position: relative;
     backdrop-filter: blur(8px);
-  }
-  .upload-box:hover {
-    border-color: var(--ouro-claro);
-    background: rgba(255,255,255,0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
   }
   .upload-icon { font-size: 44px; margin-bottom: 14px; display:block; text-align:center; }
   .upload-title {
@@ -525,41 +739,6 @@
   .upload-sub { font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:22px; text-align:center; }
   .upload-input { display:none; }
 
-  .style-picker {
-    display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;
-  }
-  .style-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.55);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px; font-weight:700;
-    padding: 7px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .style-btn:hover, .style-btn.active {
-    background: rgba(201,150,10,0.15);
-    border-color: var(--ouro-claro);
-    color: var(--ouro-claro);
-  }
-
-  .btn-upload {
-    display:block; width:100%;
-    background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
-    color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight:900; font-size:18px;
-    letter-spacing:1px; text-transform:uppercase;
-    padding: 16px;
-    border-radius: 8px; border:none; cursor:pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 32px rgba(0,166,81,0.3);
-  }
-  .btn-upload:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,166,81,0.5); }
   .upload-note { font-size:11px; color:rgba(255,255,255,0.25); margin-top:14px; text-align:center; }
 
   /* ── LAYOUT BASE (claro) ── */
@@ -1157,55 +1336,125 @@
     </div>
 
     <div id="upload">
-      <div class="upload-box" id="uploadBox" onclick="requireAuth(function(){ document.getElementById('fileInput').click(); })">
-        <span class="upload-icon" id="uploadIcon">📸</span>
-        <div class="upload-title" id="uploadTitle">Suba sua foto aqui</div>
-        <div class="upload-sub" id="uploadSub">JPG, PNG ou WEBP · Funciona com selfie do celular</div>
-        <div class="sticker-form" onclick="event.stopPropagation()">
-          <input type="text" id="stickerName" placeholder="Nome do jogador" class="form-full">
-          <input type="text" id="stickerBirth" placeholder="Nascimento (DD/MM/AAAA)">
-          <input type="text" id="stickerHeight" placeholder="Altura (ex: 1,75)">
-          <select id="stickerCountry" class="form-full">
-            <option value="">🌍 Selecione o país</option>
-            <option value="brasil">🇧🇷 Brasil</option>
-            <option value="argentina">🇦🇷 Argentina</option>
-            <option value="franca">🇫🇷 França</option>
-            <option value="alemanha">🇩🇪 Alemanha</option>
-            <option value="espanha">🇪🇸 Espanha</option>
-            <option value="portugal">🇵🇹 Portugal</option>
-            <option value="uruguai">🇺🇾 Uruguai</option>
-            <option value="colombia">🇨🇴 Colômbia</option>
-          </select>
+      <div class="upload-box" id="uploadBox">
+        <!-- Step indicator -->
+        <div class="wizard-steps-indicator">
+          <div class="wizard-dot active" data-step="1">1</div>
+          <div class="wizard-line"></div>
+          <div class="wizard-dot" data-step="2">2</div>
+          <div class="wizard-line"></div>
+          <div class="wizard-dot" data-step="3">3</div>
+          <div class="wizard-line"></div>
+          <div class="wizard-dot" data-step="4">4</div>
         </div>
-        <div class="style-picker" id="stylePicker" onclick="event.stopPropagation()">
-          <button class="style-btn active" data-style="jogador" onclick="setStyle(this)">⚽ Jogador</button>
-          <button class="style-btn" data-style="pet" onclick="setStyle(this)">🐶 Pet</button>
-          <button class="style-btn" data-style="familia" onclick="setStyle(this)">👨‍👩‍👧 Família</button>
-          <button class="style-btn" data-style="rara" onclick="setStyle(this)">✨ Rara</button>
+
+        <!-- STEP 1: Upload Photo -->
+        <div class="wizard-step active" id="wizardStep1">
+          <div class="wizard-step-title">Suba sua foto</div>
+          <div class="wizard-step-sub">JPG, PNG ou WEBP — funciona com selfie do celular</div>
+          <div class="wizard-dropzone" id="wizardDropzone">
+            <div class="wizard-dropzone-icon">📸</div>
+            <div class="wizard-dropzone-text">
+              Arraste sua foto aqui ou <strong>clique para selecionar</strong>
+            </div>
+            <div class="wizard-file-name" id="wizardFileName"></div>
+          </div>
+          <input type="file" id="fileInput" class="upload-input" accept="image/*" style="display:none">
+          <div class="upload-note" style="margin-top:14px; text-align:center;">Preview gratuito com marca d'agua — Pague so se gostar</div>
         </div>
-        <button class="btn-upload" id="btnUpload" onclick="event.stopPropagation(); requireAuth(function(){ document.getElementById('fileInput').click(); })">
-          ⚽ Gerar minha figurinha grátis
-        </button>
-        <input type="file" id="fileInput" class="upload-input" accept="image/*">
-        <div class="upload-note">Preview gratuito com marca d'água · Pague só se gostar</div>
+
+        <!-- STEP 2: Type Selection -->
+        <div class="wizard-step" id="wizardStep2">
+          <button class="wizard-back" onclick="wizardGoTo(1)">&larr; Voltar</button>
+          <div class="wizard-step-title">Escolha o tipo</div>
+          <div class="wizard-step-sub">Quem vai virar figurinha?</div>
+          <div class="wizard-type-grid">
+            <div class="wizard-type-card" onclick="selectType('jogador', this)">
+              <span class="wizard-type-icon">&#9917;</span>
+              <span class="wizard-type-label">Sozinho</span>
+            </div>
+            <div class="wizard-type-card" onclick="selectType('pet', this)">
+              <span class="wizard-type-icon">&#128054;</span>
+              <span class="wizard-type-label">Pet</span>
+            </div>
+            <div class="wizard-type-card" onclick="selectType('familia', this)">
+              <span class="wizard-type-icon">&#128104;&#8205;&#128105;&#8205;&#128103;</span>
+              <span class="wizard-type-label">Grupo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Country Selection -->
+        <div class="wizard-step" id="wizardStep3">
+          <button class="wizard-back" onclick="wizardGoTo(2)">&larr; Voltar</button>
+          <div class="wizard-step-title">Selecione o pais</div>
+          <div class="wizard-step-sub">De qual selecao voce quer ser?</div>
+          <div class="wizard-confed-tabs">
+            <button class="wizard-confed-tab active" onclick="switchConfed('conmebol', this)">CONMEBOL</button>
+            <button class="wizard-confed-tab" onclick="switchConfed('uefa', this)">UEFA</button>
+          </div>
+          <div class="wizard-country-group active" id="confed-conmebol">
+            <div class="wizard-country-card selected" onclick="selectCountry('brasil', this)">
+              <span class="wizard-country-flag">&#127463;&#127479;</span>
+              <span class="wizard-country-name">Brasil</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('argentina', this)">
+              <span class="wizard-country-flag">&#127462;&#127479;</span>
+              <span class="wizard-country-name">Argentina</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('uruguai', this)">
+              <span class="wizard-country-flag">&#127482;&#127486;</span>
+              <span class="wizard-country-name">Uruguai</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('colombia', this)">
+              <span class="wizard-country-flag">&#127464;&#127476;</span>
+              <span class="wizard-country-name">Colombia</span>
+            </div>
+          </div>
+          <div class="wizard-country-group" id="confed-uefa">
+            <div class="wizard-country-card" onclick="selectCountry('franca', this)">
+              <span class="wizard-country-flag">&#127467;&#127479;</span>
+              <span class="wizard-country-name">Franca</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('alemanha', this)">
+              <span class="wizard-country-flag">&#127465;&#127466;</span>
+              <span class="wizard-country-name">Alemanha</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('espanha', this)">
+              <span class="wizard-country-flag">&#127466;&#127480;</span>
+              <span class="wizard-country-name">Espanha</span>
+            </div>
+            <div class="wizard-country-card" onclick="selectCountry('portugal', this)">
+              <span class="wizard-country-flag">&#127477;&#127481;</span>
+              <span class="wizard-country-name">Portugal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Player Details -->
+        <div class="wizard-step" id="wizardStep4">
+          <button class="wizard-back" onclick="wizardGoTo(3)">&larr; Voltar</button>
+          <div class="wizard-step-title">Detalhes do jogador</div>
+          <div class="wizard-step-sub">Preencha as informacoes da sua figurinha</div>
+          <div class="wizard-form">
+            <label>Nome do jogador *</label>
+            <input type="text" id="stickerName" placeholder="Ex: Guilherme Vitor">
+            <label>Data de nascimento</label>
+            <input type="text" id="stickerBirth" placeholder="DD/MM/AAAA">
+            <label>Altura</label>
+            <input type="text" id="stickerHeight" placeholder="Ex: 1,75">
+            <button class="btn-generate" id="btnGenerate" onclick="generateSticker()">
+              &#9917; Gerar Minha Figurinha
+            </button>
+          </div>
+        </div>
+
+        <!-- Credits bar (shown on all steps) -->
         <div class="credits-bar">
-          <span class="credits-text-guest">⚡ 5 previews gratuitos disponíveis</span>
+          <span class="credits-text-guest">&#9889; 5 previews gratuitos disponiveis</span>
           <span class="credits-text-logged"></span>
           <div class="credits-progress"><div class="credits-progress-fill" id="creditsFill"></div></div>
         </div>
-      </div>
-      <!-- Preview result -->
-      <div id="previewResult" style="display:none; margin-top:24px; text-align:center;">
-        <img id="previewImage" src="" alt="Sua figurinha" style="max-width:320px; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.4); margin-bottom:16px;">
-        <div style="font-family:'Barlow Condensed',sans-serif; color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:12px;">
-          Preview com marca d'água · Pague para baixar em alta resolução
-        </div>
-        <button onclick="resetUpload()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:10px 22px; border-radius:4px; cursor:pointer; margin-right:8px;">
-          ↩ Gerar outra
-        </button>
-        <button onclick="buySticker()" style="background:var(--verde); border:none; color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; padding:10px 22px; border-radius:4px; cursor:pointer;">
-          💳 Comprar sem marca d'água — R$19,90
-        </button>
       </div>
     </div>
   </div>
@@ -1533,11 +1782,12 @@
     if(!was) item.classList.add('open');
   }
 
-  // ── STYLE PICKER ──
-  function setStyle(btn){
-    document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  }
+  // ── WIZARD STATE ──
+  let wizardCurrentStep = 1;
+  let wizardSelectedFile = null;
+  let wizardSelectedType = 'jogador';
+  let wizardSelectedCountry = 'brasil';
+  let wizardSelectedConfed = 'conmebol';
 
   // ── AUTH STATE ──
   let isLoggedIn = false;
@@ -1736,25 +1986,6 @@
     });
   })();
 
-  async function pollGeneration(taskId, imageId, userId, token) {
-    const maxAttempts = 40; // ~80 seconds max
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-
-      const res = await fetch(
-        '/api/generate/status?taskId=' + taskId + '&imageId=' + imageId + '&userId=' + userId,
-        { headers: { 'Authorization': 'Bearer ' + token } }
-      );
-
-      const data = await res.json();
-
-      if (data.status === 'completed') return data;
-      if (data.status === 'failed') return data;
-      // else still processing, continue polling
-    }
-    throw new Error('Timeout: a geração demorou demais. Tente novamente.');
-  }
-
   function requireAuth(callback) {
     if (!isLoggedIn) {
       openLogin();
@@ -1763,137 +1994,148 @@
     if (callback) callback();
   }
 
-  // ── FILE UPLOAD — require auth ──
-  let currentImageId = null;
+  // ── WIZARD LOGIC ──
+  function wizardGoTo(step) {
+    // Hide current step
+    var current = document.getElementById('wizardStep' + wizardCurrentStep);
+    if (current) { current.classList.remove('active'); }
 
-  document.getElementById('fileInput').addEventListener('change', async function(e) {
-    if (e.target.files.length === 0) return;
+    wizardCurrentStep = step;
 
-    if (!isLoggedIn) {
-      openLogin();
-      e.target.value = '';
-      return;
+    // Show target step
+    var target = document.getElementById('wizardStep' + step);
+    if (target) {
+      // Small delay to trigger CSS transition
+      setTimeout(function() { target.classList.add('active'); }, 30);
     }
 
-    const file = e.target.files[0];
+    // Update dots
+    document.querySelectorAll('.wizard-dot').forEach(function(dot) {
+      var s = parseInt(dot.getAttribute('data-step'));
+      dot.classList.remove('active', 'done');
+      if (s === step) dot.classList.add('active');
+      else if (s < step) dot.classList.add('done');
+    });
+    // Update lines
+    var lines = document.querySelectorAll('.wizard-line');
+    lines.forEach(function(line, i) {
+      if (i + 1 < step) line.classList.add('done');
+      else line.classList.remove('done');
+    });
+  }
+
+  // Step 1: Dropzone + file input
+  (function() {
+    var dropzone = document.getElementById('wizardDropzone');
+    var fileInput = document.getElementById('fileInput');
+
+    dropzone.addEventListener('click', function() {
+      requireAuth(function() { fileInput.click(); });
+    });
+
+    dropzone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', function() {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (!isLoggedIn) { openLogin(); return; }
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', function(e) {
+      if (e.target.files.length === 0) return;
+      if (!isLoggedIn) { openLogin(); e.target.value = ''; return; }
+      handleFile(e.target.files[0]);
+      e.target.value = '';
+    });
+  })();
+
+  function handleFile(file) {
     if (file.size > 10 * 1024 * 1024) {
-      alert('Arquivo muito grande. Máximo 10MB.');
-      e.target.value = '';
+      alert('Arquivo muito grande. Maximo 10MB.');
+      return;
+    }
+    wizardSelectedFile = file;
+    document.getElementById('wizardFileName').textContent = file.name;
+    // Advance to step 2
+    wizardGoTo(2);
+  }
+
+  // Step 2: Type selection
+  function selectType(type, card) {
+    wizardSelectedType = type;
+    document.querySelectorAll('.wizard-type-card').forEach(function(c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+    // Advance after short visual feedback
+    setTimeout(function() { wizardGoTo(3); }, 200);
+  }
+
+  // Step 3: Confederation tabs + country selection
+  function switchConfed(confed, tab) {
+    wizardSelectedConfed = confed;
+    document.querySelectorAll('.wizard-confed-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    document.querySelectorAll('.wizard-country-group').forEach(function(g) { g.classList.remove('active'); });
+    document.getElementById('confed-' + confed).classList.add('active');
+  }
+
+  function selectCountry(country, card) {
+    wizardSelectedCountry = country;
+    document.querySelectorAll('.wizard-country-card').forEach(function(c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+    setTimeout(function() { wizardGoTo(4); }, 200);
+  }
+
+  // Step 4: Generate sticker
+  async function generateSticker() {
+    var nameVal = document.getElementById('stickerName').value.trim();
+    if (!nameVal) {
+      alert('Preencha o nome do jogador.');
       return;
     }
 
-    const box = document.getElementById('uploadBox');
-    const title = document.getElementById('uploadTitle');
-    const sub = document.getElementById('uploadSub');
-    const icon = document.getElementById('uploadIcon');
-    const btnUp = document.getElementById('btnUpload');
-    const picker = document.getElementById('stylePicker');
-
-    // Show loading state
-    icon.textContent = '⏳';
-    title.textContent = 'Gerando sua figurinha...';
-    sub.textContent = 'Isso pode levar até 60 segundos. Não feche a página.';
-    box.style.borderColor = 'var(--verde-neon)';
-    box.style.pointerEvents = 'none';
-    btnUp.disabled = true;
-    btnUp.textContent = '⏳ Gerando...';
-    picker.style.pointerEvents = 'none';
-    picker.style.opacity = '0.5';
+    var btn = document.getElementById('btnGenerate');
+    btn.disabled = true;
+    btn.textContent = '⏳ Enviando...';
 
     try {
-      // Get selected style
-      const activeBtn = document.querySelector('.style-btn.active');
-      const style = activeBtn?.getAttribute('data-style') || 'jogador';
+      var session = (await sb.auth.getSession()).data.session;
+      if (!session) { openLogin(); btn.disabled = false; btn.textContent = '⚽ Gerar Minha Figurinha'; return; }
 
-      // Get auth token
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        openLogin();
-        resetUpload();
-        return;
-      }
+      var formData = new FormData();
+      formData.append('photo', wizardSelectedFile);
+      formData.append('style', wizardSelectedType);
+      formData.append('name', nameVal);
+      formData.append('birth', document.getElementById('stickerBirth').value.trim());
+      formData.append('height', document.getElementById('stickerHeight').value.trim());
+      formData.append('country', wizardSelectedCountry);
 
-      // Get form data
-      const stickerName = document.getElementById('stickerName').value.trim();
-      const stickerBirth = document.getElementById('stickerBirth').value.trim();
-      const stickerHeight = document.getElementById('stickerHeight').value.trim();
-      const stickerCountry = document.getElementById('stickerCountry').value;
-
-      if (!stickerName) {
-        alert('Preencha o nome do jogador.');
-        resetUpload();
-        return;
-      }
-
-      // Send to API — step 1: start generation
-      const formData = new FormData();
-      formData.append('photo', file);
-      formData.append('style', style);
-      formData.append('name', stickerName);
-      formData.append('birth', stickerBirth);
-      formData.append('height', stickerHeight);
-      formData.append('country', stickerCountry);
-
-      const res = await fetch('/api/generate', {
+      var res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + session.access_token },
         body: formData,
       });
 
-      const data = await res.json();
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Erro ao gerar figurinha');
-      }
+      // Redirect to gerar.html with params
+      window.location.href = '/gerar.html?taskId=' + encodeURIComponent(data.taskId)
+        + '&imageId=' + encodeURIComponent(data.imageId)
+        + '&userId=' + encodeURIComponent(data.userId);
 
-      // Step 2: poll for result
-      sub.textContent = 'A IA está criando sua figurinha... aguarde.';
-      const result = await pollGeneration(data.taskId, data.imageId, data.userId, session.access_token);
-
-      if (result.status === 'failed') {
-        throw new Error(result.error || 'Geração falhou. Tente outra foto.');
-      }
-
-      // Show preview
-      currentImageId = result.imageId;
-      document.getElementById('previewImage').src = result.previewUrl;
-      document.getElementById('previewResult').style.display = 'block';
-      box.style.display = 'none';
-
-      // Update credits
-      if (result.creditsUsed !== undefined) {
-        creditsUsed = result.creditsUsed;
-        const loggedText = document.querySelector('.credits-text-logged');
-        loggedText.textContent = creditsUsed + ' de ' + creditsTotal + ' usados';
-        document.getElementById('creditsFill').style.width = ((creditsUsed / creditsTotal) * 100) + '%';
-      }
     } catch (err) {
       alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
-      resetUpload();
+      btn.disabled = false;
+      btn.textContent = '⚽ Gerar Minha Figurinha';
     }
-
-    e.target.value = '';
-  });
-
-  function resetUpload() {
-    const box = document.getElementById('uploadBox');
-    box.style.display = '';
-    box.style.borderColor = '';
-    box.style.pointerEvents = '';
-    document.getElementById('uploadIcon').textContent = '📸';
-    document.getElementById('uploadTitle').textContent = 'Suba sua foto aqui';
-    document.getElementById('uploadSub').textContent = 'JPG, PNG ou WEBP · Funciona com selfie do celular';
-    document.getElementById('btnUpload').disabled = false;
-    document.getElementById('btnUpload').textContent = '⚽ Gerar minha figurinha grátis';
-    document.getElementById('stylePicker').style.pointerEvents = '';
-    document.getElementById('stylePicker').style.opacity = '';
-    document.getElementById('previewResult').style.display = 'none';
-    currentImageId = null;
-  }
-
-  function buySticker() {
-    // TODO: integrar checkout Pagar.me
-    alert('Checkout em breve! ID da figurinha: ' + currentImageId);
   }
 
   // ── SCROLL ANIMATIONS ──

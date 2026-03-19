@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIGURI IA — Gerando sua figurinha...</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --dark: #0D0D0B;
+    --dark-mid: #1A1A17;
+    --verde: #00A651;
+    --verde-escuro: #007A3A;
+    --verde-neon: #00E05A;
+    --ouro-claro: #F5C518;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .gerar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .gerar-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--ouro-claro);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+  .gerar-logo span { color: var(--verde-neon); }
+
+  /* Card container (3:4 ratio) */
+  .scanner-card {
+    position: relative;
+    width: 280px;
+    height: 373px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--dark-mid);
+    box-shadow:
+      0 0 40px rgba(0, 224, 90, 0.12),
+      0 20px 60px rgba(0, 0, 0, 0.5);
+    margin-bottom: 28px;
+  }
+
+  /* Placeholder with pixelated/blurred effect */
+  .scanner-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, #1a1a17 0%, #252520 50%, #1a1a17 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: blur(0px);
+    transition: filter 1.2s ease, opacity 1.2s ease;
+  }
+  .scanner-placeholder.processing {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  .scanner-placeholder .placeholder-icon {
+    font-size: 80px;
+    opacity: 0.15;
+  }
+
+  /* The actual sticker image */
+  .scanner-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    filter: blur(20px);
+    transition: opacity 1s ease, filter 1.2s ease;
+  }
+  .scanner-image.revealed {
+    opacity: 1;
+    filter: blur(0px);
+  }
+
+  /* Green scan line */
+  .scanner-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--verde-neon);
+    box-shadow: 0 0 20px var(--verde-neon), 0 0 60px rgba(0, 224, 90, 0.4);
+    top: 0;
+    animation: scan-line 2.5s ease-in-out infinite;
+    z-index: 10;
+  }
+  .scanner-line.stopped {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  @keyframes scan-line {
+    0% { top: 0; }
+    50% { top: calc(100% - 3px); }
+    100% { top: 0; }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: inset 0 0 30px rgba(0, 224, 90, 0.05); }
+    50% { box-shadow: inset 0 0 50px rgba(0, 224, 90, 0.12); }
+  }
+
+  /* Corner markers */
+  .scanner-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--verde-neon);
+    border-style: solid;
+    border-width: 0;
+    z-index: 5;
+    opacity: 0.6;
+  }
+  .scanner-corner.tl { top: 12px; left: 12px; border-top-width: 2px; border-left-width: 2px; }
+  .scanner-corner.tr { top: 12px; right: 12px; border-top-width: 2px; border-right-width: 2px; }
+  .scanner-corner.bl { bottom: 12px; left: 12px; border-bottom-width: 2px; border-left-width: 2px; }
+  .scanner-corner.br { bottom: 12px; right: 12px; border-bottom-width: 2px; border-right-width: 2px; }
+
+  /* Status text */
+  .gerar-status {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .gerar-progress {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  /* Progress bar */
+  .gerar-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .gerar-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--verde-neon);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* Buttons (hidden initially) */
+  .gerar-actions {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .gerar-actions.visible {
+    display: flex;
+    opacity: 1;
+  }
+
+  .btn-buy {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,166,81,0.3);
+  }
+  .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,166,81,0.5); }
+
+  .btn-back {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+  .gerar-credits {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* Error state */
+  .gerar-error {
+    display: none;
+    text-align: center;
+  }
+  .gerar-error.visible { display: block; }
+  .gerar-error-msg {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    color: #ff6b6b;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    .scanner-card { width: 240px; height: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="gerar-container">
+  <div class="gerar-logo">FIGURI <span>IA</span></div>
+
+  <div class="scanner-card" id="scannerCard">
+    <div class="scanner-placeholder processing" id="scannerPlaceholder">
+      <span class="placeholder-icon">&#9917;</span>
+    </div>
+    <img class="scanner-image" id="scannerImage" src="" alt="Sua figurinha">
+    <div class="scanner-line" id="scannerLine"></div>
+    <div class="scanner-corner tl"></div>
+    <div class="scanner-corner tr"></div>
+    <div class="scanner-corner bl"></div>
+    <div class="scanner-corner br"></div>
+  </div>
+
+  <div class="gerar-status" id="gerarStatus">Imprimindo sua figurinha...</div>
+  <div class="gerar-progress" id="gerarProgress">0%</div>
+  <div class="gerar-bar">
+    <div class="gerar-bar-fill" id="gerarBarFill"></div>
+  </div>
+
+  <div class="gerar-actions" id="gerarActions">
+    <a class="btn-back" href="/">&#8617; Gerar outra</a>
+    <button class="btn-buy" id="btnBuy">&#128179; Comprar sem marca d'agua &mdash; R$19,90</button>
+    <div class="gerar-credits" id="gerarCredits"></div>
+  </div>
+
+  <div class="gerar-error" id="gerarError">
+    <div class="gerar-error-msg" id="gerarErrorMsg"></div>
+    <a class="btn-back" href="/">&#8617; Voltar e tentar novamente</a>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Get URL params
+  const params = new URLSearchParams(window.location.search);
+  const taskId = params.get('taskId');
+  const imageId = params.get('imageId');
+  const userId = params.get('userId');
+
+  if (!taskId || !imageId || !userId) {
+    showError('Parametros invalidos. Volte e tente gerar novamente.');
+  }
+
+  // Fake progress animation
+  let fakeProgress = 0;
+  let progressInterval = null;
+  function startFakeProgress() {
+    progressInterval = setInterval(function() {
+      // Slow down as it approaches 90%
+      if (fakeProgress < 60) {
+        fakeProgress += Math.random() * 4 + 1;
+      } else if (fakeProgress < 85) {
+        fakeProgress += Math.random() * 1.5 + 0.3;
+      } else if (fakeProgress < 92) {
+        fakeProgress += Math.random() * 0.5 + 0.1;
+      }
+      fakeProgress = Math.min(fakeProgress, 92);
+      updateProgress(Math.round(fakeProgress));
+    }, 500);
+  }
+
+  function updateProgress(pct) {
+    document.getElementById('gerarProgress').textContent = pct + '%';
+    document.getElementById('gerarBarFill').style.width = pct + '%';
+  }
+
+  function showError(msg) {
+    document.getElementById('gerarStatus').style.display = 'none';
+    document.getElementById('gerarProgress').style.display = 'none';
+    document.querySelector('.gerar-bar').style.display = 'none';
+    document.getElementById('scannerLine').classList.add('stopped');
+    document.getElementById('scannerPlaceholder').classList.remove('processing');
+    var errEl = document.getElementById('gerarError');
+    document.getElementById('gerarErrorMsg').textContent = msg;
+    errEl.classList.add('visible');
+  }
+
+  function showResult(previewUrl) {
+    // Stop fake progress
+    if (progressInterval) clearInterval(progressInterval);
+    updateProgress(100);
+
+    // Stop scanner
+    document.getElementById('scannerLine').classList.add('stopped');
+    document.getElementById('scannerPlaceholder').classList.remove('processing');
+
+    // Show image
+    var img = document.getElementById('scannerImage');
+    img.src = previewUrl;
+    img.onload = function() {
+      // Fade placeholder, reveal image
+      var placeholder = document.getElementById('scannerPlaceholder');
+      placeholder.style.opacity = '0';
+      img.classList.add('revealed');
+
+      // Hide status, show actions
+      setTimeout(function() {
+        document.getElementById('gerarStatus').textContent = 'Figurinha pronta!';
+        document.getElementById('gerarProgress').style.display = 'none';
+        document.querySelector('.gerar-bar').style.display = 'none';
+
+        var actions = document.getElementById('gerarActions');
+        actions.classList.add('visible');
+      }, 600);
+    };
+  }
+
+  // Poll for generation result
+  async function pollGeneration(token) {
+    var maxAttempts = 60;
+    for (var i = 0; i < maxAttempts; i++) {
+      await new Promise(function(r) { setTimeout(r, 2000); });
+
+      try {
+        var res = await fetch(
+          '/api/generate/status?taskId=' + encodeURIComponent(taskId)
+          + '&imageId=' + encodeURIComponent(imageId)
+          + '&userId=' + encodeURIComponent(userId),
+          { headers: { 'Authorization': 'Bearer ' + token } }
+        );
+
+        var data = await res.json();
+
+        if (data.status === 'completed') {
+          return data;
+        }
+        if (data.status === 'failed') {
+          throw new Error(data.error || 'Geracao falhou. Tente outra foto.');
+        }
+      } catch (err) {
+        if (i > 5) throw err; // Allow a few transient failures early on
+      }
+    }
+    throw new Error('Timeout: a geracao demorou demais. Tente novamente.');
+  }
+
+  // Main init
+  (async function() {
+    if (!taskId) return;
+
+    try {
+      var sessionData = await sb.auth.getSession();
+      var session = sessionData.data.session;
+      if (!session) {
+        showError('Voce precisa estar logado. Volte para a pagina inicial.');
+        return;
+      }
+
+      startFakeProgress();
+
+      var result = await pollGeneration(session.access_token);
+
+      if (result.previewUrl) {
+        showResult(result.previewUrl);
+      }
+
+      // Update credits display
+      if (result.creditsUsed !== undefined) {
+        var creditsTotal = 5;
+        document.getElementById('gerarCredits').textContent =
+          result.creditsUsed + ' de ' + creditsTotal + ' previews usados';
+      }
+    } catch (err) {
+      if (progressInterval) clearInterval(progressInterval);
+      showError(err.message || 'Erro ao gerar figurinha.');
+    }
+  })();
+
+  // Buy button
+  document.getElementById('btnBuy').addEventListener('click', function() {
+    // TODO: integrate checkout
+    alert('Checkout em breve! ID da figurinha: ' + imageId);
+  });
+</script>
+</body>
+</html>
