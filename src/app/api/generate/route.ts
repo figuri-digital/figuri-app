@@ -4,12 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY!;
+const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
 
-const FREEPIK_FLUX_URL = 'https://api.freepik.com/v1/ai/text-to-image/flux-2-pro';
+const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
 const NUM_VARIATIONS = 3;
+
+// Test emails — unlimited credits, flagged as test in dashboard
+const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +32,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 });
     }
 
-    // Check/create credits
+    const isTestUser = TEST_EMAILS.includes(user.email || '');
+
+    // Check/create credits (skip limit for test users)
     let { data: credits } = await supabase
       .from('usage_credits')
       .select('credits_used, credits_limit')
@@ -40,12 +45,12 @@ export async function POST(req: NextRequest) {
       await supabase.from('usage_credits').insert({
         user_id: user.id,
         credits_used: 0,
-        credits_limit: 5,
+        credits_limit: isTestUser ? 99999 : 5,
       });
-      credits = { credits_used: 0, credits_limit: 5 };
+      credits = { credits_used: 0, credits_limit: isTestUser ? 99999 : 5 };
     }
 
-    if (credits.credits_used >= credits.credits_limit) {
+    if (!isTestUser && credits.credits_used >= credits.credits_limit) {
       return NextResponse.json({
         error: 'Você usou todos os previews gratuitos.',
       }, { status: 403 });
@@ -80,7 +85,6 @@ export async function POST(req: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const userPhotoBase64 = buffer.toString('base64');
     const imageId = uuidv4();
 
     // Upload original to Supabase Storage
@@ -98,18 +102,11 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Load template as base64
+    // Get template URL
+    const templateFile = COUNTRY_TEMPLATES[country] || COUNTRY_TEMPLATES.brasil;
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
-    const templateFile = COUNTRY_TEMPLATES[country] || COUNTRY_TEMPLATES.brasil;
     const templateUrl = `${protocol}://${host}/templates/${templateFile}`;
-
-    const templateRes = await fetch(templateUrl);
-    if (!templateRes.ok) {
-      return NextResponse.json({ error: 'Erro ao carregar template' }, { status: 500 });
-    }
-    const templateBuffer = Buffer.from(await templateRes.arrayBuffer());
-    const templateBase64 = templateBuffer.toString('base64');
 
     // Build prompt
     const prompt = buildPrompt(style, { name, birth, height, country });
@@ -127,25 +124,26 @@ export async function POST(req: NextRequest) {
       status: 'processing',
       expires_at: expiresAt,
       cart_status: 'preview',
+      is_test: isTestUser,
     });
 
-    // Submit 3 generation tasks to Freepik Flux 2 Pro in parallel
-    console.log(`Submitting ${NUM_VARIATIONS} Flux 2 Pro tasks via Freepik...`);
-    console.log('Country:', country, '| Style:', style);
+    // Submit 3 generation tasks to fal.ai Flux 2 Pro in parallel
+    console.log(`Submitting ${NUM_VARIATIONS} Flux 2 Pro tasks via fal.ai...`);
+    console.log('Country:', country, '| Style:', style, '| Test:', isTestUser);
 
     const taskPromises = Array.from({ length: NUM_VARIATIONS }, () =>
-      fetch(FREEPIK_FLUX_URL, {
+      fetch(FAL_FLUX_URL, {
         method: 'POST',
         headers: {
-          'x-freepik-api-key': FREEPIK_API_KEY,
+          'Authorization': `Key ${FAL_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           prompt,
-          input_image: userPhotoBase64,
-          input_image_2: templateBase64,
-          width: 768,
-          height: 1024,
+          image_urls: [originalUrlData.publicUrl, templateUrl],
+          image_size: 'portrait_4_3',
+          output_format: 'jpeg',
+          safety_tolerance: '3',
         }),
       })
     );
@@ -158,17 +156,17 @@ export async function POST(req: NextRequest) {
       const res = responses[i];
       if (!res.ok) {
         const errText = await res.text();
-        console.error(`Freepik task ${i + 1} error:`, res.status, errText);
+        console.error(`fal.ai task ${i + 1} error:`, res.status, errText);
         errors.push(`Task ${i + 1}: ${res.status} - ${errText.slice(0, 200)}`);
         continue;
       }
       const data = await res.json();
-      const tid = data.data?.task_id;
-      if (tid) {
-        taskIds.push(tid);
-        console.log(`Task ${i + 1} queued:`, tid);
+      const requestId = data.request_id;
+      if (requestId) {
+        taskIds.push(requestId);
+        console.log(`Task ${i + 1} queued:`, requestId);
       } else {
-        errors.push(`Task ${i + 1}: sem task_id - ${JSON.stringify(data).slice(0, 200)}`);
+        errors.push(`Task ${i + 1}: sem request_id - ${JSON.stringify(data).slice(0, 200)}`);
       }
     }
 
@@ -233,22 +231,22 @@ function buildPrompt(style: string, data: StickerData): string {
   const jersey = COUNTRY_JERSEYS[country] || COUNTRY_JERSEYS.brasil;
 
   if (style === 'pet') {
-    return `I have two reference images. The first is a photo of a pet/animal. The second is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the pet from the first image as a team mascot wearing a ${jersey}, placed in the exact card layout from the second image. Player name: "${data.name || 'MASCOTE'}". Keep all card design elements. Fun and photorealistic.`;
+    return `I have two reference images. @image1 is a photo of a pet/animal. @image2 is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the pet from @image1 as a team mascot wearing a ${jersey}, placed in the exact card layout from @image2. Player name: "${data.name || 'MASCOTE'}". Keep all card design elements. Fun and photorealistic.`;
   }
 
   if (style === 'grupo') {
-    return `I have two reference images. The first is a group photo. The second is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the group from the first image wearing ${jersey}, placed in the exact card layout from the second image. Name: "${data.name || 'FAMÍLIA'}". Keep all card design elements. Photorealistic.`;
+    return `I have two reference images. @image1 is a group photo. @image2 is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the group from @image1 wearing ${jersey}, placed in the exact card layout from @image2. Name: "${data.name || 'FAMÍLIA'}". Keep all card design elements. Photorealistic.`;
   }
 
-  return `I have two reference images. The first image is a photo of a real person — use their EXACT face, features, skin tone, and appearance. The second image is a FIFA World Cup 2026 player card template — use its EXACT layout, design, colors, badges, background, FIFA trophy icon, number "2", and bottom panel.
+  return `I have two reference images. @image1 is a photo of a real person — use their EXACT face, features, skin tone, and appearance. @image2 is a FIFA World Cup 2026 player card template — use its EXACT layout, design, colors, badges, background, FIFA trophy icon, number "2", and bottom panel.
 
 Create a new FIFA World Cup 2026 sticker card that:
-1. Features the person from the first image with their EXACT face preserved
+1. Features the person from @image1 with their EXACT face preserved
 2. Shows them wearing a ${jersey}, cropped from chest up, centered
-3. Follows the EXACT card layout and design from the second image
+3. Follows the EXACT card layout and design from @image2
 4. Displays player name: "${data.name || 'JOGADOR'}"
 5. Shows height: "M ${data.height || '1,75'}"
 6. Shows date of birth: "${data.birth || '1-1-2000'}"
 
-The face MUST be identical to the person in the first reference image. Professional sports card quality, photorealistic lighting.`;
+The face MUST be identical to the person in @image1. Professional sports card quality, photorealistic lighting.`;
 }

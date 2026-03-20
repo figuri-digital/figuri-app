@@ -7,6 +7,7 @@ const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || 'figuri-admin-2026';
 const COST_PER_GENERATION_USD = 0.05;
 const PRICE_PER_STICKER_BRL = 19.90;
 const USD_TO_BRL = 5.80;
+const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
 
 export async function GET(req: NextRequest) {
   // Auth check
@@ -18,10 +19,27 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Users
-    const { count: totalUsers } = await supabase
+    // Identify test user IDs by matching profiles with test emails
+    const { data: allProfiles } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact', head: true });
+      .select('id, name');
+
+    const testUserIds = new Set<string>();
+    (allProfiles || []).forEach(p => {
+      if (TEST_EMAILS.some(e => (p.name || '').toLowerCase().includes(e.split('@')[0]))) {
+        testUserIds.add(p.id);
+      }
+    });
+
+    // Also check images with is_test flag
+    const { data: testImages } = await supabase
+      .from('images')
+      .select('user_id')
+      .eq('is_test', true);
+    (testImages || []).forEach(i => testUserIds.add(i.user_id));
+
+    // Users (exclude test)
+    const totalUsers = (allProfiles || []).filter(p => !testUserIds.has(p.id)).length;
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -32,12 +50,16 @@ export async function GET(req: NextRequest) {
     // All images
     const { data: allImages } = await supabase
       .from('images')
-      .select('id, user_id, status, country, style, cart_status, created_at')
+      .select('id, user_id, status, country, style, cart_status, created_at, is_test')
       .order('created_at', { ascending: false });
 
-    const images = allImages || [];
+    const allImagesArr = allImages || [];
 
-    // Image stats
+    // Separate real vs test
+    const images = allImagesArr.filter(i => !i.is_test && !testUserIds.has(i.user_id));
+    const testImagesCount = allImagesArr.length - images.length;
+
+    // Image stats (real users only)
     const totalGenerated = images.length;
     const completed = images.filter(i => i.status === 'completed').length;
     const failed = images.filter(i => i.status === 'failed').length;
@@ -101,8 +123,9 @@ export async function GET(req: NextRequest) {
     const totalCreditsUsed = (credits || []).reduce((sum, c) => sum + (c.credits_used || 0), 0);
     const totalCreditsLimit = (credits || []).reduce((sum, c) => sum + (c.credits_limit || 0), 0);
 
-    // Financials
-    const costUSD = completed * COST_PER_GENERATION_USD;
+    // Financials (cost includes ALL generations — real + test — because fal.ai charges for all)
+    const totalCompletedAll = allImagesArr.filter(i => i.status === 'completed').length;
+    const costUSD = totalCompletedAll * COST_PER_GENERATION_USD;
     const costBRL = costUSD * USD_TO_BRL;
     const revenueBRL = purchased * PRICE_PER_STICKER_BRL;
     const profitBRL = revenueBRL - costBRL;
@@ -153,6 +176,11 @@ export async function GET(req: NextRequest) {
       },
       topUsers: topUsersWithNames,
       dailyStats,
+      test: {
+        testUserIds: Array.from(testUserIds),
+        testGenerations: testImagesCount,
+        testCostUSD: Math.round(testImagesCount * COST_PER_GENERATION_USD * 100) / 100,
+      },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';

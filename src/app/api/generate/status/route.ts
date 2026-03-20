@@ -4,11 +4,14 @@ import { applyWatermark } from '@/lib/watermark';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY!;
+const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
 
-const FREEPIK_FLUX_URL = 'https://api.freepik.com/v1/ai/text-to-image/flux-2-pro';
+const FAL_FLUX_STATUS_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit/requests';
+
+// Test emails — don't decrement credits
+const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,14 +35,18 @@ export async function GET(req: NextRequest) {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
+    // Check if test user
+    const { data: { user } } = await supabase.auth.getUser(token);
+    const isTestUser = TEST_EMAILS.includes(user?.email || '');
+
     const taskIds = taskIdsParam.split(',');
 
-    // Poll all tasks in parallel
+    // Poll all tasks in parallel via fal.ai
     const statusPromises = taskIds.map(async (taskId, index) => {
       try {
-        const statusRes = await fetch(`${FREEPIK_FLUX_URL}/${taskId}`, {
+        const statusRes = await fetch(`${FAL_FLUX_STATUS_URL}/${taskId}/status`, {
           method: 'GET',
-          headers: { 'x-freepik-api-key': FREEPIK_API_KEY },
+          headers: { 'Authorization': `Key ${FAL_KEY}` },
         });
 
         if (!statusRes.ok) {
@@ -47,16 +54,27 @@ export async function GET(req: NextRequest) {
         }
 
         const statusData = await statusRes.json();
-        const taskStatus = statusData.data?.status;
 
-        if (taskStatus === 'COMPLETED') {
-          const generatedUrls = statusData.data?.generated;
-          if (!generatedUrls?.length) {
+        if (statusData.status === 'COMPLETED') {
+          // Fetch the result
+          const resultRes = await fetch(`${FAL_FLUX_STATUS_URL}/${taskId}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Key ${FAL_KEY}` },
+          });
+
+          if (!resultRes.ok) {
             return { index, taskId, status: 'failed' };
           }
 
-          // Download the generated image
-          const imgRes = await fetch(generatedUrls[0]);
+          const resultData = await resultRes.json();
+          const imageUrl = resultData.images?.[0]?.url;
+
+          if (!imageUrl) {
+            return { index, taskId, status: 'failed' };
+          }
+
+          // Download generated image
+          const imgRes = await fetch(imageUrl);
           if (!imgRes.ok) {
             return { index, taskId, status: 'failed' };
           }
@@ -86,7 +104,7 @@ export async function GET(req: NextRequest) {
           };
         }
 
-        if (taskStatus === 'FAILED') {
+        if (statusData.status === 'FAILED') {
           return { index, taskId, status: 'failed' };
         }
 
@@ -103,22 +121,35 @@ export async function GET(req: NextRequest) {
 
     // If all done, update image record and decrement credits
     if (allCompleted && completedResults.length > 0) {
-      // Use first completed as the main record
       await supabase.from('images').update({
         generated_url: completedResults[0].hiresUrl,
         watermark_url: completedResults[0].previewUrl,
         status: 'completed',
       }).eq('id', imageId);
 
-      // Decrement credits (1 credit per generation, not per variation)
-      const { data: creds } = await supabase
-        .from('usage_credits')
-        .select('credits_used, credits_limit')
-        .eq('user_id', userId)
-        .single();
+      // Decrement credits (skip for test users)
+      if (!isTestUser) {
+        const { data: creds } = await supabase
+          .from('usage_credits')
+          .select('credits_used, credits_limit')
+          .eq('user_id', userId)
+          .single();
 
-      const newCreditsUsed = (creds?.credits_used || 0) + 1;
-      await supabase.from('usage_credits').update({ credits_used: newCreditsUsed }).eq('user_id', userId);
+        const newCreditsUsed = (creds?.credits_used || 0) + 1;
+        await supabase.from('usage_credits').update({ credits_used: newCreditsUsed }).eq('user_id', userId);
+
+        return NextResponse.json({
+          status: 'completed',
+          variations: completedResults.map(r => ({
+            index: r.index,
+            previewUrl: r.previewUrl,
+            hiresUrl: r.hiresUrl,
+          })),
+          imageId,
+          creditsUsed: newCreditsUsed,
+          creditsLimit: creds?.credits_limit || 5,
+        });
+      }
 
       return NextResponse.json({
         status: 'completed',
@@ -128,12 +159,10 @@ export async function GET(req: NextRequest) {
           hiresUrl: r.hiresUrl,
         })),
         imageId,
-        creditsUsed: newCreditsUsed,
-        creditsLimit: creds?.credits_limit || 5,
       });
     }
 
-    // Partial results — some completed, some still processing
+    // Partial results
     return NextResponse.json({
       status: 'processing',
       variations: results.map(r => ({
