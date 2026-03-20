@@ -50,10 +50,13 @@ export async function GET(req: NextRequest) {
         });
 
         if (!statusRes.ok) {
+          const errText = await statusRes.text();
+          console.log(`Task ${index} status check failed:`, statusRes.status, errText.slice(0, 200));
           return { index, taskId, status: 'processing' };
         }
 
         const statusData = await statusRes.json();
+        console.log(`Task ${index} (${taskId.slice(0, 8)}):`, JSON.stringify(statusData).slice(0, 300));
 
         if (statusData.status === 'COMPLETED') {
           // Fetch the result
