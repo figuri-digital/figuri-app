@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIGURI IA — Admin Dashboard</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+
+    /* Auth gate */
+    #auth-gate {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; flex-direction: column; gap: 16px;
+    }
+    #auth-gate h2 { color: #F5C518; font-size: 1.5rem; }
+    #auth-gate input {
+      padding: 12px 20px; border-radius: 8px; border: 1px solid #333;
+      background: #1a1a2e; color: #fff; font-size: 1rem; width: 300px; text-align: center;
+    }
+    #auth-gate button {
+      padding: 12px 32px; border-radius: 8px; border: none;
+      background: #F5C518; color: #000; font-weight: 700; cursor: pointer; font-size: 1rem;
+    }
+    #auth-gate button:hover { background: #e0b200; }
+
+    /* Dashboard */
+    #dashboard { display: none; padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 32px; border-bottom: 1px solid #222; padding-bottom: 16px;
+    }
+    .header h1 { color: #F5C518; font-size: 1.8rem; }
+    .header .refresh {
+      padding: 8px 20px; border-radius: 6px; border: 1px solid #F5C518;
+      background: transparent; color: #F5C518; cursor: pointer; font-size: 0.9rem;
+    }
+    .header .refresh:hover { background: rgba(245,197,24,0.1); }
+    .last-update { color: #666; font-size: 0.8rem; margin-top: 4px; }
+
+    /* KPI cards */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 32px;
+    }
+    .kpi {
+      background: #12121e; border: 1px solid #1e1e30; border-radius: 12px;
+      padding: 20px; text-align: center;
+    }
+    .kpi .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+    .kpi .value { font-size: 2rem; font-weight: 800; }
+    .kpi .sub { font-size: 0.8rem; color: #666; margin-top: 4px; }
+    .kpi.green .value { color: #00E05A; }
+    .kpi.yellow .value { color: #F5C518; }
+    .kpi.red .value { color: #FF6B6B; }
+    .kpi.blue .value { color: #4A9EFF; }
+    .kpi.purple .value { color: #A855F7; }
+
+    /* Sections */
+    .section { margin-bottom: 32px; }
+    .section h2 {
+      font-size: 1.1rem; color: #F5C518; margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 1px solid #1e1e30;
+    }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 12px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 1px solid #1e1e30; }
+    td { padding: 10px 12px; border-bottom: 1px solid #111; font-size: 0.9rem; }
+    tr:hover td { background: rgba(245,197,24,0.03); }
+
+    /* Bar chart */
+    .chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 12px; }
+    .chart-bar {
+      flex: 1; background: #F5C518; border-radius: 4px 4px 0 0; min-width: 20px;
+      position: relative; transition: height 0.5s ease;
+    }
+    .chart-bar:hover { background: #e0b200; }
+    .chart-bar .chart-label {
+      position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+      font-size: 0.6rem; color: #666; white-space: nowrap;
+    }
+    .chart-bar .chart-count {
+      position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+      font-size: 0.65rem; color: #F5C518; font-weight: 700;
+    }
+
+    /* Country/style badges */
+    .badge-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      padding: 6px 14px; border-radius: 20px; font-size: 0.8rem;
+      background: #1a1a2e; border: 1px solid #2a2a40;
+    }
+    .badge strong { color: #F5C518; }
+
+    /* Financial highlight */
+    .fin-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .fin-card {
+      background: #12121e; border: 1px solid #1e1e30; border-radius: 10px;
+      padding: 16px; text-align: center;
+    }
+    .fin-card .fin-label { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+    .fin-card .fin-value { font-size: 1.6rem; font-weight: 800; margin-top: 6px; }
+    .fin-card.cost .fin-value { color: #FF6B6B; }
+    .fin-card.revenue .fin-value { color: #00E05A; }
+    .fin-card.profit .fin-value { color: #F5C518; }
+    .fin-card.margin .fin-value { color: #4A9EFF; }
+
+    .loading { text-align: center; padding: 60px; color: #666; font-size: 1.2rem; }
+    .error { color: #FF6B6B; text-align: center; padding: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- Auth Gate -->
+<div id="auth-gate">
+  <h2>FIGURI IA — Admin</h2>
+  <input type="password" id="admin-key" placeholder="Chave de acesso" onkeydown="if(event.key==='Enter') login()">
+  <button onclick="login()">Entrar</button>
+  <div id="auth-error" style="color:#FF6B6B; font-size:0.85rem;"></div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="header">
+    <div>
+      <h1>FIGURI IA — Dashboard</h1>
+      <div class="last-update" id="last-update"></div>
+    </div>
+    <button class="refresh" onclick="loadStats()">Atualizar</button>
+  </div>
+
+  <div id="loading" class="loading">Carregando dados...</div>
+  <div id="content" style="display:none;">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <!-- Daily chart -->
+    <div class="section">
+      <h2>Gerações por dia (últimos 14 dias)</h2>
+      <div class="chart" id="daily-chart"></div>
+      <div style="height:24px;"></div>
+    </div>
+
+    <!-- Financial -->
+    <div class="section">
+      <h2>Financeiro</h2>
+      <div class="fin-grid" id="fin-grid"></div>
+    </div>
+
+    <!-- By country -->
+    <div class="section">
+      <h2>Por seleção</h2>
+      <div class="badge-grid" id="country-badges"></div>
+    </div>
+
+    <!-- By style -->
+    <div class="section">
+      <h2>Por tipo</h2>
+      <div class="badge-grid" id="style-badges"></div>
+    </div>
+
+    <!-- Top users -->
+    <div class="section">
+      <h2>Top usuários</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Usuário</th><th>Gerações</th></tr></thead>
+          <tbody id="top-users-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let adminKey = '';
+
+function login() {
+  adminKey = document.getElementById('admin-key').value.trim();
+  if (!adminKey) return;
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadStats();
+}
+
+async function loadStats() {
+  const loading = document.getElementById('loading');
+  const content = document.getElementById('content');
+  loading.style.display = 'block';
+  content.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/admin/stats?key=' + encodeURIComponent(adminKey));
+    if (!res.ok) {
+      if (res.status === 403) {
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('auth-gate').style.display = 'flex';
+        document.getElementById('auth-error').textContent = 'Chave inválida';
+        return;
+      }
+      throw new Error('Erro ' + res.status);
+    }
+
+    const data = await res.json();
+    renderDashboard(data);
+
+    loading.style.display = 'none';
+    content.style.display = 'block';
+    document.getElementById('last-update').textContent = 'Atualizado: ' + new Date().toLocaleString('pt-BR');
+  } catch (err) {
+    loading.innerHTML = '<div class="error">Erro ao carregar: ' + err.message + '</div>';
+  }
+}
+
+function renderDashboard(d) {
+  // KPIs
+  const kpis = [
+    { label: 'Usuários cadastrados', value: d.users.total, cls: 'blue' },
+    { label: 'Usuários ativos', value: d.users.activeGenerators, cls: 'blue', sub: 'Que geraram ao menos 1' },
+    { label: 'Total gerado', value: d.generations.total, cls: 'yellow' },
+    { label: 'Geradas hoje', value: d.generations.today, cls: 'yellow' },
+    { label: 'Geradas na semana', value: d.generations.week, cls: 'yellow' },
+    { label: 'Concluídas', value: d.generations.completed, cls: 'green' },
+    { label: 'Falharam', value: d.generations.failed, cls: 'red' },
+    { label: 'Processando', value: d.generations.processing, cls: 'purple' },
+    { label: 'Compras', value: d.sales.purchased, cls: 'green', sub: 'Figurinhas vendidas' },
+    { label: 'Taxa de conversão', value: d.sales.conversionRate, cls: 'blue', sub: 'Geração → Compra' },
+  ];
+
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k =>
+    `<div class="kpi ${k.cls}">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      ${k.sub ? `<div class="sub">${k.sub}</div>` : ''}
+    </div>`
+  ).join('');
+
+  // Financial
+  const f = d.financial;
+  const fins = [
+    { label: 'Custo IA (fal.ai)', value: `R$ ${f.totalCostBRL.toFixed(2)}`, cls: 'cost', sub: `US$ ${f.totalCostUSD.toFixed(2)} × ${f.usdToBrl}` },
+    { label: 'Receita', value: `R$ ${f.revenueBRL.toFixed(2)}`, cls: 'revenue' },
+    { label: 'Lucro', value: `R$ ${f.profitBRL.toFixed(2)}`, cls: 'profit' },
+    { label: 'Margem', value: f.marginPercent, cls: 'margin' },
+    { label: 'Custo por geração', value: `US$ ${f.costPerGenUSD}`, cls: 'cost', sub: `≈ R$ ${(f.costPerGenUSD * f.usdToBrl).toFixed(2)}` },
+  ];
+
+  document.getElementById('fin-grid').innerHTML = fins.map(fi =>
+    `<div class="fin-card ${fi.cls}">
+      <div class="fin-label">${fi.label}</div>
+      <div class="fin-value">${fi.value}</div>
+      ${fi.sub ? `<div class="sub" style="font-size:0.7rem;color:#666;margin-top:4px;">${fi.sub}</div>` : ''}
+    </div>`
+  ).join('');
+
+  // Daily chart
+  const maxCount = Math.max(...d.dailyStats.map(s => s.count), 1);
+  document.getElementById('daily-chart').innerHTML = d.dailyStats.map(s => {
+    const h = Math.max((s.count / maxCount) * 100, 2);
+    const dayLabel = s.date.slice(5).replace('-', '/');
+    return `<div class="chart-bar" style="height:${h}%;" title="${s.date}: ${s.count}">
+      ${s.count > 0 ? `<span class="chart-count">${s.count}</span>` : ''}
+      <span class="chart-label">${dayLabel}</span>
+    </div>`;
+  }).join('');
+
+  // Countries
+  const countries = Object.entries(d.generations.byCountry).sort((a, b) => b[1] - a[1]);
+  const countryFlags = { brasil: '🇧🇷', argentina: '🇦🇷', franca: '🇫🇷', alemanha: '🇩🇪', espanha: '🇪🇸', portugal: '🇵🇹', uruguai: '🇺🇾', colombia: '🇨🇴' };
+  document.getElementById('country-badges').innerHTML = countries.map(([c, n]) =>
+    `<div class="badge">${countryFlags[c] || ''} ${c} <strong>${n}</strong></div>`
+  ).join('');
+
+  // Styles
+  const styleNames = { sozinho: 'Sozinho', pet: 'Pet', grupo: 'Grupo' };
+  const styles = Object.entries(d.generations.byStyle).sort((a, b) => b[1] - a[1]);
+  document.getElementById('style-badges').innerHTML = styles.map(([s, n]) =>
+    `<div class="badge">${styleNames[s] || s} <strong>${n}</strong></div>`
+  ).join('');
+
+  // Top users
+  document.getElementById('top-users-body').innerHTML = d.topUsers.map((u, i) =>
+    `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.count}</td></tr>`
+  ).join('');
+}
+</script>
+</body>
+</html>
