@@ -25,8 +25,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
   }
 
   .gerar-container {
@@ -34,7 +32,7 @@
     flex-direction: column;
     align-items: center;
     padding: 32px 20px;
-    max-width: 420px;
+    max-width: 800px;
     width: 100%;
   }
 
@@ -47,6 +45,9 @@
   }
   .gerar-logo span { color: var(--verde-neon); }
 
+  /* ── PHASE 1: Scanner (loading) ── */
+  #phase-loading { text-align: center; }
+
   .scanner-card {
     position: relative;
     width: 280px;
@@ -54,283 +55,231 @@
     border-radius: 16px;
     overflow: hidden;
     background: var(--dark-mid);
-    box-shadow:
-      0 0 40px rgba(0, 224, 90, 0.12),
-      0 20px 60px rgba(0, 0, 0, 0.5);
-    margin-bottom: 28px;
+    box-shadow: 0 0 40px rgba(0, 224, 90, 0.12), 0 20px 60px rgba(0, 0, 0, 0.5);
+    margin: 0 auto 28px;
   }
 
   .scanner-placeholder {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: linear-gradient(145deg, #1a1a17 0%, #252520 50%, #1a1a17 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: filter 1.2s ease, opacity 1.2s ease;
+    display: flex; align-items: center; justify-content: center;
   }
-  .scanner-placeholder.processing {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-  .scanner-placeholder .placeholder-icon {
-    font-size: 80px;
-    opacity: 0.15;
-  }
-
-  .scanner-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    filter: blur(20px);
-    transition: opacity 1s ease, filter 1.2s ease;
-  }
-  .scanner-image.revealed {
-    opacity: 1;
-    filter: blur(0px);
-  }
+  .scanner-placeholder.processing { animation: pulse-glow 2s ease-in-out infinite; }
+  .scanner-placeholder .placeholder-icon { font-size: 80px; opacity: 0.15; }
 
   .scanner-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 3px;
+    position: absolute; left: 0; right: 0; height: 3px;
     background: var(--verde-neon);
     box-shadow: 0 0 20px var(--verde-neon), 0 0 60px rgba(0, 224, 90, 0.4);
-    top: 0;
-    animation: scan-line 2.5s ease-in-out infinite;
-    z-index: 10;
+    top: 0; animation: scan-line 2.5s ease-in-out infinite; z-index: 10;
   }
-  .scanner-line.stopped {
-    animation: none;
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-
-  @keyframes scan-line {
-    0% { top: 0; }
-    50% { top: calc(100% - 3px); }
-    100% { top: 0; }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: inset 0 0 30px rgba(0, 224, 90, 0.05); }
-    50% { box-shadow: inset 0 0 50px rgba(0, 224, 90, 0.12); }
-  }
+  .scanner-line.stopped { animation: none; opacity: 0; transition: opacity 0.5s; }
 
   .scanner-corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-color: var(--verde-neon);
-    border-style: solid;
-    border-width: 0;
-    z-index: 5;
-    opacity: 0.6;
+    position: absolute; width: 20px; height: 20px;
+    border-color: var(--verde-neon); border-style: solid; border-width: 0;
+    z-index: 5; opacity: 0.6;
   }
   .scanner-corner.tl { top: 12px; left: 12px; border-top-width: 2px; border-left-width: 2px; }
   .scanner-corner.tr { top: 12px; right: 12px; border-top-width: 2px; border-right-width: 2px; }
   .scanner-corner.bl { bottom: 12px; left: 12px; border-bottom-width: 2px; border-left-width: 2px; }
   .scanner-corner.br { bottom: 12px; right: 12px; border-bottom-width: 2px; border-right-width: 2px; }
 
+  @keyframes scan-line { 0% { top: 0; } 50% { top: calc(100% - 3px); } 100% { top: 0; } }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: inset 0 0 30px rgba(0, 224, 90, 0.05); }
+    50% { box-shadow: inset 0 0 50px rgba(0, 224, 90, 0.12); }
+  }
+
   .gerar-status {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+    font-size: 18px; font-weight: 700; color: #fff;
+    text-transform: uppercase; letter-spacing: 1.5px;
     margin-bottom: 8px;
-    text-align: center;
   }
 
   .gerar-progress {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.45);
-    margin-bottom: 24px;
+    font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 24px;
+  }
+
+  .gerar-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin: 0 auto 32px; }
+  .gerar-bar-fill { height: 100%; width: 0%; background: var(--verde-neon); border-radius: 2px; transition: width 0.5s ease; }
+
+  /* ── PHASE 2: Choose from 3 ── */
+  #phase-choose { display: none; }
+
+  .choose-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--verde-neon);
+    letter-spacing: 2px;
     text-align: center;
+    margin-bottom: 8px;
   }
 
-  .gerar-bar {
-    width: 200px;
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
+  .choose-subtitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .variations-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+
+  .variation-card {
+    background: var(--dark-mid);
+    border: 2px solid #333;
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 32px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
   }
-  .gerar-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--verde-neon);
-    border-radius: 2px;
-    transition: width 0.5s ease;
+  .variation-card:hover { border-color: var(--verde); transform: translateY(-4px); }
+  .variation-card.selected {
+    border-color: var(--ouro-claro);
+    box-shadow: 0 0 30px rgba(245, 197, 24, 0.25);
   }
 
-  .gerar-actions {
+  .variation-card img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    display: block;
+  }
+
+  .variation-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .variation-card.selected .variation-label { color: var(--ouro-claro); }
+
+  .variation-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: var(--ouro-claro);
+    border-radius: 50%;
     display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--dark);
+    font-weight: bold;
+  }
+  .variation-card.selected .variation-check { display: flex; }
+
+  .choose-actions {
+    display: flex;
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    max-width: 320px;
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
-  .gerar-actions.visible {
-    display: flex;
-    opacity: 1;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
   .btn-buy {
-    display: block;
-    width: 100%;
+    display: block; width: 100%;
     background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
     color: #fff;
     font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
+    font-weight: 900; font-size: 16px;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 14px; border-radius: 8px; border: none;
+    cursor: pointer; text-align: center; text-decoration: none;
     transition: all 0.3s;
     box-shadow: 0 8px 32px rgba(0,166,81,0.3);
   }
   .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,166,81,0.5); }
+  .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   .btn-back {
-    display: block;
-    width: 100%;
-    background: transparent;
-    color: rgba(255,255,255,0.6);
+    display: block; width: 100%;
+    background: transparent; color: rgba(255,255,255,0.6);
     font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 12px;
-    border-radius: 8px;
+    font-weight: 700; font-size: 14px;
+    padding: 12px; border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.15);
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
+    cursor: pointer; text-align: center; text-decoration: none;
     transition: all 0.2s;
   }
   .btn-back:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
 
   .gerar-credits {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    color: rgba(255,255,255,0.35);
-    text-align: center;
-    margin-top: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.35);
+    text-align: center; margin-top: 8px;
   }
 
-  .gerar-error {
-    display: none;
-    text-align: center;
-  }
+  /* ── Error ── */
+  .gerar-error { display: none; text-align: center; }
   .gerar-error.visible { display: block; }
   .gerar-error-msg {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    color: #ff6b6b;
-    margin-bottom: 16px;
+    font-size: 16px; color: #ff6b6b; margin-bottom: 16px;
   }
 
-  /* ── SOCIAL PROOF TOASTS ── */
+  /* ── SOCIAL PROOF ── */
   .toast-container {
-    position: fixed;
-    bottom: 24px;
-    left: 24px;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
+    position: fixed; bottom: 24px; left: 24px; z-index: 100;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
   }
-
   .toast {
     background: rgba(26,26,23,0.92);
     border: 1px solid rgba(255,255,255,0.08);
     border-left: 3px solid var(--verde);
-    border-radius: 8px;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    border-radius: 8px; padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
     backdrop-filter: blur(12px);
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    opacity: 0; transform: translateY(20px) scale(0.95);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     max-width: 340px;
   }
-  .toast.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  .toast.exit {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-
-  .toast-flag {
-    font-size: 22px;
-    flex-shrink: 0;
-  }
+  .toast.visible { opacity: 1; transform: translateY(0) scale(1); }
+  .toast.exit { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  .toast-flag { font-size: 22px; flex-shrink: 0; }
   .toast-text {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    color: rgba(255,255,255,0.75);
-    line-height: 1.3;
+    font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.3;
   }
-  .toast-text strong {
-    color: #fff;
-    font-weight: 700;
-  }
-  .toast-text .toast-city {
-    color: rgba(255,255,255,0.4);
-    font-size: 11px;
-  }
+  .toast-text strong { color: #fff; font-weight: 700; }
+  .toast-text .toast-city { color: rgba(255,255,255,0.4); font-size: 11px; }
 
-  /* ── LIVE COUNTER ── */
   .live-counter {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    color: rgba(255,255,255,0.35);
-    text-align: center;
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    font-size: 13px; color: rgba(255,255,255,0.35);
+    text-align: center; margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .live-counter .live-dot {
-    width: 6px;
-    height: 6px;
-    background: #ff4444;
-    border-radius: 50%;
-    animation: livePulse 1.5s ease-in-out infinite;
+    width: 6px; height: 6px; background: #ff4444;
+    border-radius: 50%; animation: livePulse 1.5s ease-in-out infinite;
   }
-  @keyframes livePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-  }
-  .live-counter .counter-num {
-    color: var(--ouro-claro);
-    font-weight: 700;
-    font-size: 14px;
-  }
+  @keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .live-counter .counter-num { color: var(--ouro-claro); font-weight: 700; font-size: 14px; }
 
-  @media (max-width: 480px) {
+  @media (max-width: 640px) {
+    .variations-grid { grid-template-columns: 1fr; max-width: 280px; margin: 0 auto 24px; }
     .scanner-card { width: 240px; height: 320px; }
     .toast-container { left: 12px; right: 12px; bottom: 16px; }
     .toast { max-width: 100%; }
+    .choose-title { font-size: 1.4rem; }
   }
 </style>
 </head>
@@ -339,35 +288,46 @@
 <div class="gerar-container">
   <div class="gerar-logo">FIGURI <span>IA</span></div>
 
-  <div class="scanner-card" id="scannerCard">
-    <div class="scanner-placeholder processing" id="scannerPlaceholder">
-      <span class="placeholder-icon">&#9917;</span>
+  <!-- PHASE 1: Loading/Scanner -->
+  <div id="phase-loading">
+    <div class="scanner-card" id="scannerCard">
+      <div class="scanner-placeholder processing" id="scannerPlaceholder">
+        <span class="placeholder-icon">&#9917;</span>
+      </div>
+      <div class="scanner-line" id="scannerLine"></div>
+      <div class="scanner-corner tl"></div>
+      <div class="scanner-corner tr"></div>
+      <div class="scanner-corner bl"></div>
+      <div class="scanner-corner br"></div>
     </div>
-    <img class="scanner-image" id="scannerImage" src="" alt="Sua figurinha">
-    <div class="scanner-line" id="scannerLine"></div>
-    <div class="scanner-corner tl"></div>
-    <div class="scanner-corner tr"></div>
-    <div class="scanner-corner bl"></div>
-    <div class="scanner-corner br"></div>
+
+    <div class="gerar-status" id="gerarStatus">Gerando 3 opcoes para voce...</div>
+    <div class="gerar-progress" id="gerarProgress"></div>
+
+    <div class="live-counter" id="liveCounter">
+      <span class="live-dot"></span>
+      <span><span class="counter-num" id="counterNum">847</span> figurinhas geradas hoje</span>
+    </div>
+    <div class="gerar-bar">
+      <div class="gerar-bar-fill" id="gerarBarFill"></div>
+    </div>
   </div>
 
-  <div class="gerar-status" id="gerarStatus">Imprimindo sua figurinha...</div>
-  <div class="gerar-progress" id="gerarProgress"></div>
+  <!-- PHASE 2: Choose variation -->
+  <div id="phase-choose">
+    <h2 class="choose-title">Escolha sua figurinha favorita</h2>
+    <p class="choose-subtitle">Clique na que voce mais gostou</p>
 
-  <div class="live-counter" id="liveCounter">
-    <span class="live-dot"></span>
-    <span><span class="counter-num" id="counterNum">847</span> figurinhas geradas hoje</span>
-  </div>
-  <div class="gerar-bar">
-    <div class="gerar-bar-fill" id="gerarBarFill"></div>
-  </div>
+    <div class="variations-grid" id="variationsGrid"></div>
 
-  <div class="gerar-actions" id="gerarActions">
-    <a class="btn-back" href="/">&#8617; Gerar outra</a>
-    <button class="btn-buy" id="btnBuy">&#128179; Comprar sem marca d'agua &mdash; R$19,90</button>
-    <div class="gerar-credits" id="gerarCredits"></div>
+    <div class="choose-actions">
+      <button class="btn-buy" id="btnBuy" disabled>Comprar sem marca d'agua — R$19,90</button>
+      <a class="btn-back" href="/">&#8617; Gerar novas opcoes</a>
+      <div class="gerar-credits" id="gerarCredits"></div>
+    </div>
   </div>
 
+  <!-- Error -->
   <div class="gerar-error" id="gerarError">
     <div class="gerar-error-msg" id="gerarErrorMsg"></div>
     <a class="btn-back" href="/">&#8617; Voltar e tentar novamente</a>
@@ -376,63 +336,69 @@
 
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
   var SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
 
-  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   var params = new URLSearchParams(window.location.search);
-  var taskId = params.get('taskId');
+  var taskIdsParam = params.get('taskIds');
   var imageId = params.get('imageId');
   var userId = params.get('userId');
-  var previewUrl = params.get('previewUrl');
-  var initialStatus = params.get('status');
 
   var pollCount = 0;
-  var maxPolls = 60; // 60 * 3s = 3 minutes max
+  var maxPolls = 80;
   var fakeProgress = 0;
+  var selectedVariation = null;
+  var toastIsGenerating = true;
 
   function showError(msg) {
-    document.getElementById('gerarStatus').style.display = 'none';
-    document.getElementById('gerarProgress').style.display = 'none';
-    document.querySelector('.gerar-bar').style.display = 'none';
-    document.getElementById('scannerLine').classList.add('stopped');
-    document.getElementById('scannerPlaceholder').classList.remove('processing');
+    toastIsGenerating = false;
+    document.getElementById('phase-loading').style.display = 'none';
+    document.getElementById('phase-choose').style.display = 'none';
     document.getElementById('gerarErrorMsg').textContent = msg;
     document.getElementById('gerarError').classList.add('visible');
   }
 
-  function showResult(url) {
-    document.getElementById('gerarBarFill').style.width = '100%';
-    document.getElementById('gerarProgress').textContent = '100%';
+  function showChoosePhase(variations) {
+    toastIsGenerating = false;
+    document.getElementById('phase-loading').style.display = 'none';
+    document.getElementById('phase-choose').style.display = 'block';
 
-    setTimeout(function() {
-      document.getElementById('scannerLine').classList.add('stopped');
-      document.getElementById('scannerPlaceholder').classList.remove('processing');
+    var grid = document.getElementById('variationsGrid');
+    grid.innerHTML = '';
 
-      var img = document.getElementById('scannerImage');
-      img.src = url;
-      img.onload = function() {
-        document.getElementById('scannerPlaceholder').style.opacity = '0';
-        img.classList.add('revealed');
+    variations.forEach(function(v, i) {
+      var card = document.createElement('div');
+      card.className = 'variation-card';
+      card.setAttribute('data-index', i);
+      card.setAttribute('data-preview', v.previewUrl);
+      card.setAttribute('data-hires', v.hiresUrl || '');
+      card.innerHTML =
+        '<div class="variation-check">✓</div>' +
+        '<img src="' + v.previewUrl + '" alt="Opcao ' + (i + 1) + '">' +
+        '<div class="variation-label">Opcao ' + (i + 1) + '</div>';
 
-        setTimeout(function() {
-          document.getElementById('gerarStatus').textContent = 'Figurinha pronta!';
-          document.getElementById('gerarProgress').style.display = 'none';
-          document.querySelector('.gerar-bar').style.display = 'none';
-          document.getElementById('gerarActions').classList.add('visible');
-        }, 600);
-      };
-      img.onerror = function() {
-        showError('Erro ao carregar a imagem. Tente novamente.');
-      };
-    }, 1500);
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.variation-card').forEach(function(c) {
+          c.classList.remove('selected');
+        });
+        card.classList.add('selected');
+        selectedVariation = {
+          index: i,
+          previewUrl: v.previewUrl,
+          hiresUrl: v.hiresUrl,
+        };
+        document.getElementById('btnBuy').disabled = false;
+      });
+
+      grid.appendChild(card);
+    });
   }
 
   function updateFakeProgress() {
-    // Slow down as it approaches 90%
     var increment = fakeProgress < 30 ? 3 : fakeProgress < 60 ? 2 : fakeProgress < 80 ? 1 : 0.3;
     fakeProgress = Math.min(fakeProgress + increment, 90);
     document.getElementById('gerarBarFill').style.width = Math.round(fakeProgress) + '%';
@@ -448,11 +414,10 @@
     updateFakeProgress();
 
     try {
-      // Get auth token
       var session = await sb.auth.getSession();
       var token = session?.data?.session?.access_token || '';
 
-      var url = '/api/generate/status?taskId=' + encodeURIComponent(taskId) +
+      var url = '/api/generate/status?taskIds=' + encodeURIComponent(taskIdsParam) +
         '&imageId=' + encodeURIComponent(imageId) +
         '&userId=' + encodeURIComponent(userId);
 
@@ -463,8 +428,20 @@
       var data = await res.json();
       console.log('Poll #' + pollCount + ':', data);
 
-      if (data.status === 'completed' && data.previewUrl) {
-        showResult(data.previewUrl);
+      if (data.status === 'completed' && data.variations) {
+        // All done — show the 3 options
+        document.getElementById('gerarBarFill').style.width = '100%';
+        document.getElementById('gerarProgress').textContent = '100%';
+        document.getElementById('gerarStatus').textContent = 'Pronto!';
+
+        setTimeout(function() {
+          showChoosePhase(data.variations);
+
+          if (data.creditsUsed !== undefined) {
+            document.getElementById('gerarCredits').textContent =
+              'Previews: ' + data.creditsUsed + '/' + data.creditsLimit;
+          }
+        }, 1000);
         return;
       }
 
@@ -473,7 +450,16 @@
         return;
       }
 
-      // Still processing — poll again in 3 seconds
+      // Update status text with partial progress
+      if (data.variations) {
+        var done = data.variations.filter(function(v) { return v.status === 'completed'; }).length;
+        var total = data.variations.length;
+        if (done > 0) {
+          document.getElementById('gerarStatus').textContent =
+            done + ' de ' + total + ' opcoes prontas...';
+        }
+      }
+
       setTimeout(pollStatus, 3000);
     } catch (err) {
       console.error('Poll error:', err);
@@ -482,63 +468,38 @@
   }
 
   // Init
-  if (!imageId) {
+  if (!imageId || !taskIdsParam) {
     showError('Parametros invalidos. Volte e tente gerar novamente.');
-  } else if (initialStatus === 'completed' && previewUrl) {
-    // Result came directly (sync response)
-    var quickInterval = setInterval(function() {
-      fakeProgress += Math.random() * 15 + 5;
-      fakeProgress = Math.min(fakeProgress, 95);
-      document.getElementById('gerarBarFill').style.width = Math.round(fakeProgress) + '%';
-      document.getElementById('gerarProgress').textContent = Math.round(fakeProgress) + '%';
-      if (fakeProgress >= 95) {
-        clearInterval(quickInterval);
-        showResult(previewUrl);
-      }
-    }, 200);
-  } else if (taskId && imageId && userId) {
-    // Async — need to poll
-    pollStatus();
   } else {
-    showError('Parametros invalidos. Volte e tente gerar novamente.');
+    pollStatus();
   }
 
   // Buy button
   document.getElementById('btnBuy').addEventListener('click', function() {
-    alert('Checkout em breve! ID da figurinha: ' + imageId);
+    if (!selectedVariation) {
+      alert('Selecione uma figurinha primeiro.');
+      return;
+    }
+    alert('Checkout em breve! Figurinha: ' + imageId + ' | Opcao: ' + (selectedVariation.index + 1));
   });
 
   // ── SOCIAL PROOF TOASTS ──
   var toastNames = [
-    { name: 'Maria S.', city: 'São Paulo' },
-    { name: 'Lucas F.', city: 'Curitiba' },
-    { name: 'Ana P.', city: 'Recife' },
-    { name: 'Pedro M.', city: 'Belo Horizonte' },
-    { name: 'Julia R.', city: 'Porto Alegre' },
-    { name: 'Rafael C.', city: 'Rio de Janeiro' },
-    { name: 'Camila T.', city: 'Salvador' },
-    { name: 'Bruno L.', city: 'Brasília' },
-    { name: 'Fernanda A.', city: 'Fortaleza' },
-    { name: 'Gustavo N.', city: 'Manaus' },
-    { name: 'Isabela V.', city: 'Goiânia' },
-    { name: 'Thiago D.', city: 'Florianópolis' },
-    { name: 'Larissa B.', city: 'Campinas' },
-    { name: 'Matheus G.', city: 'Belém' },
-    { name: 'Carolina H.', city: 'Vitória' },
-    { name: 'Diego O.', city: 'Natal' },
-    { name: 'Amanda K.', city: 'Cuiabá' },
-    { name: 'Felipe E.', city: 'João Pessoa' },
+    { name: 'Maria S.', city: 'São Paulo' }, { name: 'Lucas F.', city: 'Curitiba' },
+    { name: 'Ana P.', city: 'Recife' }, { name: 'Pedro M.', city: 'Belo Horizonte' },
+    { name: 'Julia R.', city: 'Porto Alegre' }, { name: 'Rafael C.', city: 'Rio de Janeiro' },
+    { name: 'Camila T.', city: 'Salvador' }, { name: 'Bruno L.', city: 'Brasília' },
+    { name: 'Fernanda A.', city: 'Fortaleza' }, { name: 'Gustavo N.', city: 'Manaus' },
+    { name: 'Isabela V.', city: 'Goiânia' }, { name: 'Thiago D.', city: 'Florianópolis' },
+    { name: 'Larissa B.', city: 'Campinas' }, { name: 'Matheus G.', city: 'Belém' },
+    { name: 'Carolina H.', city: 'Vitória' }, { name: 'Diego O.', city: 'Natal' },
   ];
 
   var toastCountries = [
-    { flag: '🇧🇷', name: 'Brasil' },
-    { flag: '🇦🇷', name: 'Argentina' },
-    { flag: '🇫🇷', name: 'França' },
-    { flag: '🇩🇪', name: 'Alemanha' },
-    { flag: '🇪🇸', name: 'Espanha' },
-    { flag: '🇵🇹', name: 'Portugal' },
-    { flag: '🇺🇾', name: 'Uruguai' },
-    { flag: '🇨🇴', name: 'Colômbia' },
+    { flag: '🇧🇷', name: 'Brasil' }, { flag: '🇦🇷', name: 'Argentina' },
+    { flag: '🇫🇷', name: 'França' }, { flag: '🇩🇪', name: 'Alemanha' },
+    { flag: '🇪🇸', name: 'Espanha' }, { flag: '🇵🇹', name: 'Portugal' },
+    { flag: '🇺🇾', name: 'Uruguai' }, { flag: '🇨🇴', name: 'Colômbia' },
   ];
 
   var toastMessages = [
@@ -546,83 +507,46 @@
     function(n, c) { return '<strong>' + n.name + '</strong> escolheu ' + c.name + ' <span class="toast-city">' + n.city + '</span>'; },
     function(n, c) { return '<strong>' + n.name + '</strong> está gerando agora... <span class="toast-city">' + n.city + '</span>'; },
     function(n, c) { return '<strong>' + n.name + '</strong> comprou sem marca d\'água! <span class="toast-city">' + n.city + '</span>'; },
-    function(n, c) { return '<strong>' + n.name + '</strong> gerou uma figurinha rara! <span class="toast-city">' + n.city + '</span>'; },
   ];
 
-  var toastUsed = [];
-  var toastIsGenerating = true;
-
-  function getRandomItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
+  function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   function showToast() {
     if (!toastIsGenerating) return;
-
     var person = getRandomItem(toastNames);
     var country = getRandomItem(toastCountries);
     var msgFn = getRandomItem(toastMessages);
 
     var toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = '<span class="toast-flag">' + country.flag + '</span>' +
-      '<span class="toast-text">' + msgFn(person, country) + '</span>';
+    toast.innerHTML = '<span class="toast-flag">' + country.flag + '</span><span class="toast-text">' + msgFn(person, country) + '</span>';
 
     var container = document.getElementById('toastContainer');
     container.appendChild(toast);
-
-    // Animate in
     setTimeout(function() { toast.classList.add('visible'); }, 50);
-
-    // Animate out after 4s
     setTimeout(function() {
-      toast.classList.remove('visible');
-      toast.classList.add('exit');
-      setTimeout(function() {
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-      }, 400);
+      toast.classList.remove('visible'); toast.classList.add('exit');
+      setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 400);
     }, 4000);
 
-    // Keep max 2 toasts visible
     var toasts = container.querySelectorAll('.toast');
     if (toasts.length > 2) {
       var old = toasts[0];
-      old.classList.remove('visible');
-      old.classList.add('exit');
-      setTimeout(function() {
-        if (old.parentNode) old.parentNode.removeChild(old);
-      }, 400);
+      old.classList.remove('visible'); old.classList.add('exit');
+      setTimeout(function() { if (old.parentNode) old.parentNode.removeChild(old); }, 400);
     }
 
-    // Schedule next toast (random 4-7 seconds)
-    var nextDelay = 4000 + Math.random() * 3000;
-    setTimeout(showToast, nextDelay);
+    setTimeout(showToast, 4000 + Math.random() * 3000);
   }
-
-  // Start toasts after 2s delay
   setTimeout(showToast, 2000);
 
-  // ── LIVE COUNTER ──
   var counterBase = 800 + Math.floor(Math.random() * 200);
   document.getElementById('counterNum').textContent = counterBase;
-
   setInterval(function() {
     if (!toastIsGenerating) return;
     counterBase += Math.floor(Math.random() * 3) + 1;
     document.getElementById('counterNum').textContent = counterBase;
   }, 8000 + Math.random() * 5000);
-
-  // Stop toasts when generation completes or fails
-  var origShowResult = showResult;
-  showResult = function(url) {
-    toastIsGenerating = false;
-    origShowResult(url);
-  };
-  var origShowError = showError;
-  showError = function(msg) {
-    toastIsGenerating = false;
-    origShowError(msg);
-  };
 </script>
 </body>
 </html>

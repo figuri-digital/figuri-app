@@ -4,9 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const FAL_KEY = process.env.FAL_KEY!;
+const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY!;
 
 export const maxDuration = 60;
+
+const FREEPIK_FLUX_URL = 'https://api.freepik.com/v1/ai/text-to-image/flux-2-pro';
+const NUM_VARIATIONS = 3;
 
 export async function POST(req: NextRequest) {
   try {
@@ -77,6 +80,7 @@ export async function POST(req: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const userPhotoBase64 = buffer.toString('base64');
     const imageId = uuidv4();
 
     // Upload original to Supabase Storage
@@ -94,11 +98,18 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Get template URL
+    // Load template as base64
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const templateFile = COUNTRY_TEMPLATES[country] || COUNTRY_TEMPLATES.brasil;
     const templateUrl = `${protocol}://${host}/templates/${templateFile}`;
+
+    const templateRes = await fetch(templateUrl);
+    if (!templateRes.ok) {
+      return NextResponse.json({ error: 'Erro ao carregar template' }, { status: 500 });
+    }
+    const templateBuffer = Buffer.from(await templateRes.arrayBuffer());
+    const templateBase64 = templateBuffer.toString('base64');
 
     // Build prompt
     const prompt = buildPrompt(style, { name, birth, height, country });
@@ -118,56 +129,57 @@ export async function POST(req: NextRequest) {
       cart_status: 'preview',
     });
 
-    // Call Flux 2 Pro via fal.ai (async queue)
-    console.log('Calling Flux 2 Pro via fal.ai...');
-    console.log('User photo:', originalUrlData.publicUrl);
-    console.log('Template:', templateUrl);
+    // Submit 3 generation tasks to Freepik Flux 2 Pro in parallel
+    console.log(`Submitting ${NUM_VARIATIONS} Flux 2 Pro tasks via Freepik...`);
     console.log('Country:', country, '| Style:', style);
 
-    const falRes = await fetch('https://queue.fal.run/fal-ai/flux-2-pro/edit', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        image_urls: [
-          originalUrlData.publicUrl,  // @image1 = user's face
-          templateUrl,                // @image2 = country template
-        ],
-        image_size: 'portrait_4_3',
-        output_format: 'jpeg',
-        safety_tolerance: '3',
-        enable_safety_checker: true,
-      }),
-    });
+    const taskPromises = Array.from({ length: NUM_VARIATIONS }, () =>
+      fetch(FREEPIK_FLUX_URL, {
+        method: 'POST',
+        headers: {
+          'x-freepik-api-key': FREEPIK_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          input_image: userPhotoBase64,
+          input_image_2: templateBase64,
+          width: 768,
+          height: 1024,
+        }),
+      })
+    );
 
-    if (!falRes.ok) {
-      const errText = await falRes.text();
-      console.error('fal.ai error:', falRes.status, errText);
-      await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
-      return NextResponse.json({ error: `Erro na geração: ${errText}` }, { status: 500 });
+    const responses = await Promise.all(taskPromises);
+    const taskIds: string[] = [];
+
+    for (let i = 0; i < responses.length; i++) {
+      const res = responses[i];
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(`Freepik task ${i + 1} error:`, res.status, errText);
+        continue;
+      }
+      const data = await res.json();
+      const tid = data.data?.task_id;
+      if (tid) {
+        taskIds.push(tid);
+        console.log(`Task ${i + 1} queued:`, tid);
+      }
     }
 
-    const falData = await falRes.json();
-    console.log('fal.ai queue response:', JSON.stringify(falData).slice(0, 300));
-
-    const requestId = falData.request_id;
-
-    if (!requestId) {
-      console.error('No request_id from fal.ai:', JSON.stringify(falData).slice(0, 500));
+    if (taskIds.length === 0) {
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
-      return NextResponse.json({ error: 'Erro na fila de geração' }, { status: 500 });
+      return NextResponse.json({ error: 'Nenhuma geração iniciada' }, { status: 500 });
     }
 
-    console.log('fal.ai task queued:', requestId);
+    console.log(`${taskIds.length} tasks queued for imageId ${imageId}`);
 
     return NextResponse.json({
       success: true,
       imageId,
       userId: user.id,
-      taskId: requestId,
+      taskIds,
       status: 'processing',
     });
   } catch (err: unknown) {
@@ -190,7 +202,7 @@ const COUNTRY_TEMPLATES: Record<string, string> = {
   colombia: 'colombia.jpg',
 };
 
-// ── Prompts ──
+// ── Prompts (V1) ──
 
 interface StickerData {
   name?: string;
@@ -199,67 +211,38 @@ interface StickerData {
   country?: string;
 }
 
-const COUNTRY_PROMPTS: Record<string, (d: StickerData) => string> = {
-  brasil: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Brazil).
-Keep ALL design elements from @image2 exactly the same: green background with layered shapes, FIFA World Cup trophy icon on the left, Brazil 2026 badge on the top right, large white number "2" in the background, bottom rounded white panel, green stylized "26" on the bottom right.
-The person from @image1 must be wearing a Brazil national team jersey (yellow shirt with green details), cropped from chest up, centered, facing forward.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Maintain photorealism, consistent lighting, and professional sports card quality. The face must look exactly like the person in @image1.`,
-
-  argentina: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Argentina).
-Keep ALL design elements from @image2 exactly the same: light blue background with geometric shapes, FIFA World Cup trophy icon, Argentina badge with "ARG 2026", large white number "2", bottom rounded white panel, green stylized "26".
-The person from @image1 must be wearing an Argentina national team jersey (white and sky blue stripes), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Maintain photorealism and the face must look exactly like @image1.`,
-
-  franca: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for France).
-Keep ALL design elements from @image2: blue background with geometric shapes, FIFA World Cup trophy, France badge with "FRA 2026", large white number "2", bottom rounded white panel, green stylized "26".
-The person from @image1 must be wearing a France national team jersey (dark blue), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
-
-  alemanha: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Germany).
-Keep ALL design elements from @image2: grey background with geometric shapes, FIFA World Cup trophy, Germany badge with "GER 2026", large white number "2", bottom rounded white panel, green stylized "26".
-The person from @image1 must be wearing a Germany national team jersey (white with black, red, yellow details), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
-
-  espanha: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Spain).
-Keep ALL design elements from @image2: red background with geometric shapes, FIFA World Cup trophy, Spain badge with "ESP 2026", large white number "2", bottom rounded white panel, green stylized "26".
-The person from @image1 must be wearing a Spain national team jersey (red with yellow accents), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
-
-  portugal: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Portugal).
-Keep ALL design elements from @image2: red background with geometric shapes, FIFA World Cup trophy, Portugal badge with "POR 2026", large white number "2", bottom rounded white panel, green stylized "26".
-The person from @image1 must be wearing a Portugal national team jersey (red with green details), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
-
-  uruguai: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Uruguay).
-Keep ALL design elements from @image2: light blue background with geometric shapes, FIFA World Cup trophy, Uruguay badge with "URU 2026", large white number "2", bottom rounded white panel, orange stylized "26".
-The person from @image1 must be wearing a Uruguay national team jersey (light blue), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
-
-  colombia: (d) => `Use the face and appearance of the person in @image1. Place them into the exact layout, composition, and design of @image2 (a FIFA World Cup 2026 player card for Colombia).
-Keep ALL design elements from @image2: yellow/gold background with geometric shapes, FIFA World Cup trophy, Colombia badge with "COL 2026", large white number "2", bottom rounded white panel, orange stylized "26".
-The person from @image1 must be wearing a Colombia national team jersey (yellow with blue/red details), cropped from chest up, centered.
-Replace the player name with "${d.name || 'JOGADOR'}", height with "M ${d.height || '1,75'}", date of birth with "${d.birth || '1-1-2000'}".
-Photorealistic, face must match @image1 exactly.`,
+const COUNTRY_JERSEYS: Record<string, string> = {
+  brasil: 'Brazil national team jersey (yellow shirt with green details)',
+  argentina: 'Argentina national team jersey (white and sky blue stripes)',
+  franca: 'France national team jersey (dark blue)',
+  alemanha: 'Germany national team jersey (white with black, red, yellow details)',
+  espanha: 'Spain national team jersey (red with yellow accents)',
+  portugal: 'Portugal national team jersey (red with green details)',
+  uruguai: 'Uruguay national team jersey (light blue)',
+  colombia: 'Colombia national team jersey (yellow with blue/red details)',
 };
 
 function buildPrompt(style: string, data: StickerData): string {
   const country = data.country || 'brasil';
+  const jersey = COUNTRY_JERSEYS[country] || COUNTRY_JERSEYS.brasil;
 
   if (style === 'pet') {
-    return `Use the animal/pet from @image1. Place them into the exact layout and design of @image2 (a FIFA World Cup 2026 player card). The pet should be dressed as a team mascot wearing the national team jersey, centered in the card. Replace the name with "${data.name || 'MASCOTE'}", height with "M ${data.height || '0,50'}", date with "${data.birth || '1-1-2020'}". Keep all card elements from @image2. Photorealistic and fun.`;
+    return `I have two reference images. The first is a photo of a pet/animal. The second is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the pet from the first image as a team mascot wearing a ${jersey}, placed in the exact card layout from the second image. Player name: "${data.name || 'MASCOTE'}". Keep all card design elements. Fun and photorealistic.`;
   }
 
   if (style === 'grupo') {
-    return `Use the group of people from @image1. Place them into the exact layout and design of @image2 (a FIFA World Cup 2026 player card). All people should be wearing the national team jersey, centered in the card. Replace the name with "${data.name || 'FAMÍLIA'}", info with "M ${data.height || '---'}", date with "${data.birth || '---'}". Keep all card elements from @image2. Photorealistic.`;
+    return `I have two reference images. The first is a group photo. The second is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the group from the first image wearing ${jersey}, placed in the exact card layout from the second image. Name: "${data.name || 'FAMÍLIA'}". Keep all card design elements. Photorealistic.`;
   }
 
-  const promptFn = COUNTRY_PROMPTS[country] || COUNTRY_PROMPTS.brasil;
-  return promptFn(data);
+  return `I have two reference images. The first image is a photo of a real person — use their EXACT face, features, skin tone, and appearance. The second image is a FIFA World Cup 2026 player card template — use its EXACT layout, design, colors, badges, background, FIFA trophy icon, number "2", and bottom panel.
+
+Create a new FIFA World Cup 2026 sticker card that:
+1. Features the person from the first image with their EXACT face preserved
+2. Shows them wearing a ${jersey}, cropped from chest up, centered
+3. Follows the EXACT card layout and design from the second image
+4. Displays player name: "${data.name || 'JOGADOR'}"
+5. Shows height: "M ${data.height || '1,75'}"
+6. Shows date of birth: "${data.birth || '1-1-2000'}"
+
+The face MUST be identical to the person in the first reference image. Professional sports card quality, photorealistic lighting.`;
 }

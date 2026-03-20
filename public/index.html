@@ -2127,11 +2127,10 @@
       if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
       // Redirect to gerar.html with all needed params
+      var taskIds = data.taskIds ? data.taskIds.join(',') : (data.taskId || '');
       window.location.href = '/gerar.html?imageId=' + encodeURIComponent(data.imageId)
-        + '&taskId=' + encodeURIComponent(data.taskId || '')
-        + '&userId=' + encodeURIComponent(data.userId || '')
-        + '&previewUrl=' + encodeURIComponent(data.previewUrl || '')
-        + '&status=' + encodeURIComponent(data.status || 'processing');
+        + '&taskIds=' + encodeURIComponent(taskIds)
+        + '&userId=' + encodeURIComponent(data.userId || '');
 
     } catch (err) {
       alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
