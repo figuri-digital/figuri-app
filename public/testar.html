@@ -530,23 +530,26 @@
     console.log('Melhor engine:', engine);
   }
 
-  // Flux 2 Pro (async polling)
+  // Flux 2 Pro via Freepik (async polling)
   async function generateFlux(fd) {
     const timer = showLoading('flux');
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/generate-flux-freepik', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + accessToken },
         body: fd
       });
-      if (!res.ok) throw new Error('Status ' + res.status);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Status ' + res.status);
+      }
       const data = await res.json();
-      const { taskId, imageId, userId } = data;
+      const { taskId, imageId } = data;
 
-      // Poll
+      // Poll Freepik status
       while (true) {
         await new Promise(r => setTimeout(r, 3000));
-        const pollRes = await fetch(`/api/generate/status?taskId=${taskId}&imageId=${imageId}&userId=${userId}`, {
+        const pollRes = await fetch(`/api/generate-flux-freepik/status?taskId=${taskId}&imageId=${imageId}`, {
           headers: { 'Authorization': 'Bearer ' + accessToken }
         });
         if (!pollRes.ok) throw new Error('Poll status ' + pollRes.status);
