@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
     );
 
     const responses = await Promise.all(taskPromises);
-    const taskIds: string[] = [];
+    const tasks: { requestId: string; statusUrl: string; responseUrl: string }[] = [];
     const errors: string[] = [];
 
     for (let i = 0; i < responses.length; i++) {
@@ -161,29 +161,36 @@ export async function POST(req: NextRequest) {
         continue;
       }
       const data = await res.json();
+      console.log(`Task ${i + 1} response:`, JSON.stringify(data).slice(0, 500));
       const requestId = data.request_id;
       if (requestId) {
-        taskIds.push(requestId);
-        console.log(`Task ${i + 1} queued:`, requestId);
+        tasks.push({
+          requestId,
+          statusUrl: data.status_url || '',
+          responseUrl: data.response_url || '',
+        });
+        console.log(`Task ${i + 1} queued:`, requestId, '| status_url:', data.status_url);
       } else {
         errors.push(`Task ${i + 1}: sem request_id - ${JSON.stringify(data).slice(0, 200)}`);
       }
     }
 
-    if (taskIds.length === 0) {
+    if (tasks.length === 0) {
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
       const errorDetail = errors.join(' | ') || 'Sem detalhes';
       console.error('All tasks failed:', errorDetail);
       return NextResponse.json({ error: `Falha na geração: ${errorDetail}` }, { status: 500 });
     }
 
-    console.log(`${taskIds.length} tasks queued for imageId ${imageId}`);
+    console.log(`${tasks.length} tasks queued for imageId ${imageId}`);
 
     return NextResponse.json({
       success: true,
       imageId,
       userId: user.id,
-      taskIds,
+      taskIds: tasks.map(t => t.requestId),
+      statusUrls: tasks.map(t => t.statusUrl),
+      responseUrls: tasks.map(t => t.responseUrl),
       status: 'processing',
     });
   } catch (err: unknown) {

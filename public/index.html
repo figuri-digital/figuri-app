@@ -2145,11 +2145,15 @@
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
-      // Redirect to gerar.html with all needed params
+      // Redirect to gerar.html with all needed params (including fal.ai URLs)
       var taskIds = data.taskIds ? data.taskIds.join(',') : (data.taskId || '');
+      var statusUrls = data.statusUrls ? data.statusUrls.join('|') : '';
+      var responseUrls = data.responseUrls ? data.responseUrls.join('|') : '';
       window.location.href = '/gerar.html?imageId=' + encodeURIComponent(data.imageId)
         + '&taskIds=' + encodeURIComponent(taskIds)
-        + '&userId=' + encodeURIComponent(data.userId || '');
+        + '&userId=' + encodeURIComponent(data.userId || '')
+        + '&statusUrls=' + encodeURIComponent(statusUrls)
+        + '&responseUrls=' + encodeURIComponent(responseUrls);
 
     } catch (err) {
       clearInterval(msgInterval);

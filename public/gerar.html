@@ -347,6 +347,8 @@
   var taskIdsParam = params.get('taskIds');
   var imageId = params.get('imageId');
   var userId = params.get('userId');
+  var statusUrlsParam = params.get('statusUrls') || '';
+  var responseUrlsParam = params.get('responseUrls') || '';
 
   var pollCount = 0;
   var maxPolls = 80;
@@ -440,7 +442,9 @@
 
       var url = '/api/generate/status?taskIds=' + encodeURIComponent(taskIdsParam) +
         '&imageId=' + encodeURIComponent(imageId) +
-        '&userId=' + encodeURIComponent(userId);
+        '&userId=' + encodeURIComponent(userId) +
+        '&statusUrls=' + encodeURIComponent(statusUrlsParam) +
+        '&responseUrls=' + encodeURIComponent(responseUrlsParam);
 
       var res = await fetch(url, {
         headers: token ? { 'Authorization': 'Bearer ' + token } : {},

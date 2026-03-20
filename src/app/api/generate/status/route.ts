@@ -8,20 +8,19 @@ const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
 
-// fal.ai uses the same base URL for submit and status polling
-const FAL_APP_ID = 'fal-ai/flux-2-pro/edit';
-
 // Test emails — don't decrement credits
 const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const statusUrlsParam = searchParams.get('statusUrls');
+    const responseUrlsParam = searchParams.get('responseUrls');
     const taskIdsParam = searchParams.get('taskIds');
     const imageId = searchParams.get('imageId');
     const userId = searchParams.get('userId');
 
-    if (!taskIdsParam || !imageId || !userId) {
+    if (!imageId || !userId) {
       return NextResponse.json({ error: 'Parâmetros faltando' }, { status: 400 });
     }
 
@@ -40,62 +39,56 @@ export async function GET(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser(token);
     const isTestUser = TEST_EMAILS.includes(user?.email || '');
 
-    const taskIds = taskIdsParam.split(',');
+    // Parse URLs from fal.ai (provided by generate route)
+    const statusUrls = statusUrlsParam ? statusUrlsParam.split('|') : [];
+    const responseUrls = responseUrlsParam ? responseUrlsParam.split('|') : [];
+    const taskIds = taskIdsParam ? taskIdsParam.split(',') : [];
 
-    // Poll all tasks in parallel via fal.ai
-    const statusPromises = taskIds.map(async (taskId, index) => {
+    const numTasks = Math.max(statusUrls.length, taskIds.length);
+    if (numTasks === 0) {
+      return NextResponse.json({ error: 'Sem tasks para verificar' }, { status: 400 });
+    }
+
+    // Poll all tasks in parallel
+    const statusPromises = Array.from({ length: numTasks }, async (_, index) => {
+      const taskId = taskIds[index] || `task-${index}`;
       try {
-        // Try status check via fal.ai REST API
-        const statusUrl = `https://queue.fal.run/${FAL_APP_ID}/requests/${taskId}/status`;
-        console.log(`Polling: ${statusUrl}`);
+        // Use status URL from fal.ai if available, otherwise construct it
+        const statusUrl = statusUrls[index] || `https://queue.fal.run/fal-ai/flux-2-pro/requests/${taskId}/status`;
+        console.log(`Polling task ${index}: ${statusUrl}`);
 
-        let statusRes = await fetch(statusUrl, {
+        const statusRes = await fetch(statusUrl, {
           method: 'GET',
           headers: { 'Authorization': `Key ${FAL_KEY}` },
         });
 
-        // If 405, try alternative URL format (without /edit)
-        if (statusRes.status === 405) {
-          const altUrl = `https://queue.fal.run/fal-ai/flux-2-pro/requests/${taskId}/status`;
-          console.log(`405 on primary, trying alt: ${altUrl}`);
-          statusRes = await fetch(altUrl, {
-            method: 'GET',
-            headers: { 'Authorization': `Key ${FAL_KEY}` },
-          });
-        }
-
-        // If still 405, try global requests endpoint
-        if (statusRes.status === 405) {
-          const globalUrl = `https://queue.fal.run/requests/${taskId}/status`;
-          console.log(`405 on alt, trying global: ${globalUrl}`);
-          statusRes = await fetch(globalUrl, {
-            method: 'GET',
-            headers: { 'Authorization': `Key ${FAL_KEY}` },
-          });
-        }
-
         if (!statusRes.ok) {
           const errText = await statusRes.text();
-          console.log(`Task ${index} status check failed:`, statusRes.status, errText.slice(0, 200));
+          console.log(`Task ${index} status failed: ${statusRes.status} ${errText.slice(0, 200)}`);
           return { index, taskId, status: 'processing' };
         }
 
         const statusData = await statusRes.json();
-        console.log(`Task ${index} (${taskId.slice(0, 8)}):`, JSON.stringify(statusData).slice(0, 300));
+        console.log(`Task ${index}: ${JSON.stringify(statusData).slice(0, 300)}`);
 
         if (statusData.status === 'COMPLETED') {
-          // Fetch the result using same URL pattern that worked for status
-          const resultRes = await fetch(`https://queue.fal.run/${FAL_APP_ID}/requests/${taskId}`, {
+          // Fetch the result
+          const resultUrl = responseUrls[index] || `https://queue.fal.run/fal-ai/flux-2-pro/requests/${taskId}`;
+          console.log(`Fetching result: ${resultUrl}`);
+
+          const resultRes = await fetch(resultUrl, {
             method: 'GET',
             headers: { 'Authorization': `Key ${FAL_KEY}` },
           });
 
           if (!resultRes.ok) {
+            console.log(`Result fetch failed: ${resultRes.status}`);
             return { index, taskId, status: 'failed' };
           }
 
           const resultData = await resultRes.json();
           const imageUrl = resultData.images?.[0]?.url;
+          console.log(`Image URL: ${imageUrl?.slice(0, 100)}`);
 
           if (!imageUrl) {
             return { index, taskId, status: 'failed' };
@@ -136,8 +129,10 @@ export async function GET(req: NextRequest) {
           return { index, taskId, status: 'failed' };
         }
 
+        // IN_QUEUE or IN_PROGRESS
         return { index, taskId, status: 'processing' };
-      } catch {
+      } catch (err) {
+        console.error(`Task ${index} error:`, err);
         return { index, taskId, status: 'processing' };
       }
     });
