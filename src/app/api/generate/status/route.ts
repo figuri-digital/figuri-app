@@ -8,7 +8,8 @@ const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
 
-const FAL_FLUX_STATUS_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit/requests';
+// fal.ai uses the same base URL for submit and status polling
+const FAL_APP_ID = 'fal-ai/flux-2-pro/edit';
 
 // Test emails — don't decrement credits
 const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
@@ -44,10 +45,34 @@ export async function GET(req: NextRequest) {
     // Poll all tasks in parallel via fal.ai
     const statusPromises = taskIds.map(async (taskId, index) => {
       try {
-        const statusRes = await fetch(`${FAL_FLUX_STATUS_URL}/${taskId}/status`, {
+        // Try status check via fal.ai REST API
+        const statusUrl = `https://queue.fal.run/${FAL_APP_ID}/requests/${taskId}/status`;
+        console.log(`Polling: ${statusUrl}`);
+
+        let statusRes = await fetch(statusUrl, {
           method: 'GET',
           headers: { 'Authorization': `Key ${FAL_KEY}` },
         });
+
+        // If 405, try alternative URL format (without /edit)
+        if (statusRes.status === 405) {
+          const altUrl = `https://queue.fal.run/fal-ai/flux-2-pro/requests/${taskId}/status`;
+          console.log(`405 on primary, trying alt: ${altUrl}`);
+          statusRes = await fetch(altUrl, {
+            method: 'GET',
+            headers: { 'Authorization': `Key ${FAL_KEY}` },
+          });
+        }
+
+        // If still 405, try global requests endpoint
+        if (statusRes.status === 405) {
+          const globalUrl = `https://queue.fal.run/requests/${taskId}/status`;
+          console.log(`405 on alt, trying global: ${globalUrl}`);
+          statusRes = await fetch(globalUrl, {
+            method: 'GET',
+            headers: { 'Authorization': `Key ${FAL_KEY}` },
+          });
+        }
 
         if (!statusRes.ok) {
           const errText = await statusRes.text();
@@ -59,8 +84,8 @@ export async function GET(req: NextRequest) {
         console.log(`Task ${index} (${taskId.slice(0, 8)}):`, JSON.stringify(statusData).slice(0, 300));
 
         if (statusData.status === 'COMPLETED') {
-          // Fetch the result
-          const resultRes = await fetch(`${FAL_FLUX_STATUS_URL}/${taskId}`, {
+          // Fetch the result using same URL pattern that worked for status
+          const resultRes = await fetch(`https://queue.fal.run/${FAL_APP_ID}/requests/${taskId}`, {
             method: 'GET',
             headers: { 'Authorization': `Key ${FAL_KEY}` },
           });
