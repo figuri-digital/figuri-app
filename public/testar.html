@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIGURI IA — Teste de Prompts</title>
+  <title>FIGURI IA — Lab de Testes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Bebas+Neue&family=Lora:wght@400;700&display=swap" rel="stylesheet">
@@ -14,8 +14,9 @@
       --verde: #00A651;
       --ouro-claro: #F5C518;
       --verde-neon: #00E05A;
-      --prompt-v1: #3B82F6;
-      --prompt-v2: #F59E0B;
+      --flux: #3B82F6;
+      --nano: #8B5CF6;
+      --seedream: #EC4899;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,7 +41,7 @@
     }
 
     .container {
-      max-width: 960px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 24px 16px;
     }
@@ -49,7 +50,7 @@
       font-size: 2.4rem;
       color: var(--verde-neon);
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       letter-spacing: 2px;
     }
 
@@ -61,256 +62,157 @@
     }
 
     /* Auth gate */
-    #auth-gate {
-      text-align: center;
-      padding: 80px 16px;
-    }
-
-    #auth-gate p {
-      font-size: 1.2rem;
-      margin-bottom: 20px;
-      color: #aaa;
-    }
+    #auth-gate { text-align: center; padding: 80px 16px; }
+    #auth-gate p { font-size: 1.2rem; margin-bottom: 20px; color: #aaa; }
 
     .btn-google {
-      background: #fff;
-      color: #333;
-      border: none;
-      padding: 12px 32px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
+      background: #fff; color: #333; border: none; padding: 12px 32px;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 1rem;
+      font-weight: 600; border-radius: 6px; cursor: pointer;
     }
-
     .btn-google:hover { background: #e0e0e0; }
 
     /* Upload */
     .upload-area {
-      border: 2px dashed #444;
-      border-radius: 8px;
-      padding: 32px;
-      text-align: center;
-      margin-bottom: 20px;
-      cursor: pointer;
+      border: 2px dashed #444; border-radius: 8px; padding: 28px;
+      text-align: center; margin-bottom: 20px; cursor: pointer;
       transition: border-color 0.2s;
     }
-
-    .upload-area:hover, .upload-area.has-file {
-      border-color: var(--verde);
-    }
-
+    .upload-area:hover, .upload-area.has-file { border-color: var(--verde); }
     .upload-area input { display: none; }
-
-    .upload-area .label {
-      font-size: 1.1rem;
-      color: #888;
-    }
-
+    .upload-area .label { font-size: 1.1rem; color: #888; }
     .upload-area .label.active { color: var(--verde-neon); }
-
     .upload-preview {
-      max-width: 120px;
-      max-height: 120px;
-      border-radius: 6px;
-      margin-top: 12px;
+      max-width: 100px; max-height: 100px; border-radius: 6px; margin-top: 10px;
     }
 
     /* Form */
     .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 20px;
     }
-
     .form-group { display: flex; flex-direction: column; gap: 4px; }
-
     .form-group label {
-      font-size: 0.85rem;
-      color: #888;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: 0.8rem; color: #888; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .form-group input, .form-group select {
+      background: #1a1a17; border: 1px solid #333; color: #E5E5E5;
+      padding: 10px 12px; border-radius: 6px;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 1rem;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: var(--verde);
     }
 
-    .form-group input,
-    .form-group select {
-      background: #1a1a17;
-      border: 1px solid #333;
-      color: #E5E5E5;
-      padding: 10px 12px;
-      border-radius: 6px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem;
+    /* Generate button */
+    .btn-generate {
+      width: 100%; padding: 16px; border: none; border-radius: 8px;
+      background: var(--verde); color: #fff;
+      font-family: 'Bebas Neue', cursive; font-size: 1.6rem;
+      letter-spacing: 2px; cursor: pointer; transition: opacity 0.2s;
+      margin-bottom: 28px;
     }
+    .btn-generate:hover { opacity: 0.85; }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: var(--verde);
+    /* Results grid — 3 cols × 2 rows */
+    .results-header {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 8px;
     }
-
-    /* Buttons */
-    .buttons-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
+    .col-header {
+      text-align: center; font-family: 'Bebas Neue', cursive;
+      font-size: 1.3rem; letter-spacing: 1px; padding: 8px;
+      border-radius: 6px 6px 0 0;
     }
+    .col-header.flux { color: var(--flux); border-bottom: 2px solid var(--flux); }
+    .col-header.nano { color: var(--nano); border-bottom: 2px solid var(--nano); }
+    .col-header.seedream { color: var(--seedream); border-bottom: 2px solid var(--seedream); }
 
-    .btn {
-      flex: 1;
-      min-width: 200px;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 6px;
-      font-family: 'Bebas Neue', cursive;
-      font-size: 1.3rem;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      color: #fff;
-    }
-
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .btn-v1 { background: var(--prompt-v1); }
-    .btn-v2 { background: var(--prompt-v2); color: #1a1a17; }
-    .btn-both { background: var(--verde); }
-
-    /* Results */
     .results-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 24px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 8px;
+    }
+
+    .row-label {
+      grid-column: 1 / -1;
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1rem;
+      color: #666;
+      letter-spacing: 1px;
+      padding: 6px 0 2px;
+      border-top: 1px solid #222;
     }
 
     .result-card {
-      background: #1a1a17;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 16px;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .result-card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 4px;
-      color: #ccc;
-      letter-spacing: 1px;
+      background: #1a1a17; border: 1px solid #333; border-radius: 8px;
+      padding: 12px; min-height: 160px;
+      display: flex; flex-direction: column; align-items: center;
     }
 
     .result-card .tag {
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 3px;
-      margin-bottom: 12px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      font-size: 0.7rem; padding: 2px 8px; border-radius: 3px;
+      margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px;
     }
-
-    .result-card.v1 h3 { color: var(--prompt-v1); }
-    .result-card.v1 .tag { background: var(--prompt-v1); color: #fff; }
-    .result-card.v2 h3 { color: var(--prompt-v2); }
-    .result-card.v2 .tag { background: var(--prompt-v2); color: #1a1a17; }
+    .tag.v1 { background: #333; color: #aaa; }
+    .tag.v2 { background: var(--ouro-claro); color: #1a1a17; }
 
     .result-placeholder {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      font-size: 0.9rem;
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: #444; font-size: 0.85rem;
     }
 
     .result-img {
-      max-width: 100%;
-      border-radius: 6px;
-      margin-bottom: 12px;
+      max-width: 100%; border-radius: 6px; margin-bottom: 8px;
     }
 
     .result-meta {
-      width: 100%;
-      font-size: 0.85rem;
-      color: #888;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      width: 100%; font-size: 0.78rem; color: #777;
+      display: flex; flex-direction: column; gap: 2px;
     }
-
     .result-meta span { display: block; }
 
     .btn-melhor {
-      margin-top: 10px;
-      background: transparent;
-      border: 1px solid var(--ouro-claro);
-      color: var(--ouro-claro);
-      padding: 6px 16px;
-      border-radius: 4px;
-      cursor: pointer;
+      margin-top: 8px; background: transparent;
+      border: 1px solid var(--ouro-claro); color: var(--ouro-claro);
+      padding: 4px 14px; border-radius: 4px; cursor: pointer;
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: background 0.2s;
+      font-size: 0.85rem; font-weight: 600; transition: background 0.2s;
     }
-
-    .btn-melhor:hover {
-      background: var(--ouro-claro);
-      color: var(--dark);
-    }
-
-    .btn-melhor.selected {
-      background: var(--ouro-claro);
-      color: var(--dark);
+    .btn-melhor:hover, .btn-melhor.selected {
+      background: var(--ouro-claro); color: var(--dark);
     }
 
     /* Spinner */
     .spinner-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 20px 0;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 16px 0;
     }
-
     .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid #333;
-      border-top-color: var(--verde-neon);
-      border-radius: 50%;
+      width: 30px; height: 30px; border: 3px solid #333;
+      border-top-color: var(--verde-neon); border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
-    .timer { font-size: 0.9rem; color: #888; font-variant-numeric: tabular-nums; }
+    .timer { font-size: 0.8rem; color: #888; font-variant-numeric: tabular-nums; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Responsive */
-    @media (max-width: 640px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .results-grid { grid-template-columns: 1fr; }
-      .buttons-row { flex-direction: column; }
-      .btn { min-width: unset; }
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .results-header, .results-grid { grid-template-columns: 1fr; }
       h1 { font-size: 1.8rem; }
     }
   </style>
 </head>
 <body>
 
-<div class="note">Pagina de teste interno — nao visivel para clientes</div>
+<div class="note">Lab de teste interno — 3 modelos × 2 prompts = 6 comparacoes</div>
 
 <div class="container">
-  <h1>FIGURI IA — Teste de Prompts</h1>
-  <p class="subtitle">Mesmo engine (Flux 2 Pro via Freepik) — comparando qualidade dos prompts</p>
+  <h1>FIGURI IA — Lab de Testes</h1>
+  <p class="subtitle">Flux 2 Pro · Nano Banana Pro · Seedream 4.5 — Prompt V1 vs V2</p>
 
   <!-- Auth gate -->
   <div id="auth-gate" style="display:none;">
@@ -348,7 +250,7 @@
         <input type="text" id="field-name" placeholder="Nome completo">
       </div>
       <div class="form-group">
-        <label>Data de nascimento</label>
+        <label>Nascimento</label>
         <input type="date" id="field-birth">
       </div>
       <div class="form-group">
@@ -357,28 +259,55 @@
       </div>
     </div>
 
-    <!-- Action buttons -->
-    <div class="buttons-row">
-      <button class="btn btn-v1" onclick="generate('v1')">Prompt Atual</button>
-      <button class="btn btn-v2" onclick="generate('v2')">Prompt 2.0</button>
-    </div>
-    <div class="buttons-row">
-      <button class="btn btn-both" onclick="generateBoth()">Comparar AMBOS</button>
+    <!-- Big generate button -->
+    <button class="btn-generate" id="btn-go" onclick="generateAll()">
+      GERAR TODOS (6 RESULTADOS)
+    </button>
+
+    <!-- Column headers -->
+    <div class="results-header">
+      <div class="col-header flux">Flux 2 Pro</div>
+      <div class="col-header nano">Nano Banana Pro</div>
+      <div class="col-header seedream">Seedream 4.5</div>
     </div>
 
-    <!-- Results -->
-    <div class="results-grid">
-      <div class="result-card v1" id="result-v1">
-        <h3>Prompt Atual</h3>
-        <span class="tag">V1 — ORIGINAL</span>
-        <div class="result-placeholder" id="v1-placeholder">Aguardando...</div>
-        <div id="v1-output" style="display:none; width:100%; text-align:center;"></div>
+    <!-- Row 1: Prompt V1 -->
+    <div class="results-grid" id="row-v1">
+      <div class="row-label">PROMPT V1 — Original</div>
+      <div class="result-card" id="card-flux-v1">
+        <span class="tag v1">V1</span>
+        <div class="result-placeholder" id="flux-v1-placeholder">Aguardando...</div>
+        <div id="flux-v1-output" style="display:none; width:100%; text-align:center;"></div>
       </div>
-      <div class="result-card v2" id="result-v2">
-        <h3>Prompt 2.0</h3>
-        <span class="tag">V2 — MELHORADO</span>
-        <div class="result-placeholder" id="v2-placeholder">Aguardando...</div>
-        <div id="v2-output" style="display:none; width:100%; text-align:center;"></div>
+      <div class="result-card" id="card-nano-v1">
+        <span class="tag v1">V1</span>
+        <div class="result-placeholder" id="nano-v1-placeholder">Aguardando...</div>
+        <div id="nano-v1-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+      <div class="result-card" id="card-seedream-v1">
+        <span class="tag v1">V1</span>
+        <div class="result-placeholder" id="seedream-v1-placeholder">Aguardando...</div>
+        <div id="seedream-v1-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Prompt V2 -->
+    <div class="results-grid" id="row-v2">
+      <div class="row-label">PROMPT V2 — Melhorado</div>
+      <div class="result-card" id="card-flux-v2">
+        <span class="tag v2">V2</span>
+        <div class="result-placeholder" id="flux-v2-placeholder">Aguardando...</div>
+        <div id="flux-v2-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+      <div class="result-card" id="card-nano-v2">
+        <span class="tag v2">V2</span>
+        <div class="result-placeholder" id="nano-v2-placeholder">Aguardando...</div>
+        <div id="nano-v2-output" style="display:none; width:100%; text-align:center;"></div>
+      </div>
+      <div class="result-card" id="card-seedream-v2">
+        <span class="tag v2">V2</span>
+        <div class="result-placeholder" id="seedream-v2-placeholder">Aguardando...</div>
+        <div id="seedream-v2-output" style="display:none; width:100%; text-align:center;"></div>
       </div>
     </div>
 
@@ -389,28 +318,28 @@
   const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
 
+  const MODELS = [
+    { key: 'flux', apiModel: 'flux-2-pro', label: 'Flux 2 Pro' },
+    { key: 'nano', apiModel: 'nano-banana-pro', label: 'Nano Banana Pro' },
+    { key: 'seedream', apiModel: 'seedream-v4-5', label: 'Seedream 4.5' },
+  ];
+  const PROMPTS = ['v1', 'v2'];
+
   let sb = null;
   let currentFile = null;
   let accessToken = null;
 
   try {
     const supabaseLib = window.supabase;
-    if (!supabaseLib || !supabaseLib.createClient) {
-      throw new Error('Supabase SDK nao carregou');
-    }
+    if (!supabaseLib || !supabaseLib.createClient) throw new Error('SDK');
     sb = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
-    console.error('Erro ao inicializar Supabase:', e);
+    console.error('Supabase error:', e);
     document.getElementById('main-content').style.display = 'block';
-    document.getElementById('auth-gate').style.display = 'none';
   }
 
-  // Auth
   async function checkAuth() {
-    if (!sb) {
-      document.getElementById('main-content').style.display = 'block';
-      return;
-    }
+    if (!sb) { document.getElementById('main-content').style.display = 'block'; return; }
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
@@ -419,16 +348,14 @@
         document.getElementById('main-content').style.display = 'block';
       } else {
         document.getElementById('auth-gate').style.display = 'block';
-        document.getElementById('main-content').style.display = 'none';
       }
     } catch (e) {
-      console.error('Erro no checkAuth:', e);
       document.getElementById('auth-gate').style.display = 'block';
     }
   }
 
   if (sb) {
-    sb.auth.onAuthStateChange((event, session) => {
+    sb.auth.onAuthStateChange((ev, session) => {
       if (session) {
         accessToken = session.access_token;
         document.getElementById('auth-gate').style.display = 'none';
@@ -438,192 +365,169 @@
   }
 
   function loginGoogle() {
-    if (!sb) { alert('Erro: SDK nao carregou. Recarregue a pagina.'); return; }
+    if (!sb) { alert('SDK nao carregou'); return; }
     sb.auth.signInWithOAuth({ provider: 'google' });
   }
 
   checkAuth();
-
-  // Safety fallback
   setTimeout(() => {
-    const authGate = document.getElementById('auth-gate');
-    const mainContent = document.getElementById('main-content');
-    if (authGate.style.display === 'none' && mainContent.style.display === 'none') {
-      authGate.style.display = 'block';
-    }
+    const a = document.getElementById('auth-gate');
+    const m = document.getElementById('main-content');
+    if (a.style.display === 'none' && m.style.display === 'none') a.style.display = 'block';
   }, 2000);
 
   // File upload
-  const photoInput = document.getElementById('photo-input');
-  const uploadArea = document.getElementById('upload-area');
-  const uploadLabel = document.getElementById('upload-label');
-
-  photoInput.addEventListener('change', (e) => {
+  document.getElementById('photo-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     currentFile = file;
-    uploadArea.classList.add('has-file');
-    uploadLabel.classList.add('active');
-    uploadLabel.textContent = file.name;
-
-    const old = uploadArea.querySelector('.upload-preview');
+    const area = document.getElementById('upload-area');
+    const label = document.getElementById('upload-label');
+    area.classList.add('has-file');
+    label.classList.add('active');
+    label.textContent = file.name;
+    const old = area.querySelector('.upload-preview');
     if (old) old.remove();
-
     const img = document.createElement('img');
     img.className = 'upload-preview';
     img.src = URL.createObjectURL(file);
-    uploadArea.appendChild(img);
+    area.appendChild(img);
   });
 
-  // Build FormData
-  function buildFormData() {
-    if (!currentFile) { alert('Selecione uma foto.'); return null; }
-    const country = document.getElementById('field-country').value;
-    if (!country) { alert('Selecione um pais.'); return null; }
+  // Build FormData with model + prompt_version
+  function buildFD(modelKey, promptVer) {
+    if (!currentFile) return null;
     const fd = new FormData();
     fd.append('photo', currentFile);
+    fd.append('model', modelKey);
+    fd.append('prompt_version', promptVer);
     fd.append('style', 'sozinho');
     fd.append('name', document.getElementById('field-name').value);
     fd.append('birth', document.getElementById('field-birth').value);
     fd.append('height', document.getElementById('field-height').value);
-    fd.append('country', country);
+    fd.append('country', document.getElementById('field-country').value);
     return fd;
   }
 
-  // Timer helper
+  // Timer
   function startTimer(el) {
     const start = Date.now();
     const interval = setInterval(() => {
-      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-      el.textContent = elapsed + 's';
+      el.textContent = ((Date.now() - start) / 1000).toFixed(1) + 's';
     }, 100);
     return { interval, start };
   }
 
-  // Show loading state
-  function showLoading(version) {
-    const placeholder = document.getElementById(version + '-placeholder');
-    const output = document.getElementById(version + '-output');
-    output.style.display = 'none';
-    output.innerHTML = '';
-    placeholder.style.display = 'flex';
-    placeholder.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="timer" id="' + version + '-timer">0.0s</div></div>';
-    return startTimer(document.getElementById(version + '-timer'));
+  // Card ID helper: e.g. "flux-v1"
+  function cardId(modelKey, promptVer) {
+    return modelKey + '-' + promptVer;
   }
 
-  // Show result
-  function showResult(version, imageUrl, timeTaken) {
-    const placeholder = document.getElementById(version + '-placeholder');
-    const output = document.getElementById(version + '-output');
-    placeholder.style.display = 'none';
-    output.style.display = 'block';
+  function showLoading(id) {
+    const ph = document.getElementById(id + '-placeholder');
+    const out = document.getElementById(id + '-output');
+    out.style.display = 'none';
+    out.innerHTML = '';
+    ph.style.display = 'flex';
+    ph.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div><div class="timer" id="timer-' + id + '">0.0s</div></div>';
+    return startTimer(document.getElementById('timer-' + id));
+  }
 
-    const label = version === 'v1' ? 'Prompt Atual' : 'Prompt 2.0';
-
-    output.innerHTML = `
-      <img class="result-img" src="${imageUrl}" onload="this.nextElementSibling.querySelector('.dims').textContent = this.naturalWidth + ' x ' + this.naturalHeight + 'px'">
+  function showResult(id, imageUrl, timeTaken, modelLabel, promptVer) {
+    const ph = document.getElementById(id + '-placeholder');
+    const out = document.getElementById(id + '-output');
+    ph.style.display = 'none';
+    out.style.display = 'block';
+    out.innerHTML = `
+      <img class="result-img" src="${imageUrl}">
       <div class="result-meta">
-        <span><strong>Prompt:</strong> ${label}</span>
-        <span><strong>Engine:</strong> Flux 2 Pro (Freepik)</span>
-        <span><strong>Tempo:</strong> ${timeTaken}s</span>
-        <span class="dims"><strong>Dimensoes:</strong> carregando...</span>
+        <span><strong>${modelLabel}</strong> · ${promptVer.toUpperCase()}</span>
+        <span>${timeTaken}s</span>
       </div>
-      <button class="btn-melhor" onclick="markBest('${version}', this)">Melhor</button>
+      <button class="btn-melhor" onclick="markBest('${id}', this)">Melhor</button>
     `;
   }
 
-  // Show error
-  function showError(version, msg) {
-    const placeholder = document.getElementById(version + '-placeholder');
-    const output = document.getElementById(version + '-output');
-    placeholder.style.display = 'none';
-    output.style.display = 'block';
-    output.innerHTML = '<div style="color:#f87171;padding:12px;">Erro: ' + msg + '</div>';
+  function showError(id, msg) {
+    const ph = document.getElementById(id + '-placeholder');
+    const out = document.getElementById(id + '-output');
+    ph.style.display = 'none';
+    out.style.display = 'block';
+    out.innerHTML = '<div style="color:#f87171;padding:8px;font-size:0.85rem;">Erro: ' + msg + '</div>';
   }
 
-  function markBest(version, btn) {
+  function markBest(id, btn) {
     document.querySelectorAll('.btn-melhor').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    console.log('Melhor prompt:', version);
+    console.log('Melhor:', id);
   }
 
-  // Flux via Freepik — polling helper
-  async function pollFreepik(statusUrl, timer, version) {
-    while (true) {
-      await new Promise(r => setTimeout(r, 3000));
-      const pollRes = await fetch(statusUrl, {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-      });
-      if (!pollRes.ok) throw new Error('Poll status ' + pollRes.status);
-      const pollData = await pollRes.json();
-      if (pollData.status === 'completed') {
-        clearInterval(timer.interval);
-        const elapsed = ((Date.now() - timer.start) / 1000).toFixed(1);
-        showResult(version, pollData.previewUrl, elapsed);
-        return;
-      }
-      if (pollData.status === 'failed' || pollData.status === 'error') {
-        throw new Error(pollData.error || 'Geração falhou');
-      }
-    }
-  }
-
-  // V1 — Prompt Atual
-  async function generateV1(fd) {
-    const timer = showLoading('v1');
+  // Generate one card
+  async function generateOne(model, promptVer) {
+    const id = cardId(model.key, promptVer);
+    const timer = showLoading(id);
     try {
-      const res = await fetch('/api/generate-flux-freepik', {
+      const fd = buildFD(model.apiModel, promptVer);
+      if (!fd) throw new Error('Sem foto');
+
+      const res = await fetch('/api/generate-test', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + accessToken },
-        body: fd
+        body: fd,
       });
+
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Status ' + res.status);
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Status ' + res.status);
       }
+
       const data = await res.json();
-      await pollFreepik(`/api/generate-flux-freepik/status?taskId=${data.taskId}&imageId=${data.imageId}`, timer, 'v1');
+
+      // Poll
+      while (true) {
+        await new Promise(r => setTimeout(r, 3000));
+        const pollRes = await fetch(
+          `/api/generate-test/status?taskId=${data.taskId}&imageId=${data.imageId}&model=${model.apiModel}`,
+          { headers: { 'Authorization': 'Bearer ' + accessToken } }
+        );
+        if (!pollRes.ok) throw new Error('Poll ' + pollRes.status);
+        const poll = await pollRes.json();
+        if (poll.status === 'completed') {
+          clearInterval(timer.interval);
+          const elapsed = ((Date.now() - timer.start) / 1000).toFixed(1);
+          showResult(id, poll.previewUrl, elapsed, model.label, promptVer);
+          return;
+        }
+        if (poll.status === 'failed') {
+          throw new Error(poll.error || 'Falhou');
+        }
+      }
     } catch (err) {
       clearInterval(timer.interval);
-      showError('v1', err.message);
+      showError(id, err.message);
     }
   }
 
-  // V2 — Prompt 2.0
-  async function generateV2(fd) {
-    const timer = showLoading('v2');
-    try {
-      const res = await fetch('/api/generate-flux-v2', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + accessToken },
-        body: fd
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Status ' + res.status);
+  // Generate all 6
+  async function generateAll() {
+    if (!currentFile) { alert('Selecione uma foto.'); return; }
+    if (!document.getElementById('field-country').value) { alert('Selecione um pais.'); return; }
+
+    const btn = document.getElementById('btn-go');
+    btn.disabled = true;
+    btn.textContent = 'GERANDO 6 RESULTADOS...';
+
+    const promises = [];
+    for (const model of MODELS) {
+      for (const pv of PROMPTS) {
+        promises.push(generateOne(model, pv));
       }
-      const data = await res.json();
-      await pollFreepik(`/api/generate-flux-v2/status?taskId=${data.taskId}&imageId=${data.imageId}`, timer, 'v2');
-    } catch (err) {
-      clearInterval(timer.interval);
-      showError('v2', err.message);
     }
-  }
 
-  // Generate
-  function generate(version) {
-    const fd = buildFormData();
-    if (!fd) return;
-    if (version === 'v1') generateV1(fd);
-    else generateV2(fd);
-  }
+    await Promise.all(promises);
 
-  function generateBoth() {
-    const fd1 = buildFormData();
-    if (!fd1) return;
-    const fd2 = buildFormData();
-    generateV1(fd1);
-    generateV2(fd2);
+    btn.disabled = false;
+    btn.textContent = 'GERAR TODOS (6 RESULTADOS)';
   }
 </script>
 
