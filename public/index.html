@@ -2106,11 +2106,26 @@
 
     var btn = document.getElementById('btnGenerate');
     btn.disabled = true;
-    btn.innerHTML = '⏳ GERANDO... (até 60s)';
+
+    // Progressive messages while API processes
+    var msgIndex = 0;
+    var btnMessages = [
+      '📤 Enviando sua foto...',
+      '🔍 Preparando geração...',
+      '⚙️ Conectando com a IA...',
+      '⏳ Quase lá...',
+    ];
+    btn.innerHTML = btnMessages[0];
+    var msgInterval = setInterval(function() {
+      msgIndex++;
+      if (msgIndex < btnMessages.length) {
+        btn.innerHTML = btnMessages[msgIndex];
+      }
+    }, 3000);
 
     try {
       var session = (await sb.auth.getSession()).data.session;
-      if (!session) { openLogin(); btn.disabled = false; btn.textContent = '⚽ Gerar Minha Figurinha'; return; }
+      if (!session) { clearInterval(msgInterval); openLogin(); btn.disabled = false; btn.textContent = '⚽ Gerar Minha Figurinha'; return; }
 
       var formData = new FormData();
       formData.append('photo', wizardSelectedFile);
@@ -2126,6 +2141,7 @@
         body: formData,
       });
 
+      clearInterval(msgInterval);
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
 
@@ -2136,6 +2152,7 @@
         + '&userId=' + encodeURIComponent(data.userId || '');
 
     } catch (err) {
+      clearInterval(msgInterval);
       alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
       btn.disabled = false;
       btn.textContent = '⚽ Gerar Minha Figurinha';

@@ -301,7 +301,7 @@
       <div class="scanner-corner br"></div>
     </div>
 
-    <div class="gerar-status" id="gerarStatus">Gerando 3 opcoes para voce...</div>
+    <div class="gerar-status" id="gerarStatus">Analisando sua foto...</div>
     <div class="gerar-progress" id="gerarProgress"></div>
 
     <div class="live-counter" id="liveCounter">
@@ -354,6 +354,18 @@
   var selectedVariation = null;
   var toastIsGenerating = true;
 
+  // Progressive status messages
+  var statusMessages = [
+    { at: 0,  text: 'Analisando sua foto...' },
+    { at: 10, text: 'Identificando caracteristicas do rosto...' },
+    { at: 20, text: 'Preparando o template da selecao...' },
+    { at: 35, text: 'Gerando sua figurinha com IA...' },
+    { at: 50, text: 'A imagem esta quase pronta...' },
+    { at: 65, text: 'Aplicando detalhes finais...' },
+    { at: 78, text: 'Finalizando suas opcoes...' },
+    { at: 88, text: 'So mais um instante...' },
+  ];
+
   function showError(msg) {
     toastIsGenerating = false;
     document.getElementById('phase-loading').style.display = 'none';
@@ -403,6 +415,15 @@
     fakeProgress = Math.min(fakeProgress + increment, 90);
     document.getElementById('gerarBarFill').style.width = Math.round(fakeProgress) + '%';
     document.getElementById('gerarProgress').textContent = Math.round(fakeProgress) + '%';
+
+    // Update status message based on progress
+    var statusEl = document.getElementById('gerarStatus');
+    for (var i = statusMessages.length - 1; i >= 0; i--) {
+      if (fakeProgress >= statusMessages[i].at) {
+        statusEl.textContent = statusMessages[i].text;
+        break;
+      }
+    }
   }
 
   async function pollStatus() {
