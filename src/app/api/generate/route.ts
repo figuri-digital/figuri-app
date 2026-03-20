@@ -152,12 +152,14 @@ export async function POST(req: NextRequest) {
 
     const responses = await Promise.all(taskPromises);
     const taskIds: string[] = [];
+    const errors: string[] = [];
 
     for (let i = 0; i < responses.length; i++) {
       const res = responses[i];
       if (!res.ok) {
         const errText = await res.text();
         console.error(`Freepik task ${i + 1} error:`, res.status, errText);
+        errors.push(`Task ${i + 1}: ${res.status} - ${errText.slice(0, 200)}`);
         continue;
       }
       const data = await res.json();
@@ -165,12 +167,16 @@ export async function POST(req: NextRequest) {
       if (tid) {
         taskIds.push(tid);
         console.log(`Task ${i + 1} queued:`, tid);
+      } else {
+        errors.push(`Task ${i + 1}: sem task_id - ${JSON.stringify(data).slice(0, 200)}`);
       }
     }
 
     if (taskIds.length === 0) {
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
-      return NextResponse.json({ error: 'Nenhuma geração iniciada' }, { status: 500 });
+      const errorDetail = errors.join(' | ') || 'Sem detalhes';
+      console.error('All tasks failed:', errorDetail);
+      return NextResponse.json({ error: `Falha na geração: ${errorDetail}` }, { status: 500 });
     }
 
     console.log(`${taskIds.length} tasks queued for imageId ${imageId}`);
