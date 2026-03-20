@@ -9,7 +9,7 @@ const FAL_KEY = process.env.FAL_KEY!;
 export const maxDuration = 60;
 
 const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
-const NUM_VARIATIONS = 3;
+const NUM_VARIATIONS = 2;
 
 // Test emails — unlimited credits, flagged as test in dashboard
 const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
