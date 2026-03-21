@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIGURI IA — Editor de Figurinha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Sora', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #F5C518;
+    }
+    .subtitle {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .editor-container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* === CARD PREVIEW === */
+    .card-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .arrow-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .arrow-btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: #F5C518;
+      color: #F5C518;
+    }
+
+    .card-wrapper {
+      position: relative;
+      width: 380px;
+      aspect-ratio: 3/4;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .card-wrapper canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Moldura color indicator */
+    .moldura-indicator {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .moldura-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .moldura-dot.active {
+      border-color: #F5C518;
+      transform: scale(1.2);
+      box-shadow: 0 0 8px rgba(245,197,24,0.5);
+    }
+    .moldura-dot[data-color="branco"] { background: #ffffff; }
+    .moldura-dot[data-color="verde"] { background: #1B8C3D; }
+    .moldura-dot[data-color="azul"] { background: #1E3A8A; }
+    .moldura-dot[data-color="amarelo"] { background: #F5C518; }
+
+    /* === CONTROLS === */
+    .controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-group {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .control-group h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #F5C518;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus {
+      border-color: #F5C518;
+    }
+    .field input::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* Moldura selector */
+    .moldura-options {
+      display: flex;
+      gap: 10px;
+    }
+    .moldura-option {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .moldura-option.active {
+      border-color: #F5C518;
+      background: rgba(245,197,24,0.1);
+    }
+    .moldura-option:hover {
+      border-color: rgba(255,255,255,0.3);
+    }
+    .moldura-option[data-m="branco"] { color: #fff; }
+    .moldura-option[data-m="verde"] { color: #1B8C3D; }
+    .moldura-option[data-m="azul"] { color: #5B9FFF; }
+    .moldura-option[data-m="amarelo"] { color: #F5C518; }
+
+    .btn-comprar {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #1B8C3D, #15692E);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-comprar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(27,140,61,0.4);
+    }
+
+    .btn-download {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #999;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-download:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .editor-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .card-wrapper { width: 300px; }
+      .controls { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>EDITOR DE FIGURINHA</h1>
+  <p class="subtitle">Escolha a moldura e personalize os textos</p>
+
+  <div class="editor-container">
+    <!-- Left: Card Preview with Arrows -->
+    <div>
+      <div class="card-area">
+        <button class="arrow-btn" onclick="prevMoldura()">&#8249;</button>
+        <div class="card-wrapper">
+          <canvas id="cardCanvas" width="1543" height="2047"></canvas>
+        </div>
+        <button class="arrow-btn" onclick="nextMoldura()">&#8250;</button>
+      </div>
+      <div class="moldura-indicator">
+        <div class="moldura-dot active" data-color="branco" onclick="setMoldura('branco')"></div>
+        <div class="moldura-dot" data-color="verde" onclick="setMoldura('verde')"></div>
+        <div class="moldura-dot" data-color="azul" onclick="setMoldura('azul')"></div>
+        <div class="moldura-dot" data-color="amarelo" onclick="setMoldura('amarelo')"></div>
+      </div>
+    </div>
+
+    <!-- Right: Controls -->
+    <div class="controls">
+      <!-- Moldura Color -->
+      <div class="control-group">
+        <h3>Moldura</h3>
+        <div class="moldura-options">
+          <div class="moldura-option active" data-m="branco" onclick="setMoldura('branco')">Branco</div>
+          <div class="moldura-option" data-m="verde" onclick="setMoldura('verde')">Verde</div>
+          <div class="moldura-option" data-m="azul" onclick="setMoldura('azul')">Azul</div>
+          <div class="moldura-option" data-m="amarelo" onclick="setMoldura('amarelo')">Amarelo</div>
+        </div>
+      </div>
+
+      <!-- Text Fields -->
+      <div class="control-group">
+        <h3>Detalhes do Jogador</h3>
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" id="playerName" value="NEYMAR JR" placeholder="NOME DO JOGADOR" maxlength="20" oninput="renderCard()" />
+        </div>
+        <div class="field">
+          <label>Data de Nascimento</label>
+          <input type="text" id="playerBirth" value="05-02-1992" placeholder="DD-MM-AAAA" maxlength="10" oninput="renderCard()" />
+        </div>
+        <div class="field">
+          <label>Altura</label>
+          <input type="text" id="playerHeight" value="1.75" placeholder="1.75" maxlength="5" oninput="renderCard()" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <button class="btn-comprar" onclick="handleBuy()">Comprar por R$19,90</button>
+      <button class="btn-download" onclick="downloadPreview()">Baixar Preview (com marca d'agua)</button>
+    </div>
+  </div>
+
+  <script>
+    // ── CONFIG ──
+    var CANVAS_W = 1543;
+    var CANVAS_H = 2047;
+
+    var MOLDURAS = ['branco', 'verde', 'azul', 'amarelo'];
+    var currentMolduraIndex = 0;
+
+    // Text positions (based on 1543x2047 canvas)
+    var TEXT_CONFIG = {
+      name: { x: 771, y: 1750, font: '700 72px Sora', color: '#FFFFFF' },
+      height: { x: 620, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
+      birth: { x: 920, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
+    };
+
+    // ── IMAGE CACHE ──
+    var layoutImg = new Image();
+    var molduraImgs = {};
+    var imagesLoaded = 0;
+    var totalImages = 5; // 1 layout + 4 molduras
+
+    function onImageLoad() {
+      imagesLoaded++;
+      if (imagesLoaded >= totalImages) {
+        renderCard();
+      }
+    }
+
+    // Load layout
+    layoutImg.crossOrigin = 'anonymous';
+    layoutImg.onload = onImageLoad;
+    layoutImg.src = '/assets/layouts/brasil.png';
+
+    // Load molduras
+    MOLDURAS.forEach(function(m) {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = onImageLoad;
+      img.src = '/assets/molduras/' + m + '.png';
+      molduraImgs[m] = img;
+    });
+
+    // ── RENDER ──
+    function renderCard() {
+      var canvas = document.getElementById('cardCanvas');
+      var ctx = canvas.getContext('2d');
+
+      // Clear
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // 1. Draw layout (jogador) — fit to canvas
+      if (layoutImg.complete && layoutImg.naturalWidth) {
+        // Calculate scaling to fit layout into canvas
+        var scale = Math.max(CANVAS_W / layoutImg.naturalWidth, CANVAS_H / layoutImg.naturalHeight);
+        var sw = layoutImg.naturalWidth * scale;
+        var sh = layoutImg.naturalHeight * scale;
+        var sx = (CANVAS_W - sw) / 2;
+        var sy = (CANVAS_H - sh) / 2;
+        ctx.drawImage(layoutImg, sx, sy, sw, sh);
+      }
+
+      // 2. Draw moldura overlay
+      var currentMoldura = MOLDURAS[currentMolduraIndex];
+      var molduraImg = molduraImgs[currentMoldura];
+      if (molduraImg && molduraImg.complete && molduraImg.naturalWidth) {
+        ctx.drawImage(molduraImg, 0, 0, CANVAS_W, CANVAS_H);
+      }
+
+      // 3. Draw texts
+      var name = (document.getElementById('playerName').value || '').toUpperCase();
+      var birth = (document.getElementById('playerBirth').value || '').toUpperCase();
+      var height = (document.getElementById('playerHeight').value || '').toUpperCase();
+
+      // Format birth: replace / with -
+      birth = birth.replace(/\//g, '-');
+
+      // Name — bold, centered
+      ctx.font = TEXT_CONFIG.name.font;
+      ctx.fillStyle = TEXT_CONFIG.name.color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Add text shadow for readability
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+
+      ctx.fillText(name, TEXT_CONFIG.name.x, TEXT_CONFIG.name.y);
+
+      // Height — regular, centered at its position
+      ctx.font = TEXT_CONFIG.height.font;
+      ctx.fillText(height, TEXT_CONFIG.height.x, TEXT_CONFIG.height.y);
+
+      // Birth — regular, centered at its position
+      ctx.font = TEXT_CONFIG.birth.font;
+      ctx.fillText(birth, TEXT_CONFIG.birth.x, TEXT_CONFIG.birth.y);
+
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    // ── MOLDURA CONTROLS ──
+    function setMoldura(name) {
+      currentMolduraIndex = MOLDURAS.indexOf(name);
+      updateMolduraUI();
+      renderCard();
+    }
+
+    function nextMoldura() {
+      currentMolduraIndex = (currentMolduraIndex + 1) % MOLDURAS.length;
+      updateMolduraUI();
+      renderCard();
+    }
+
+    function prevMoldura() {
+      currentMolduraIndex = (currentMolduraIndex - 1 + MOLDURAS.length) % MOLDURAS.length;
+      updateMolduraUI();
+      renderCard();
+    }
+
+    function updateMolduraUI() {
+      var current = MOLDURAS[currentMolduraIndex];
+
+      // Update dots
+      document.querySelectorAll('.moldura-dot').forEach(function(dot) {
+        dot.classList.toggle('active', dot.dataset.color === current);
+      });
+
+      // Update options
+      document.querySelectorAll('.moldura-option').forEach(function(opt) {
+        opt.classList.toggle('active', opt.dataset.m === current);
+      });
+    }
+
+    // ── ACTIONS ──
+    function handleBuy() {
+      alert('Integrado com Stripe — redireciona pro checkout R$19,90');
+    }
+
+    function downloadPreview() {
+      var canvas = document.getElementById('cardCanvas');
+      var link = document.createElement('a');
+      link.download = 'figurinha-preview.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>
