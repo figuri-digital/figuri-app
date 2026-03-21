@@ -51,22 +51,21 @@
     overflow-x: hidden;
   }
 
-  /* ── HEADER (escuro) ── */
-  .header-wrapper {
+  /* ── TICKER (fixo no topo) ── */
+  .ticker-wrapper {
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 100;
-    background: rgba(13,13,11,0.95);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(201,150,10,0.2);
   }
-  .header {
-    max-width: 1160px;
-    margin: 0 auto;
-    padding: 14px 32px;
+
+  /* ── HEADER NAV (botões no hero) ── */
+  .header-nav {
+    grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    padding: 8px 0;
+    margin-bottom: 4px;
   }
 
   .header-cta {
@@ -574,9 +573,7 @@
     .user-menu-btn { display: none !important; }
   }
 
-  /* ── TICKER (escuro) ── */
   .ticker {
-    margin-top: 56px;
     background: var(--verde-escuro);
     overflow: hidden;
     height: 40px;
@@ -621,7 +618,7 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    padding: 80px 32px 80px;
+    padding: 60px 32px 80px;
   }
   .hero-glow {
     position: absolute;
@@ -1291,38 +1288,23 @@
 </head>
 <body>
 
-<!-- HEADER (escuro) -->
-<div class="header-wrapper">
-<header class="header">
-  <div class="header-right">
-    <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
-    <div class="user-menu" id="userMenu">
-      <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()"></button>
-      <div class="user-dropdown" id="userDropdown">
-        <a href="#meus-pedidos">Meus Pedidos</a>
-        <a href="#" onclick="doLogout(); return false;">Sair</a>
-      </div>
+<!-- TICKER (fixo no topo) -->
+<div class="ticker-wrapper">
+  <div class="ticker">
+    <div class="ticker-track">
+      <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
+      <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
+      <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
+      <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
+      <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
+      <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
+      <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
+      <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
+      <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
+      <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
+      <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
+      <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
     </div>
-    <a href="#upload" class="header-cta">⚽ Criar Minha Figurinha</a>
-  </div>
-</header>
-</div>
-
-<!-- TICKER (escuro) -->
-<div class="ticker">
-  <div class="ticker-track">
-    <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
-    <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
-    <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
-    <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
-    <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
-    <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
-    <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
-    <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
-    <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
-    <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
-    <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
-    <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
   </div>
 </div>
 
@@ -1331,6 +1313,20 @@
   <div class="hero-glow"></div>
   <div class="hero-grid-bg"></div>
   <div class="hero-content">
+    <!-- Nav buttons (full width across grid) -->
+    <nav class="header-nav">
+      <div class="header-right">
+        <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()"></button>
+          <div class="user-dropdown" id="userDropdown">
+            <a href="#meus-pedidos">Meus Pedidos</a>
+            <a href="#" onclick="doLogout(); return false;">Sair</a>
+          </div>
+        </div>
+        <a href="#upload" class="header-cta">⚽ Criar Minha Figurinha</a>
+      </div>
+    </nav>
     <div>
       <div class="hero-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
       <div class="hero-badge">⚽ Ativo durante a Copa 2026</div>
