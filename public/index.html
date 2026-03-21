@@ -580,13 +580,13 @@
     border-bottom: 2px solid var(--ouro);
     display: flex;
     align-items: center;
-    justify-content: center;
   }
   .ticker-track {
     display: flex;
     align-items: center;
     height: 100%;
-    animation: ticker 22s linear infinite;
+    flex-shrink: 0;
+    animation: ticker 25s linear infinite;
     white-space: nowrap;
   }
   .ticker-item {
@@ -608,7 +608,7 @@
   .ticker-item span { color: var(--ouro-claro); }
   @keyframes ticker {
     0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    100% { transform: translateX(-100%); }
   }
 
   /* ── HERO (escuro — seção de impacto) ── */
@@ -1299,6 +1299,8 @@
       <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
       <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
       <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
+    </div>
+    <div class="ticker-track" aria-hidden="true">
       <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
       <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
       <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
