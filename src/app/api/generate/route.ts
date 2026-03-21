@@ -104,11 +104,11 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Get template URL
-    const templateFile = COUNTRY_TEMPLATES[country] || COUNTRY_TEMPLATES.brasil;
+    // Get layout URL (new system: layout = player only, moldura applied in editor)
+    const layoutFile = COUNTRY_LAYOUTS[country] || COUNTRY_LAYOUTS.brasil;
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
-    const templateUrl = `${protocol}://${host}/templates/${templateFile}`;
+    const layoutUrl = `${protocol}://${host}/assets/layouts/${layoutFile}`;
 
     // Build prompt
     const prompt = buildPrompt(style, { name, birth, height, country });
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           prompt,
-          image_urls: [originalUrlData.publicUrl, templateUrl],
+          image_urls: [originalUrlData.publicUrl, layoutUrl],
           image_size: 'portrait_4_3',
           output_format: 'jpeg',
           safety_tolerance: '3',
@@ -202,17 +202,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── Country templates ──
+// ── Country layouts (player only, no frame/moldura) ──
 
-const COUNTRY_TEMPLATES: Record<string, string> = {
+const COUNTRY_LAYOUTS: Record<string, string> = {
   brasil: 'brasil.jpg',
-  argentina: 'argentina.jpg',
-  franca: 'franca.jpg',
-  alemanha: 'alemanha.jpg',
-  espanha: 'espanha.jpg',
-  portugal: 'portugal.jpg',
-  uruguai: 'uruguai.jpg',
-  colombia: 'colombia.jpg',
 };
 
 // ── Prompts (V1) ──
@@ -239,23 +232,17 @@ function buildPrompt(style: string, data: StickerData): string {
   const country = data.country || 'brasil';
   const jersey = COUNTRY_JERSEYS[country] || COUNTRY_JERSEYS.brasil;
 
-  if (style === 'pet') {
-    return `I have two reference images. @image1 is a photo of a pet/animal. @image2 is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the pet from @image1 as a team mascot wearing a ${jersey}, placed in the exact card layout from @image2. Player name: "${data.name || 'MASCOTE'}". Keep all card design elements. Fun and photorealistic.`;
-  }
+  // New prompt: generate ONLY the player photo with jersey and background
+  // No frame, no text — those are added in the editor (moldura + canvas text)
+  return `I have two reference images. @image1 is a photo of a real person — use their EXACT face, features, skin tone, hair, and appearance. @image2 is a reference layout showing a player with team jersey and background style.
 
-  if (style === 'grupo') {
-    return `I have two reference images. @image1 is a group photo. @image2 is a FIFA World Cup 2026 player card template. Create a FIFA World Cup 2026 sticker card featuring the group from @image1 wearing ${jersey}, placed in the exact card layout from @image2. Name: "${data.name || 'FAMÍLIA'}". Keep all card design elements. Photorealistic.`;
-  }
+Generate a portrait photo of the person from @image1 wearing a ${jersey}. Follow the composition and background style from @image2:
+1. The person's face MUST be identical to @image1 — preserve exact facial features, skin tone, expression
+2. Show them wearing the ${jersey}, cropped from chest/waist up, centered in frame
+3. Use the same background gradient, lighting, and color scheme as @image2
+4. Professional sports portrait quality, photorealistic lighting
+5. Do NOT add any text, numbers, labels, borders, frames, or overlay elements
+6. The output should be ONLY the player portrait — clean, no decorative elements
 
-  return `I have two reference images. @image1 is a photo of a real person — use their EXACT face, features, skin tone, and appearance. @image2 is a FIFA World Cup 2026 player card template — use its EXACT layout, design, colors, badges, background, FIFA trophy icon, number "2", and bottom panel.
-
-Create a new FIFA World Cup 2026 sticker card that:
-1. Features the person from @image1 with their EXACT face preserved
-2. Shows them wearing a ${jersey}, cropped from chest up, centered
-3. Follows the EXACT card layout and design from @image2
-4. Displays player name: "${data.name || 'JOGADOR'}"
-5. Shows height: "M ${data.height || '1,75'}"
-6. Shows date of birth: "${data.birth || '1-1-2000'}"
-
-The face MUST be identical to the person in @image1. Professional sports card quality, photorealistic lighting.`;
+The face MUST be a faithful reproduction of the person in @image1. High quality, sharp details.`;
 }
