@@ -569,8 +569,9 @@
   }
 
   @media(max-width:600px){
-    .btn-entrar { display: none; }
-    .user-menu-btn { display: none !important; }
+    .btn-entrar { font-size: 12px; padding: 8px 14px; }
+    .user-menu-btn { font-size: 12px; padding: 8px 14px; }
+    .header-cta { font-size: 12px; padding: 8px 14px; }
   }
 
   .ticker {
@@ -1975,10 +1976,11 @@
       return;
     }
     const user = session.user;
-    const name = user.user_metadata?.name
+    const fullName = user.user_metadata?.name
       || user.user_metadata?.full_name
       || user.email?.split('@')[0]
       || 'Usuário';
+    const name = fullName.split(' ')[0];
 
     // Load credits
     const credits = await loadCredits(user.id);
