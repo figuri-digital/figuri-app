@@ -337,6 +337,12 @@
       birth: { x: 570, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
     };
 
+    // ── READ URL PARAMS ──
+    var editorParams = new URLSearchParams(window.location.search);
+    var paramImageUrl = editorParams.get('imageUrl') || '';
+    var paramHiresUrl = editorParams.get('hiresUrl') || '';
+    var paramImageId = editorParams.get('imageId') || '';
+
     // ── IMAGE CACHE ──
     var layoutImg = new Image();
     var molduraImgs = {};
@@ -350,10 +356,10 @@
       }
     }
 
-    // Load layout
+    // Load layout (use generated image from URL params if available)
     layoutImg.crossOrigin = 'anonymous';
     layoutImg.onload = onImageLoad;
-    layoutImg.src = '/assets/layouts/brasil.png';
+    layoutImg.src = paramImageUrl || '/assets/layouts/brasil.png';
 
     // Load molduras
     MOLDURAS.forEach(function(m) {

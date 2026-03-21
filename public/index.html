@@ -511,37 +511,6 @@
   .wizard-country-group { display: none; }
   .wizard-country-group.active { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
 
-  /* Step 4: Player details */
-  .wizard-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 380px;
-    margin: 0 auto;
-  }
-  .wizard-form input {
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .wizard-form input::placeholder { color: rgba(255,255,255,0.35); }
-  .wizard-form input:focus { border-color: var(--verde-neon); }
-  .wizard-form label {
-    font-family: 'Sora', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: -6px;
-  }
-
   .btn-generate {
     display: block;
     width: 100%;
@@ -1355,8 +1324,6 @@
           <div class="wizard-dot" data-step="2">2</div>
           <div class="wizard-line"></div>
           <div class="wizard-dot" data-step="3">3</div>
-          <div class="wizard-line"></div>
-          <div class="wizard-dot" data-step="4">4</div>
         </div>
 
         <!-- STEP 1: Upload Photo -->
@@ -1440,24 +1407,9 @@
               <span class="wizard-country-name">Portugal</span>
             </div>
           </div>
-        </div>
-
-        <!-- STEP 4: Player Details -->
-        <div class="wizard-step" id="wizardStep4">
-          <button class="wizard-back" onclick="wizardGoTo(3)">&larr; Voltar</button>
-          <div class="wizard-step-title">Detalhes do jogador</div>
-          <div class="wizard-step-sub">Preencha as informacoes da sua figurinha</div>
-          <div class="wizard-form">
-            <label>Nome do jogador *</label>
-            <input type="text" id="stickerName" placeholder="Ex: Guilherme Vitor">
-            <label>Data de nascimento</label>
-            <input type="text" id="stickerBirth" placeholder="DD/MM/AAAA">
-            <label>Altura</label>
-            <input type="text" id="stickerHeight" placeholder="Ex: 1,75">
-            <button class="btn-generate" id="btnGenerate" onclick="generateSticker()">
-              &#9917; Gerar Minha Figurinha
-            </button>
-          </div>
+          <button class="btn-generate" id="btnGenerate" onclick="generateSticker()" style="margin-top:20px;">
+            &#9917; Gerar Minha Figurinha
+          </button>
         </div>
 
         <!-- Credits bar (shown on all steps) -->
@@ -2154,17 +2106,10 @@
     wizardSelectedCountry = country;
     document.querySelectorAll('.wizard-country-card').forEach(function(c) { c.classList.remove('selected'); });
     card.classList.add('selected');
-    setTimeout(function() { wizardGoTo(4); }, 200);
   }
 
-  // Step 4: Generate sticker
+  // Step 3: Generate sticker
   async function generateSticker() {
-    var nameVal = document.getElementById('stickerName').value.trim();
-    if (!nameVal) {
-      alert('Preencha o nome do jogador.');
-      return;
-    }
-
     var btn = document.getElementById('btnGenerate');
     btn.disabled = true;
 
@@ -2204,15 +2149,11 @@
         size: wizardSelectedFile.size,
         type: wizardSelectedType,
         country: wizardSelectedCountry,
-        name: nameVal,
       });
 
       var formData = new FormData();
       formData.append('photo', wizardSelectedFile);
       formData.append('style', wizardSelectedType);
-      formData.append('name', nameVal);
-      formData.append('birth', document.getElementById('stickerBirth').value.trim());
-      formData.append('height', document.getElementById('stickerHeight').value.trim());
       formData.append('country', wizardSelectedCountry);
 
       var res = await fetch('/api/generate', {

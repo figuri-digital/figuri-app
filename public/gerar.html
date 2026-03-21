@@ -322,7 +322,7 @@
     <div class="variations-grid" id="variationsGrid"></div>
 
     <div class="choose-actions">
-      <button class="btn-buy" id="btnBuy" disabled>Comprar sem marca d'agua — R$19,90</button>
+      <button class="btn-buy" id="btnBuy" disabled>&#10024; PERSONALIZAR FIGURINHA</button>
       <a class="btn-back" href="/">&#8617; Gerar novas opcoes</a>
       <div class="gerar-credits" id="gerarCredits"></div>
     </div>
@@ -500,55 +500,17 @@
     pollStatus();
   }
 
-  // Buy button — Stripe Checkout
-  document.getElementById('btnBuy').addEventListener('click', async function() {
+  // Personalizar button — redirect to editor
+  document.getElementById('btnBuy').addEventListener('click', function() {
     if (!selectedVariation) {
       alert('Selecione uma figurinha primeiro.');
       return;
     }
 
-    var btn = document.getElementById('btnBuy');
-    btn.disabled = true;
-    btn.textContent = 'Redirecionando para pagamento...';
-
-    try {
-      var session = await sb.auth.getSession();
-      var token = session?.data?.session?.access_token || '';
-
-      if (!token) {
-        alert('Voce precisa estar logado para comprar. Faca login e tente novamente.');
-        btn.disabled = false;
-        btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
-        return;
-      }
-
-      var res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
-        body: JSON.stringify({
-          imageId: imageId,
-          variationIndex: selectedVariation.index,
-        }),
-      });
-
-      var data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || 'Erro ao iniciar pagamento. Tente novamente.');
-        btn.disabled = false;
-        btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-      alert('Erro de conexao. Tente novamente.');
-      btn.disabled = false;
-      btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
-    }
+    var editorUrl = 'editor.html?imageUrl=' + encodeURIComponent(selectedVariation.previewUrl)
+      + '&hiresUrl=' + encodeURIComponent(selectedVariation.hiresUrl || '')
+      + '&imageId=' + encodeURIComponent(imageId);
+    window.location.href = editorUrl;
   });
 
   // ── SOCIAL PROOF TOASTS ──
