@@ -286,11 +286,11 @@
         </div>
         <div class="field">
           <label>Data de Nascimento</label>
-          <input type="text" id="playerBirth" value="05-02-1992" placeholder="DD-MM-AAAA" maxlength="10" oninput="renderCard()" />
+          <input type="text" id="playerBirth" value="05/02/1992" placeholder="DD/MM/AAAA" maxlength="10" oninput="formatBirth(this); renderCard()" />
         </div>
         <div class="field">
           <label>Altura</label>
-          <input type="text" id="playerHeight" value="1.75" placeholder="1.75" maxlength="5" oninput="renderCard()" />
+          <input type="text" id="playerHeight" value="1,75" placeholder="1,75" maxlength="4" oninput="formatHeight(this); renderCard()" />
         </div>
       </div>
 
@@ -305,14 +305,36 @@
     var CANVAS_W = 1543;
     var CANVAS_H = 2047;
 
+    // Auto-format birth date: inserts / after DD and MM
+    function formatBirth(input) {
+      var v = input.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length >= 5) {
+        input.value = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+      } else if (v.length >= 3) {
+        input.value = v.slice(0, 2) + '/' + v.slice(2);
+      } else {
+        input.value = v;
+      }
+    }
+
+    // Auto-format height: inserts , after first digit
+    function formatHeight(input) {
+      var v = input.value.replace(/\D/g, '').slice(0, 3);
+      if (v.length >= 2) {
+        input.value = v.slice(0, 1) + ',' + v.slice(1);
+      } else {
+        input.value = v;
+      }
+    }
+
     var MOLDURAS = ['branco', 'verde', 'azul', 'amarelo'];
     var currentMolduraIndex = 0;
 
     // Text positions (based on 1543x2047 canvas)
     var TEXT_CONFIG = {
-      name: { x: 540, y: 1080, font: '700 72px Sora', color: '#FFFFFF' },
-      height: { x: 470, y: 1200, font: '400 48px Sora', color: '#FFFFFF' },
-      birth: { x: 650, y: 1200, font: '400 48px Sora', color: '#FFFFFF' },
+      name: { x: 771, y: 1750, font: '700 72px Sora', color: '#FFFFFF' },
+      height: { x: 610, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
+      birth: { x: 930, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
     };
 
     // ── IMAGE CACHE ──
