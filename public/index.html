@@ -58,11 +58,11 @@
     z-index: 100;
   }
 
-  /* ── HEADER NAV (botões no hero) ── */
+  /* ── HEADER NAV (logo + botões no hero) ── */
   .header-nav {
     grid-column: 1 / -1;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     padding: 8px 0;
     margin-bottom: 4px;
@@ -650,11 +650,8 @@
     width: 100%;
   }
 
-  .hero-logo {
-    margin-bottom: 28px;
-  }
   .hero-logo img {
-    height: 52px;
+    height: 42px;
     width: auto;
   }
 
@@ -1316,8 +1313,9 @@
   <div class="hero-glow"></div>
   <div class="hero-grid-bg"></div>
   <div class="hero-content">
-    <!-- Nav buttons (full width across grid) -->
+    <!-- Nav bar: logo left + buttons right -->
     <nav class="header-nav">
+      <div class="hero-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
       <div class="header-right">
         <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
         <div class="user-menu" id="userMenu">
@@ -1331,7 +1329,6 @@
       </div>
     </nav>
     <div>
-      <div class="hero-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
       <div class="hero-badge">⚽ Ativo durante a Copa 2026</div>
       <h1 class="hero-title">
         <span class="l1">VIRE UM</span>
