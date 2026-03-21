@@ -2124,8 +2124,27 @@
     }, 3000);
 
     try {
+      // Validate all fields before sending
+      if (!wizardSelectedFile) {
+        throw new Error('Nenhuma foto selecionada. Volte ao passo 1 e envie uma foto.');
+      }
+      if (!wizardSelectedType) {
+        throw new Error('Selecione o tipo de figurinha (passo 2).');
+      }
+      if (!wizardSelectedCountry) {
+        throw new Error('Selecione uma seleção (passo 3).');
+      }
+
       var session = (await sb.auth.getSession()).data.session;
       if (!session) { clearInterval(msgInterval); openLogin(); btn.disabled = false; btn.textContent = '⚽ Gerar Minha Figurinha'; return; }
+
+      console.log('Gerando figurinha:', {
+        file: wizardSelectedFile.name,
+        size: wizardSelectedFile.size,
+        type: wizardSelectedType,
+        country: wizardSelectedCountry,
+        name: nameVal,
+      });
 
       var formData = new FormData();
       formData.append('photo', wizardSelectedFile);
@@ -2142,8 +2161,11 @@
       });
 
       clearInterval(msgInterval);
-      var data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha');
+      var resText = await res.text();
+      console.log('API response:', res.status, resText.slice(0, 500));
+      var data;
+      try { data = JSON.parse(resText); } catch(e) { throw new Error('Resposta inválida do servidor: ' + resText.slice(0, 200)); }
+      if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha (status ' + res.status + ')');
 
       // Redirect to gerar.html with all needed params (including fal.ai URLs)
       var taskIds = data.taskIds ? data.taskIds.join(',') : (data.taskId || '');
