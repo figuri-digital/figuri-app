@@ -355,6 +355,7 @@
   var maxPolls = 80;
   var fakeProgress = 0;
   var selectedVariation = null;
+  var cachedVariations = [];
   var toastIsGenerating = true;
 
   // Progressive status messages
@@ -378,6 +379,7 @@
   }
 
   function showChoosePhase(variations) {
+    cachedVariations = variations;
     toastIsGenerating = false;
     document.getElementById('phase-loading').style.display = 'none';
     document.getElementById('phase-choose').style.display = 'block';
@@ -493,8 +495,18 @@
     }
   }
 
-  // Init
-  if (!imageId || !taskIdsParam) {
+  // Init — check if returning from editor (restore from sessionStorage)
+  var restoreParam = params.get('restore');
+  var savedVariations = sessionStorage.getItem('figuri_variations');
+
+  if (restoreParam === 'true' && savedVariations) {
+    try {
+      var restored = JSON.parse(savedVariations);
+      showChoosePhase(restored);
+    } catch (e) {
+      showError('Erro ao restaurar opcoes. Gere novamente.');
+    }
+  } else if (!imageId || !taskIdsParam) {
     showError('Parametros invalidos. Volte e tente gerar novamente.');
   } else {
     pollStatus();
@@ -506,6 +518,10 @@
       alert('Selecione uma figurinha primeiro.');
       return;
     }
+
+    // Save variations to sessionStorage so user can come back without regenerating
+    sessionStorage.setItem('figuri_variations', JSON.stringify(cachedVariations));
+    sessionStorage.setItem('figuri_imageId', imageId);
 
     var editorUrl = 'editor.html?imageUrl=' + encodeURIComponent(selectedVariation.previewUrl)
       + '&hiresUrl=' + encodeURIComponent(selectedVariation.hiresUrl || '')

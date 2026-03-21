@@ -243,6 +243,7 @@
   </style>
 </head>
 <body>
+  <button onclick="goBackToChoose()" style="align-self:flex-start; background:none; border:1px solid #555; color:#ccc; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:'Sora',sans-serif; font-size:13px; margin-bottom:12px;">← Voltar e trocar opção</button>
   <h1>EDITOR DE FIGURINHA</h1>
   <p class="subtitle">Escolha a moldura e personalize os textos</p>
 
@@ -301,6 +302,12 @@
   </div>
 
   <script>
+    // ── BACK TO CHOOSE ──
+    function goBackToChoose() {
+      var savedImageId = new URLSearchParams(window.location.search).get('imageId') || '';
+      window.location.href = 'gerar.html?restore=true&imageId=' + encodeURIComponent(savedImageId);
+    }
+
     // ── CONFIG ──
     var CANVAS_W = 1543;
     var CANVAS_H = 2047;
