@@ -500,13 +500,55 @@
     pollStatus();
   }
 
-  // Buy button
-  document.getElementById('btnBuy').addEventListener('click', function() {
+  // Buy button — Stripe Checkout
+  document.getElementById('btnBuy').addEventListener('click', async function() {
     if (!selectedVariation) {
       alert('Selecione uma figurinha primeiro.');
       return;
     }
-    alert('Checkout em breve! Figurinha: ' + imageId + ' | Opcao: ' + (selectedVariation.index + 1));
+
+    var btn = document.getElementById('btnBuy');
+    btn.disabled = true;
+    btn.textContent = 'Redirecionando para pagamento...';
+
+    try {
+      var session = await sb.auth.getSession();
+      var token = session?.data?.session?.access_token || '';
+
+      if (!token) {
+        alert('Voce precisa estar logado para comprar. Faca login e tente novamente.');
+        btn.disabled = false;
+        btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
+        return;
+      }
+
+      var res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          imageId: imageId,
+          variationIndex: selectedVariation.index,
+        }),
+      });
+
+      var data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Erro ao iniciar pagamento. Tente novamente.');
+        btn.disabled = false;
+        btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Erro de conexao. Tente novamente.');
+      btn.disabled = false;
+      btn.textContent = 'Comprar sem marca d\'agua — R$19,90';
+    }
   });
 
   // ── SOCIAL PROOF TOASTS ──
