@@ -2060,13 +2060,65 @@
     });
   })();
 
-  function handleFile(file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Arquivo muito grande. Maximo 10MB.');
+  function compressImage(file, maxWidth, quality) {
+    return new Promise(function(resolve) {
+      // If not an image, return as-is
+      if (!file.type.startsWith('image/')) { resolve(file); return; }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var w = img.width;
+          var h = img.height;
+
+          // Only resize if larger than maxWidth
+          if (w > maxWidth) {
+            h = Math.round(h * maxWidth / w);
+            w = maxWidth;
+          }
+
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          canvas.toBlob(function(blob) {
+            var compressed = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            console.log('Compressao: ' + (file.size / 1024).toFixed(0) + 'KB → ' + (compressed.size / 1024).toFixed(0) + 'KB (' + w + 'x' + h + ')');
+            resolve(compressed);
+          }, 'image/jpeg', quality);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFile(file) {
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Arquivo muito grande. Maximo 20MB.');
       return;
     }
-    wizardSelectedFile = file;
-    document.getElementById('wizardFileName').textContent = file.name;
+
+    // Show compressing feedback
+    var fileNameEl = document.getElementById('wizardFileName');
+    fileNameEl.textContent = 'Otimizando imagem...';
+
+    // Compress: max 1500px width, 80% quality → typically 200-400KB
+    var compressed = await compressImage(file, 1500, 0.8);
+
+    // Safety check: if still over 4MB after compression, try harder
+    if (compressed.size > 4 * 1024 * 1024) {
+      compressed = await compressImage(file, 1200, 0.6);
+    }
+
+    wizardSelectedFile = compressed;
+    fileNameEl.textContent = compressed.name + ' (' + (compressed.size / 1024).toFixed(0) + 'KB)';
     // Advance to step 2
     wizardGoTo(2);
   }
