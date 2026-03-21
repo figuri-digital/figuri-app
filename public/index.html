@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIGURI IA — Vire Jogador da Copa em 30 Segundos</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
@@ -45,7 +45,7 @@
   html { scroll-behavior:smooth; }
 
   body {
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Sora', sans-serif;
     background: var(--bg-primary);
     color: var(--text-body);
     overflow-x: hidden;
@@ -65,23 +65,14 @@
     margin: 0 auto;
     padding: 14px 32px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-  }
-  .logo img {
-    height: 36px;
-    width: auto;
   }
 
   .header-cta {
     background: var(--verde);
     color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 14px;
     letter-spacing: 1px;
@@ -101,7 +92,7 @@
     background: transparent;
     border: 1px solid rgba(255,255,255,0.5);
     color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 14px;
     letter-spacing: 1px;
@@ -120,7 +111,7 @@
     background: transparent;
     border: 1px solid rgba(255,255,255,0.5);
     color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 14px;
     letter-spacing: 1px;
@@ -151,7 +142,7 @@
     padding: 12px 18px;
     color: rgba(255,255,255,0.85);
     text-decoration: none;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     letter-spacing: 0.5px;
     transition: background 0.15s;
@@ -190,7 +181,7 @@
   }
   .login-close:hover { color: var(--text-heading); }
   .login-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 22px;
     color: var(--text-heading);
@@ -208,7 +199,7 @@
     color: #fff;
     border: none;
     border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 16px;
     letter-spacing: 0.5px;
@@ -223,7 +214,7 @@
     margin: 20px 0;
     color: var(--text-muted);
     font-size: 13px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
   }
   .login-sep::before, .login-sep::after {
     content: '';
@@ -236,7 +227,7 @@
     padding: 12px 14px;
     border: 1px solid var(--border-mid);
     border-radius: 6px;
-    font-family: 'Lora', serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     margin-bottom: 12px;
     outline: none;
@@ -250,7 +241,7 @@
     color: #fff;
     border: none;
     border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 15px;
     letter-spacing: 0.5px;
@@ -264,7 +255,7 @@
     margin-top: 16px;
     font-size: 13px;
     color: var(--verde);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     text-decoration: none;
   }
   .login-link:hover { text-decoration: underline; }
@@ -275,7 +266,7 @@
     color: #C33;
     padding: 10px 14px;
     border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 13px;
     margin-bottom: 12px;
     text-align: center;
@@ -290,7 +281,7 @@
   .credits-bar {
     margin-top: 12px;
     text-align: center;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     color: rgba(255,255,255,0.7);
     letter-spacing: 0.5px;
@@ -325,7 +316,7 @@
     width: 32px; height: 32px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700; font-size: 14px;
     color: rgba(255,255,255,0.3);
     background: rgba(255,255,255,0.06);
@@ -367,7 +358,7 @@
     background: none;
     border: none;
     color: rgba(255,255,255,0.5);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -378,7 +369,7 @@
   .wizard-back:hover { color: rgba(255,255,255,0.8); }
 
   .wizard-step-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Sora', sans-serif; font-weight: 700;
     font-size: 26px;
     color: #fff;
     text-align: center;
@@ -386,7 +377,7 @@
     letter-spacing: 1px;
   }
   .wizard-step-sub {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     color: rgba(255,255,255,0.45);
     text-align: center;
@@ -413,13 +404,13 @@
   }
   .wizard-dropzone-icon { font-size: 48px; margin-bottom: 10px; }
   .wizard-dropzone-text {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 14px;
     color: rgba(255,255,255,0.5);
   }
   .wizard-dropzone-text strong { color: var(--ouro-claro); }
   .wizard-file-name {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 13px;
     color: var(--verde-neon);
     margin-top: 10px;
@@ -452,7 +443,7 @@
   }
   .wizard-type-icon { font-size: 42px; display: block; margin-bottom: 10px; }
   .wizard-type-label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 16px;
     color: #fff;
@@ -471,7 +462,7 @@
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
     color: rgba(255,255,255,0.5);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
@@ -511,7 +502,7 @@
   }
   .wizard-country-flag { font-size: 32px; display: block; margin-bottom: 6px; }
   .wizard-country-name {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 14px;
     color: #fff;
@@ -535,7 +526,7 @@
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 8px;
     color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 15px;
     outline: none;
     transition: border-color 0.2s;
@@ -543,7 +534,7 @@
   .wizard-form input::placeholder { color: rgba(255,255,255,0.35); }
   .wizard-form input:focus { border-color: var(--verde-neon); }
   .wizard-form label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 12px;
     font-weight: 700;
     color: rgba(255,255,255,0.5);
@@ -557,7 +548,7 @@
     width: 100%;
     background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
     color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-weight: 900;
     font-size: 18px;
     letter-spacing: 1px;
@@ -588,29 +579,33 @@
     margin-top: 56px;
     background: var(--verde-escuro);
     overflow: hidden;
-    padding: 10px 0;
+    height: 40px;
     border-bottom: 2px solid var(--ouro);
     display: flex;
     align-items: center;
+    justify-content: center;
   }
   .ticker-track {
     display: flex;
     align-items: center;
+    height: 100%;
     animation: ticker 22s linear infinite;
     white-space: nowrap;
   }
   .ticker-item {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     padding: 0 36px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
+    font-family: 'Sora', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: rgba(255,255,255,0.7);
     flex-shrink: 0;
+    line-height: 1;
   }
   .ticker-item span { color: var(--ouro-claro); }
   @keyframes ticker {
@@ -657,6 +652,14 @@
     width: 100%;
   }
 
+  .hero-logo {
+    margin-bottom: 28px;
+  }
+  .hero-logo img {
+    height: 52px;
+    width: auto;
+  }
+
   .hero-badge {
     display: inline-flex;
     align-items: center;
@@ -664,7 +667,7 @@
     background: rgba(0,166,81,0.15);
     border: 1px solid rgba(0,166,81,0.35);
     color: var(--verde-neon);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 2px;
@@ -685,10 +688,11 @@
   }
 
   .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(60px, 7.5vw, 104px);
-    line-height: 0.88;
-    letter-spacing: 2px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: clamp(42px, 5.5vw, 72px);
+    line-height: 1;
+    letter-spacing: -1px;
     margin-bottom: 28px;
   }
   .hero-title .l1 { display:block; color:#fff; }
@@ -696,7 +700,7 @@
   .hero-title .l3 { display:block; color: var(--verde-neon); }
 
   .hero-sub {
-    font-family: 'Lora', serif;
+    font-family: 'Sora', sans-serif;
     font-size: 16px;
     color: rgba(255,255,255,0.6);
     line-height: 1.75;
@@ -712,14 +716,14 @@
     flex-wrap: wrap;
   }
   .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Sora', sans-serif; font-weight: 700;
     font-size: 40px;
     line-height: 1;
     color: var(--ouro-claro);
     display: block;
   }
   .stat-lbl {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 11px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -738,7 +742,7 @@
   }
   .upload-icon { font-size: 44px; margin-bottom: 14px; display:block; text-align:center; }
   .upload-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size: 22px; font-weight:700;
     color: #fff;
     margin-bottom: 6px;
@@ -754,14 +758,14 @@
   .container { max-width:1160px; margin:0 auto; }
 
   .sec-label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size:11px; font-weight:700;
     letter-spacing:4px; text-transform:uppercase;
     color: var(--verde);
     margin-bottom:14px; display:block;
   }
   .sec-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Sora', sans-serif; font-weight: 700;
     font-size: clamp(40px,5vw,64px);
     line-height:1; letter-spacing:1px;
     color: var(--text-heading);
@@ -797,14 +801,14 @@
     transform: translateY(-4px);
   }
   .step-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Sora', sans-serif; font-weight: 700;
     font-size:88px; line-height:1;
     color: rgba(0,166,81,0.06);
     position:absolute; top:12px; right:20px;
   }
   .step-icon { font-size:36px; margin-bottom:20px; display:block; }
   .step-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Sora', sans-serif;
     font-size:22px; font-weight:700;
     color: var(--text-heading);
     margin-bottom:10px;
@@ -854,13 +858,13 @@
   }
   .card-top { display:flex; justify-content:space-between; align-items:center; }
   .card-flag { font-size:18px; }
-  .card-num { font-family:'Bebas Neue',sans-serif; font-size:26px; opacity:0.55; }
+  .card-num { font-family:'Sora',sans-serif; font-weight:700; font-size:26px; opacity:0.55; }
   .card-figure { flex:1; display:flex; align-items:center; justify-content:center; font-size:60px; }
   .card-bottom {
     text-align:center; padding-top:8px;
     border-top: 1px solid rgba(255,255,255,0.15);
   }
-  .card-name { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:1px; display:block; }
+  .card-name { font-family:'Sora',sans-serif; font-weight:700; font-size:17px; letter-spacing:1px; display:block; }
   .card-pos { font-size:9px; text-transform:uppercase; letter-spacing:2px; opacity:0.5; }
 
   .card-verde  { background:linear-gradient(155deg,#004D20 0%,#001A0A 100%); color:#fff; }
@@ -894,7 +898,7 @@
   .rare-badge {
     position:absolute; top:8px; left:8px; z-index:2;
     background:linear-gradient(135deg,#9B59B6,#3498DB);
-    font-size:8px; font-family:'Barlow Condensed',sans-serif;
+    font-size:8px; font-family:'Sora',sans-serif;
     font-weight:700; letter-spacing:1px;
     padding:2px 8px; border-radius:100px;
     text-transform:uppercase; color:#fff;
@@ -934,7 +938,7 @@
   .plan-badge {
     display:inline-block;
     background: var(--verde);
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-size:11px; font-weight:700;
     letter-spacing:2px; text-transform:uppercase;
     padding:4px 14px; border-radius:100px;
@@ -942,7 +946,7 @@
   }
 
   .plan-name {
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-size:13px; font-weight:700;
     letter-spacing:3px; text-transform:uppercase;
     color: var(--text-muted);
@@ -951,7 +955,7 @@
   .plan.featured .plan-name { color:rgba(255,255,255,0.45); }
 
   .plan-price {
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:64px; line-height:1;
     color: var(--text-heading);
     margin-bottom:4px;
@@ -976,14 +980,14 @@
   }
   .plan-features li::before {
     content:'✓';
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-weight:900; color: var(--verde);
     font-size:15px; flex-shrink:0;
   }
 
   .btn-plan {
     display:block; text-align:center; width:100%;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-weight:900; font-size:16px;
     letter-spacing:1px; text-transform:uppercase;
     padding:14px; border-radius:8px;
@@ -1026,14 +1030,14 @@
     pointer-events:none;
   }
   .cd-label {
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-size:13px; font-weight:700;
     letter-spacing:4px; text-transform:uppercase;
     color:rgba(255,255,255,0.35);
     margin-bottom:10px; display:block;
   }
   .cd-title {
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:clamp(32px,5vw,60px);
     color:#fff; margin-bottom:48px;
   }
@@ -1050,7 +1054,7 @@
     padding:18px 28px; min-width:90px;
   }
   .cd-num {
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:52px; line-height:1;
     color: var(--ouro-claro); display:block;
   }
@@ -1058,13 +1062,13 @@
     font-size:10px; text-transform:uppercase;
     letter-spacing:2px; color:rgba(255,255,255,0.35);
     margin-top:4px; display:block;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
   }
 
   .btn-cd {
     background:linear-gradient(135deg, var(--ouro-claro), #E5A800);
     color: var(--dark);
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:22px; letter-spacing:2px;
     padding:18px 56px; border-radius:8px;
     border:none; cursor:pointer;
@@ -1099,7 +1103,7 @@
   }
   .review-stars { color: var(--ouro); font-size:15px; margin-bottom:14px; letter-spacing:2px; }
   .review-text {
-    font-family:'Lora',serif;
+    font-family:'Sora',sans-serif;
     font-size:14px; color: var(--text-body);
     line-height:1.75; margin-bottom:20px;
     font-style:italic;
@@ -1114,7 +1118,7 @@
     flex-shrink:0;
   }
   .reviewer-name {
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-size:16px; font-weight:700;
     color: var(--text-heading);
   }
@@ -1137,7 +1141,7 @@
     display:flex; justify-content:space-between;
     align-items:center;
     padding:20px 24px; cursor:pointer;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-size:17px; font-weight:700;
     color: var(--text-heading);
     transition:color 0.2s;
@@ -1174,7 +1178,7 @@
     pointer-events:none;
   }
   .cta-title {
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:clamp(52px,8vw,100px);
     line-height:0.9; margin-bottom:24px;
     position:relative; z-index:1;
@@ -1193,7 +1197,7 @@
   .btn-cta-big {
     background:linear-gradient(135deg, var(--verde), var(--verde-escuro));
     color:#fff;
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:26px; letter-spacing:2px;
     padding:20px 64px; border-radius:8px;
     border:none; cursor:pointer;
@@ -1212,7 +1216,7 @@
     margin-top:22px; font-size:12px;
     color:rgba(255,255,255,0.3);
     position:relative; z-index:1;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     letter-spacing:0.5px;
   }
 
@@ -1221,7 +1225,7 @@
     position:fixed; bottom:24px; right:24px; z-index:90;
     background: var(--verde);
     color:#fff;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     font-weight:900; font-size:14px;
     letter-spacing:1px; text-transform:uppercase;
     padding:13px 24px; border-radius:100px;
@@ -1249,7 +1253,7 @@
     padding:40px 32px; text-align:center;
   }
   .footer-logo {
-    font-family:'Bebas Neue',sans-serif;
+    font-family:'Sora',sans-serif; font-weight:700;
     font-size:28px; color: var(--ouro-claro);
     margin-bottom:16px; display:block;
   }
@@ -1260,7 +1264,7 @@
   .footer-links a {
     font-size:13px; color:rgba(255,255,255,0.3);
     text-decoration:none; transition:color 0.2s;
-    font-family:'Barlow Condensed',sans-serif;
+    font-family:'Sora',sans-serif;
     letter-spacing:0.5px;
   }
   .footer-links a:hover { color:rgba(255,255,255,0.7); }
@@ -1290,7 +1294,6 @@
 <!-- HEADER (escuro) -->
 <div class="header-wrapper">
 <header class="header">
-  <div class="logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
   <div class="header-right">
     <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
     <div class="user-menu" id="userMenu">
@@ -1329,6 +1332,7 @@
   <div class="hero-grid-bg"></div>
   <div class="hero-content">
     <div>
+      <div class="hero-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
       <div class="hero-badge">⚽ Ativo durante a Copa 2026</div>
       <h1 class="hero-title">
         <span class="l1">VIRE UM</span>
