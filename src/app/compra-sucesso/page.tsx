@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface SessionData {
@@ -11,7 +11,7 @@ interface SessionData {
   cartStatus: string;
 }
 
-export default function CompraSucessoPage() {
+function CompraSucessoContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -257,5 +257,13 @@ export default function CompraSucessoPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CompraSucessoPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <CompraSucessoContent />
+    </Suspense>
   );
 }
