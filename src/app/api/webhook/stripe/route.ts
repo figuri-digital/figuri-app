@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-const _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
-});
-// _stripe will be used for webhook signature verification (TODO)
+// Stripe instance created on-demand for webhook signature verification
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2026-02-25.clover",
+  });
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // TODO: Add signature verification when STRIPE_WEBHOOK_SECRET is configured
     // const sig = request.headers.get('stripe-signature')!;
-    // const event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    // const event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
 
     const event = JSON.parse(body) as Stripe.Event;
 
