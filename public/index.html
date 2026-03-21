@@ -66,12 +66,13 @@
   }
 
   .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px;
-    letter-spacing: 3px;
-    color: var(--ouro-claro);
+    display: flex;
+    align-items: center;
   }
-  .logo span { color: var(--verde-neon); }
+  .logo img {
+    height: 36px;
+    width: auto;
+  }
 
   .header-cta {
     background: var(--verde);
@@ -1284,7 +1285,7 @@
 
 <!-- HEADER (escuro) -->
 <header class="header">
-  <div class="logo">FIGURI <span>IA</span></div>
+  <div class="logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
   <div class="header-right">
     <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
     <div class="user-menu" id="userMenu">

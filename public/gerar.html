@@ -37,13 +37,14 @@
   }
 
   .gerar-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    color: var(--ouro-claro);
-    letter-spacing: 2px;
+    display: flex;
+    justify-content: center;
     margin-bottom: 32px;
   }
-  .gerar-logo span { color: var(--verde-neon); }
+  .gerar-logo img {
+    height: 40px;
+    width: auto;
+  }
 
   /* ── PHASE 1: Scanner (loading) ── */
   #phase-loading { text-align: center; }
@@ -286,7 +287,7 @@
 <body>
 
 <div class="gerar-container">
-  <div class="gerar-logo">FIGURI <span>IA</span></div>
+  <div class="gerar-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
 
   <!-- PHASE 1: Loading/Scanner -->
   <div id="phase-loading">
