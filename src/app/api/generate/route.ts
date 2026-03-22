@@ -230,19 +230,10 @@ const COUNTRY_JERSEYS: Record<string, string> = {
 
 function buildPrompt(style: string, data: StickerData): string {
   const country = data.country || 'brasil';
-  const jersey = COUNTRY_JERSEYS[country] || COUNTRY_JERSEYS.brasil;
 
-  // New prompt: generate ONLY the player photo with jersey and background
-  // No frame, no text — those are added in the editor (moldura + canvas text)
-  return `I have two reference images. @image1 is a photo of a real person — use their EXACT face, features, skin tone, hair, and appearance. @image2 is a reference layout showing a player with team jersey and background style.
+  const COUNTRY_PROMPTS: Record<string, string> = {
+    brasil: `Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, neutral expression, and proportions. Preserve the green background with abstract shapes and the large number behind completely unchanged. Also keep the Brazil national team jersey identical (colors, texture, logo, and details). The new person should be centered, facing forward, with a realistic appearance and seamless integration with the original lighting.`,
+  };
 
-Generate a portrait photo of the person from @image1 wearing a ${jersey}. Follow the composition and background style from @image2:
-1. The person's face MUST be identical to @image1 — preserve exact facial features, skin tone, expression
-2. Show them wearing the ${jersey}, cropped from chest/waist up, centered in frame
-3. Use the same background gradient, lighting, and color scheme as @image2
-4. Professional sports portrait quality, photorealistic lighting
-5. Do NOT add any text, numbers, labels, borders, frames, or overlay elements
-6. The output should be ONLY the player portrait — clean, no decorative elements
-
-The face MUST be a faithful reproduction of the person in @image1. High quality, sharp details.`;
+  return COUNTRY_PROMPTS[country] || COUNTRY_PROMPTS.brasil;
 }
