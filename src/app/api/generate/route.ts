@@ -206,9 +206,12 @@ export async function POST(req: NextRequest) {
 
 const COUNTRY_LAYOUTS: Record<string, string> = {
   brasil: 'brasil.jpg',
+  argentina: 'argentina.jpg',
+  colombia: 'colombia.jpg',
+  uruguai: 'uruguai.jpg',
 };
 
-// ── Prompts (V1) ──
+// ── Prompts ──
 
 interface StickerData {
   name?: string;
@@ -217,23 +220,14 @@ interface StickerData {
   country?: string;
 }
 
-const COUNTRY_JERSEYS: Record<string, string> = {
-  brasil: 'Brazil national team jersey (yellow shirt with green details)',
-  argentina: 'Argentina national team jersey (white and sky blue stripes)',
-  franca: 'France national team jersey (dark blue)',
-  alemanha: 'Germany national team jersey (white with black, red, yellow details)',
-  espanha: 'Spain national team jersey (red with yellow accents)',
-  portugal: 'Portugal national team jersey (red with green details)',
-  uruguai: 'Uruguay national team jersey (light blue)',
-  colombia: 'Colombia national team jersey (yellow with blue/red details)',
+const COUNTRY_PROMPTS: Record<string, string> = {
+  brasil: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, neutral expression, and proportions. Preserve the green background with abstract shapes and the large number behind completely unchanged. Also keep the Brazil national team jersey identical (colors, texture, logo, and details). The new person should be centered, facing forward, with a realistic appearance and seamless integration with the original lighting.',
+  argentina: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire blue background with abstract shapes and the large number behind unchanged. Keep the Argentina national team jersey identical (colors, stripes, texture, logo, and details). The new person must be centered, facing forward, with realistic skin tones and natural shadows, seamlessly blended with the original lighting and composition.',
+  colombia: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire yellow background with abstract shapes and the large number behind completely unchanged. Keep the Colombia national team jersey identical (colors, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
+  uruguai: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and facial expression (slight smile). Preserve the entire light blue background with abstract shapes and the large number behind completely unchanged. Keep the Uruguay national team jersey identical (colors, texture, logo, collar, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
 };
 
 function buildPrompt(style: string, data: StickerData): string {
   const country = data.country || 'brasil';
-
-  const COUNTRY_PROMPTS: Record<string, string> = {
-    brasil: `Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, neutral expression, and proportions. Preserve the green background with abstract shapes and the large number behind completely unchanged. Also keep the Brazil national team jersey identical (colors, texture, logo, and details). The new person should be centered, facing forward, with a realistic appearance and seamless integration with the original lighting.`,
-  };
-
   return COUNTRY_PROMPTS[country] || COUNTRY_PROMPTS.brasil;
 }
