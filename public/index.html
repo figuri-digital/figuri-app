@@ -2182,7 +2182,8 @@
         + '&taskIds=' + encodeURIComponent(taskIds)
         + '&userId=' + encodeURIComponent(data.userId || '')
         + '&statusUrls=' + encodeURIComponent(statusUrls)
-        + '&responseUrls=' + encodeURIComponent(responseUrls);
+        + '&responseUrls=' + encodeURIComponent(responseUrls)
+        + '&country=' + encodeURIComponent(wizardSelectedCountry || 'brasil');
 
     } catch (err) {
       clearInterval(msgInterval);

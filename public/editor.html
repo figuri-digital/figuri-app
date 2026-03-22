@@ -102,10 +102,7 @@
       transform: scale(1.2);
       box-shadow: 0 0 8px rgba(245,197,24,0.5);
     }
-    .moldura-dot[data-color="branco"] { background: #ffffff; }
-    .moldura-dot[data-color="verde"] { background: #1B8C3D; }
-    .moldura-dot[data-color="azul"] { background: #1E3A8A; }
-    .moldura-dot[data-color="amarelo"] { background: #F5C518; }
+    /* Moldura dot colors set dynamically via JS */
 
     /* === CONTROLS === */
     .controls {
@@ -189,10 +186,7 @@
     .moldura-option:hover {
       border-color: rgba(255,255,255,0.3);
     }
-    .moldura-option[data-m="branco"] { color: #fff; }
-    .moldura-option[data-m="verde"] { color: #1B8C3D; }
-    .moldura-option[data-m="azul"] { color: #5B9FFF; }
-    .moldura-option[data-m="amarelo"] { color: #F5C518; }
+    /* Moldura option colors set dynamically via JS */
 
     .btn-comprar {
       width: 100%;
@@ -258,10 +252,7 @@
         <button class="arrow-btn" onclick="nextMoldura()">&#8250;</button>
       </div>
       <div class="moldura-indicator">
-        <div class="moldura-dot active" data-color="branco" onclick="setMoldura('branco')"></div>
-        <div class="moldura-dot" data-color="verde" onclick="setMoldura('verde')"></div>
-        <div class="moldura-dot" data-color="azul" onclick="setMoldura('azul')"></div>
-        <div class="moldura-dot" data-color="amarelo" onclick="setMoldura('amarelo')"></div>
+        <div id="molduraDots"></div>
       </div>
     </div>
 
@@ -271,10 +262,7 @@
       <div class="control-group">
         <h3>Moldura</h3>
         <div class="moldura-options">
-          <div class="moldura-option active" data-m="branco" onclick="setMoldura('branco')">Branco</div>
-          <div class="moldura-option" data-m="verde" onclick="setMoldura('verde')">Verde</div>
-          <div class="moldura-option" data-m="azul" onclick="setMoldura('azul')">Azul</div>
-          <div class="moldura-option" data-m="amarelo" onclick="setMoldura('amarelo')">Amarelo</div>
+          <div id="molduraButtons"></div>
         </div>
       </div>
 
@@ -334,7 +322,30 @@
       }
     }
 
-    var MOLDURAS = ['branco', 'verde', 'azul', 'amarelo'];
+    // ── READ URL PARAMS ──
+    var editorParams = new URLSearchParams(window.location.search);
+    var paramImageUrl = editorParams.get('imageUrl') || '';
+    var paramHiresUrl = editorParams.get('hiresUrl') || '';
+    var paramImageId = editorParams.get('imageId') || '';
+    var paramCountry = editorParams.get('country') || 'brasil';
+
+    // Country moldura config — how many molduras each country has
+    var COUNTRY_MOLDURAS = {
+      brasil: 4,
+      argentina: 4,
+      colombia: 4,
+      uruguai: 4,
+      franca: 4,
+      alemanha: 1,
+      portugal: 1,
+      espanha: 1,
+    };
+
+    var numMolduras = COUNTRY_MOLDURAS[paramCountry] || 4;
+    var MOLDURAS = [];
+    for (var i = 1; i <= numMolduras; i++) {
+      MOLDURAS.push('0' + i);
+    }
     var currentMolduraIndex = 0;
 
     // Text positions (based on 1543x2047 canvas)
@@ -344,17 +355,11 @@
       birth: { x: 570, y: 1870, font: '400 48px Sora', color: '#FFFFFF' },
     };
 
-    // ── READ URL PARAMS ──
-    var editorParams = new URLSearchParams(window.location.search);
-    var paramImageUrl = editorParams.get('imageUrl') || '';
-    var paramHiresUrl = editorParams.get('hiresUrl') || '';
-    var paramImageId = editorParams.get('imageId') || '';
-
     // ── IMAGE CACHE ──
     var layoutImg = new Image();
     var molduraImgs = {};
     var imagesLoaded = 0;
-    var totalImages = 5; // 1 layout + 4 molduras
+    var totalImages = 1 + numMolduras;
 
     function onImageLoad() {
       imagesLoaded++;
@@ -366,14 +371,14 @@
     // Load layout (use generated image from URL params if available)
     layoutImg.crossOrigin = 'anonymous';
     layoutImg.onload = onImageLoad;
-    layoutImg.src = paramImageUrl || '/assets/layouts/brasil.png';
+    layoutImg.src = paramImageUrl || '/assets/layouts/' + paramCountry + '.png';
 
-    // Load molduras
+    // Load molduras dynamically based on country
     MOLDURAS.forEach(function(m) {
       var img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = onImageLoad;
-      img.src = '/assets/molduras/brasil/' + m + '.png';
+      img.src = '/assets/molduras/' + paramCountry + '/' + m + '.png';
       molduraImgs[m] = img;
     });
 
@@ -441,6 +446,29 @@
     }
 
     // ── MOLDURA CONTROLS ──
+    // ── BUILD MOLDURA UI DYNAMICALLY ──
+    var dotsContainer = document.getElementById('molduraDots');
+    var btnsContainer = document.getElementById('molduraButtons');
+    var molduraColors = ['#ffffff', '#1B8C3D', '#1E3A8A', '#F5C518', '#E53E3E', '#9B59B6', '#E67E22', '#2ECC71'];
+
+    MOLDURAS.forEach(function(m, idx) {
+      // Dot
+      var dot = document.createElement('div');
+      dot.className = 'moldura-dot' + (idx === 0 ? ' active' : '');
+      dot.style.background = molduraColors[idx] || '#888';
+      dot.dataset.color = m;
+      dot.onclick = function() { setMoldura(m); };
+      dotsContainer.appendChild(dot);
+
+      // Button
+      var btn = document.createElement('div');
+      btn.className = 'moldura-option' + (idx === 0 ? ' active' : '');
+      btn.dataset.m = m;
+      btn.textContent = 'Moldura ' + (idx + 1);
+      btn.onclick = function() { setMoldura(m); };
+      btnsContainer.appendChild(btn);
+    });
+
     function setMoldura(name) {
       currentMolduraIndex = MOLDURAS.indexOf(name);
       updateMolduraUI();
