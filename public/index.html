@@ -1941,6 +1941,11 @@
 
   // ── INIT: check session on page load ──
   (async function() {
+    // Clean up # fragment left by Supabase OAuth redirect
+    if (window.location.hash && window.location.hash.length <= 1) {
+      history.replaceState(null, '', window.location.pathname);
+    }
+
     const { data: { session } } = await sb.auth.getSession();
     await handleSession(session);
 
