@@ -104,6 +104,7 @@
       box-shadow: 0 0 8px rgba(245,197,24,0.5);
     }
     /* Moldura dot colors set dynamically via JS */
+    #molduraDots { display: flex; gap: 8px; justify-content: center; }
 
     /* === CONTROLS === */
     .controls {
@@ -442,7 +443,18 @@
     // ── BUILD MOLDURA UI DYNAMICALLY ──
     var dotsContainer = document.getElementById('molduraDots');
     var btnsContainer = document.getElementById('molduraButtons');
-    var molduraColors = ['#ffffff', '#1B8C3D', '#1E3A8A', '#F5C518', '#E53E3E', '#9B59B6', '#E67E22', '#2ECC71'];
+    // Colors per country — index matches moldura 01, 02, 03, 04
+    var COUNTRY_COLORS = {
+      brasil:    ['#ffffff', '#1B8C3D', '#1E3A8A', '#F5C518'],
+      argentina: ['#ffffff', '#74ACDF', '#1A3A6E', '#F6C517'],
+      colombia:  ['#ffffff', '#FCD116', '#003087', '#CE1126'],
+      uruguai:   ['#ffffff', '#5B9FFF', '#003DA5', '#FFFFFF'],
+      franca:    ['#ffffff', '#002395', '#ED2939', '#FFFFFF'],
+      alemanha:  ['#ffffff'],
+      portugal:  ['#ffffff'],
+      espanha:   ['#ffffff'],
+    };
+    var molduraColors = COUNTRY_COLORS[paramCountry] || ['#ffffff', '#888', '#555', '#333'];
 
     MOLDURAS.forEach(function(m, idx) {
       // Dot
