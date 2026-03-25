@@ -1631,7 +1631,7 @@
     <div class="reviews-carousel fade-up">
       <div class="reviews-track-wrap">
         <div class="reviews-grid" id="reviewsTrack">
-          <div class="review">
+          <!-- M --> <div class="review">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Ficou incrível, parece figurinha de verdade do álbum da Panini. Fiz a minha e já pedi mais duas pra dar de presente."</div>
             <div class="reviewer">
@@ -1639,7 +1639,7 @@
               <div><div class="reviewer-name">Guilherme V.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
             </div>
           </div>
-          <div class="review">
+          <!-- F --> <div class="review">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Presente perfeito pro meu marido! Ele ficou sem acreditar quando viu. A qualidade da impressão surpreende muito."</div>
             <div class="reviewer">
@@ -1647,7 +1647,7 @@
               <div><div class="reviewer-name">Karina D.</div><div class="reviewer-info">Curitiba, PR · Seleção Brasil</div></div>
             </div>
           </div>
-          <div class="review">
+          <!-- M --> <div class="review">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
             <div class="reviewer">
@@ -1655,23 +1655,7 @@
               <div><div class="reviewer-name">Matheus S.</div><div class="reviewer-info">Belo Horizonte, MG · Seleção Brasil</div></div>
             </div>
           </div>
-          <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Minhas figurinhas ficam ótimas! Foi muito rápido e com muita qualidade."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
-              <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/pedro.jpeg" alt="Pedro"></div>
-              <div><div class="reviewer-name">Pedro R.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <div class="review">
+          <!-- F --> <div class="review">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Eu ameiii muitoo, fiz várias figurinhas com meus pets e eles ficaram lindos demais."</div>
             <div class="reviewer">
@@ -1679,12 +1663,28 @@
               <div><div class="reviewer-name">Fernanda D.</div><div class="reviewer-info">Brasil · Figurinha Pet</div></div>
             </div>
           </div>
-          <div class="review">
+          <!-- M --> <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/pedro.jpeg" alt="Pedro"></div>
+              <div><div class="reviewer-name">Pedro R.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <!-- F --> <div class="review">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Fiz uma do meu filho, ele amou e já está querendo mais!"</div>
             <div class="reviewer">
               <div class="reviewer-avatar"><img src="/assets/depoimentos/amanda F.jpeg" alt="Amanda"></div>
               <div><div class="reviewer-name">Amanda F.</div><div class="reviewer-info">Brasil · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <!-- M --> <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Minhas figurinhas ficam ótimas! Foi muito rápido e com muita qualidade."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
+              <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
             </div>
           </div>
         </div>
@@ -1811,57 +1811,112 @@
   }
   updateCountdown(); setInterval(updateCountdown,1000);
 
-  // ── REVIEWS CAROUSEL ──
+  // ── REVIEWS CAROUSEL (infinite loop) ──
   (function(){
     var track = document.getElementById('reviewsTrack');
     var dotsEl = document.getElementById('reviewsDots');
     if (!track) return;
 
-    var items = track.querySelectorAll('.review');
-    var total = items.length;
-    var perPage = window.innerWidth <= 560 ? 1 : 3;
-    var maxIndex = Math.ceil(total / perPage) - 1;
-    var cur = 0;
+    var origItems = Array.from(track.querySelectorAll('.review'));
+    var N = origItems.length;
+
+    // Clone all originals before and after for seamless infinite loop
+    origItems.forEach(function(el){
+      track.insertBefore(el.cloneNode(true), track.firstChild);
+    });
+    origItems.forEach(function(el){
+      track.appendChild(el.cloneNode(true));
+    });
+    // Layout: [N clones] [N originals] [N clones]
+
+    var perPage = getPerPage();
+    var offset = N; // start at first real item
+    var busy = false;
 
     function getPerPage(){ return window.innerWidth <= 560 ? 1 : 3; }
 
-    function buildDots(){
-      dotsEl.innerHTML = '';
-      perPage = getPerPage();
-      maxIndex = Math.ceil(total / perPage) - 1;
-      for(var i=0; i<=maxIndex; i++){
-        var d = document.createElement('button');
-        d.className = 'carousel-dot' + (i===cur?' active':'');
-        d.setAttribute('aria-label','Página '+(i+1));
-        d.dataset.idx = i;
-        d.onclick = function(){ go(+this.dataset.idx); };
-        dotsEl.appendChild(d);
-      }
+    function getItemW(){
+      var el = track.querySelector('.review');
+      return el ? el.offsetWidth + 16 : 0;
     }
 
-    function go(idx){
-      cur = Math.max(0,Math.min(idx,maxIndex));
-      perPage = getPerPage();
-      var itemW = items[0].offsetWidth + 16; // width + gap
-      track.style.transform = 'translateX(-'+(cur * perPage * itemW)+'px)';
-      dotsEl.querySelectorAll('.carousel-dot').forEach(function(d,i){
-        d.classList.toggle('active', i===cur);
+    function moveTo(newOffset, animate){
+      offset = newOffset;
+      track.style.transition = animate ? 'transform 0.4s cubic-bezier(0.4,0,0.2,1)' : 'none';
+      track.style.transform = 'translateX(-' + (offset * getItemW()) + 'px)';
+    }
+
+    track.addEventListener('transitionend', function(){
+      busy = false;
+      // Silently jump if we've drifted into clone territory
+      if (offset < N) {
+        moveTo(offset + N, false);
+      } else if (offset >= N * 2) {
+        moveTo(offset - N, false);
+      }
+      updateDots();
+    });
+
+    function getLogicalPage(){
+      var logical = ((offset - N) % N + N) % N;
+      return Math.floor(logical / perPage) % Math.ceil(N / perPage);
+    }
+
+    function updateDots(){
+      var page = getLogicalPage();
+      dotsEl.querySelectorAll('.carousel-dot').forEach(function(d, i){
+        d.classList.toggle('active', i === page);
       });
     }
 
-    window.reviewsPrev = function(){ go(cur-1); };
-    window.reviewsNext = function(){ go(cur+1); };
+    function buildDots(){
+      dotsEl.innerHTML = '';
+      var pages = Math.ceil(N / perPage);
+      for (var i = 0; i < pages; i++){
+        var d = document.createElement('button');
+        d.className = 'carousel-dot';
+        d.setAttribute('aria-label', 'Página ' + (i + 1));
+        d.dataset.page = i;
+        d.onclick = function(){
+          moveTo(N + (+this.dataset.page * perPage), true);
+          updateDots();
+        };
+        dotsEl.appendChild(d);
+      }
+      updateDots();
+    }
 
+    window.reviewsPrev = function(){
+      if (busy) return; busy = true;
+      moveTo(offset - perPage, true);
+      updateDots();
+    };
+    window.reviewsNext = function(){
+      if (busy) return; busy = true;
+      moveTo(offset + perPage, true);
+      updateDots();
+    };
+
+    moveTo(N, false);
     buildDots();
-    window.addEventListener('resize', function(){ buildDots(); go(0); });
+
+    // Auto-advance every 5s
+    var autoTimer = setInterval(reviewsNext, 5000);
+    track.addEventListener('touchstart', function(){ clearInterval(autoTimer); }, {passive:true, once:true});
+
+    window.addEventListener('resize', function(){
+      perPage = getPerPage();
+      moveTo(N, false);
+      buildDots();
+    });
 
     // Touch/swipe
     var startX = 0;
     track.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
     track.addEventListener('touchend', function(e){
       var dx = e.changedTouches[0].clientX - startX;
-      if(dx < -40) reviewsNext();
-      else if(dx > 40) reviewsPrev();
+      if (dx < -40) reviewsNext();
+      else if (dx > 40) reviewsPrev();
     }, {passive:true});
   })();
 
