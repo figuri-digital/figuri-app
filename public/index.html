@@ -1050,17 +1050,39 @@
   /* ── REVIEWS (fundo claro) ── */
   .reviews-section { background: var(--bg-primary); }
 
+  .reviews-carousel { position:relative; margin-top:48px; }
+  .reviews-track-wrap { overflow:hidden; }
   .reviews-grid {
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:16px; margin-top:56px;
+    display:flex;
+    gap:16px;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
   }
-  @media(max-width:1200px){
-    .reviews-grid { grid-template-columns:repeat(3,1fr); }
-  }
+  .review { flex: 0 0 calc(33.333% - 11px); max-width: calc(33.333% - 11px); }
   @media(max-width:768px){
-    .reviews-grid { grid-template-columns:repeat(2,1fr); }
+    .review { flex: 0 0 calc(33.333% - 11px); max-width: calc(33.333% - 11px); }
   }
+  @media(max-width:560px){
+    .review { flex: 0 0 calc(80vw); max-width: calc(80vw); }
+  }
+  .carousel-nav {
+    display:flex; justify-content:center; align-items:center;
+    gap:12px; margin-top:24px;
+  }
+  .carousel-btn {
+    width:36px; height:36px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--border-light);
+    color:var(--text-heading); font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.2s;
+  }
+  .carousel-btn:hover { background:var(--verde-vivo); border-color:var(--verde-vivo); color:#fff; }
+  .carousel-dots { display:flex; gap:6px; }
+  .carousel-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--border-light); cursor:pointer; transition:all 0.2s;
+  }
+  .carousel-dot.active { background:var(--verde-vivo); width:20px; border-radius:4px; }
   .review {
     background: var(--surface);
     border:1px solid var(--border-light);
@@ -1259,7 +1281,7 @@
     .steps-grid   { grid-template-columns:1fr; }
     .pricing-grid { grid-template-columns:1fr; }
     .plan.featured { transform:none; }
-    .reviews-grid { grid-template-columns:1fr; }
+    .reviews-grid { flex-wrap:nowrap; }
     .gallery-scroll { grid-template-columns:repeat(6,160px); }
     .section { padding:72px 20px; }
   }
@@ -1606,46 +1628,55 @@
       <span class="sec-label">O que estão dizendo</span>
       <h2 class="sec-title">+3.200 figurinhas <em>geradas e amadas</em></h2>
     </div>
-    <div class="reviews-grid fade-up">
-      <div class="review">
-        <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Ficou incrível, parece figurinha de verdade do álbum da Panini. Fiz a minha e já pedi mais duas pra dar de presente."</div>
-        <div class="reviewer">
-          <div class="reviewer-avatar"><img src="/assets/depoimentos/guilherme.png" alt="Guilherme"></div>
-          <div><div class="reviewer-name">Guilherme V.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
+    <div class="reviews-carousel fade-up">
+      <div class="reviews-track-wrap">
+        <div class="reviews-grid" id="reviewsTrack">
+          <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Ficou incrível, parece figurinha de verdade do álbum da Panini. Fiz a minha e já pedi mais duas pra dar de presente."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/guilherme.png" alt="Guilherme"></div>
+              <div><div class="reviewer-name">Guilherme V.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Presente perfeito pro meu marido! Ele ficou sem acreditar quando viu. A qualidade da impressão surpreende muito."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/karina.png" alt="Karina"></div>
+              <div><div class="reviewer-name">Karina D.</div><div class="reviewer-info">Curitiba, PR · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/matheus.png" alt="Matheus"></div>
+              <div><div class="reviewer-name">Matheus S.</div><div class="reviewer-info">Belo Horizonte, MG · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Minhas figurinhas ficam ótimas! Foi muito rápido e com muita qualidade."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
+              <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
+            </div>
+          </div>
+          <div class="review">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
+            <div class="reviewer">
+              <div class="reviewer-avatar"><img src="/assets/depoimentos/pedro.jpeg" alt="Pedro"></div>
+              <div><div class="reviewer-name">Pedro R.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="review">
-        <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Presente perfeito pro meu marido! Ele ficou sem acreditar quando viu. A qualidade da impressão surpreende muito."</div>
-        <div class="reviewer">
-          <div class="reviewer-avatar"><img src="/assets/depoimentos/karina.png" alt="Karina"></div>
-          <div><div class="reviewer-name">Karina D.</div><div class="reviewer-info">Curitiba, PR · Seleção Brasil</div></div>
-        </div>
-      </div>
-      <div class="review">
-        <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
-        <div class="reviewer">
-          <div class="reviewer-avatar"><img src="/assets/depoimentos/matheus.png" alt="Matheus"></div>
-          <div><div class="reviewer-name">Matheus S.</div><div class="reviewer-info">Belo Horizonte, MG · Seleção Brasil</div></div>
-        </div>
-      </div>
-      <div class="review">
-        <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Minhas figurinhas ficam ótimas! Foi muito rápido e com muita qualidade."</div>
-        <div class="reviewer">
-          <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
-          <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
-        </div>
-      </div>
-      <div class="review">
-        <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
-        <div class="reviewer">
-          <div class="reviewer-avatar"><img src="/assets/depoimentos/pedro.jpeg" alt="Pedro"></div>
-          <div><div class="reviewer-name">Pedro R.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
-        </div>
+      <div class="carousel-nav">
+        <button class="carousel-btn" onclick="reviewsPrev()" aria-label="Anterior">&#8249;</button>
+        <div class="carousel-dots" id="reviewsDots"></div>
+        <button class="carousel-btn" onclick="reviewsNext()" aria-label="Próximo">&#8250;</button>
       </div>
     </div>
   </div>
@@ -1763,6 +1794,60 @@
     document.getElementById('d-secs').textContent  = String(s).padStart(2,'0');
   }
   updateCountdown(); setInterval(updateCountdown,1000);
+
+  // ── REVIEWS CAROUSEL ──
+  (function(){
+    var track = document.getElementById('reviewsTrack');
+    var dotsEl = document.getElementById('reviewsDots');
+    if (!track) return;
+
+    var items = track.querySelectorAll('.review');
+    var total = items.length;
+    var perPage = window.innerWidth <= 560 ? 1 : 3;
+    var maxIndex = Math.ceil(total / perPage) - 1;
+    var cur = 0;
+
+    function getPerPage(){ return window.innerWidth <= 560 ? 1 : 3; }
+
+    function buildDots(){
+      dotsEl.innerHTML = '';
+      perPage = getPerPage();
+      maxIndex = Math.ceil(total / perPage) - 1;
+      for(var i=0; i<=maxIndex; i++){
+        var d = document.createElement('button');
+        d.className = 'carousel-dot' + (i===cur?' active':'');
+        d.setAttribute('aria-label','Página '+(i+1));
+        d.dataset.idx = i;
+        d.onclick = function(){ go(+this.dataset.idx); };
+        dotsEl.appendChild(d);
+      }
+    }
+
+    function go(idx){
+      cur = Math.max(0,Math.min(idx,maxIndex));
+      perPage = getPerPage();
+      var itemW = items[0].offsetWidth + 16; // width + gap
+      track.style.transform = 'translateX(-'+(cur * perPage * itemW)+'px)';
+      dotsEl.querySelectorAll('.carousel-dot').forEach(function(d,i){
+        d.classList.toggle('active', i===cur);
+      });
+    }
+
+    window.reviewsPrev = function(){ go(cur-1); };
+    window.reviewsNext = function(){ go(cur+1); };
+
+    buildDots();
+    window.addEventListener('resize', function(){ buildDots(); go(0); });
+
+    // Touch/swipe
+    var startX = 0;
+    track.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend', function(e){
+      var dx = e.changedTouches[0].clientX - startX;
+      if(dx < -40) reviewsNext();
+      else if(dx > 40) reviewsPrev();
+    }, {passive:true});
+  })();
 
   // ── FAQ ──
   function toggleFaq(btn){
