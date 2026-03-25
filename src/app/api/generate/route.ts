@@ -105,10 +105,16 @@ export async function POST(req: NextRequest) {
       .getPublicUrl(originalPath);
 
     // Get layout URL (new system: layout = player only, moldura applied in editor)
-    const layoutFile = COUNTRY_LAYOUTS[country] || COUNTRY_LAYOUTS.brasil;
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
-    const layoutUrl = `${protocol}://${host}/assets/layouts/${layoutFile}`;
+    let layoutUrl: string;
+    if (style === 'pet') {
+      const petFile = PET_LAYOUTS[country] || PET_LAYOUTS.brasil;
+      layoutUrl = `${protocol}://${host}/assets/layouts/Pet/${petFile}`;
+    } else {
+      const layoutFile = COUNTRY_LAYOUTS[country] || COUNTRY_LAYOUTS.brasil;
+      layoutUrl = `${protocol}://${host}/assets/layouts/${layoutFile}`;
+    }
 
     // Build prompt
     const prompt = buildPrompt(style, { name, birth, height, country });
@@ -209,6 +215,17 @@ const COUNTRY_LAYOUTS: Record<string, string> = {
   argentina: 'argentina.jpg',
   colombia: 'colombia.jpg',
   uruguai: 'uruguai.jpg',
+  franca: 'franca.png',
+  alemanha: 'alemanha.png',
+  espanha: 'espanha.png',
+  portugal: 'portugal.png',
+};
+
+const PET_LAYOUTS: Record<string, string> = {
+  brasil: 'brasil.png',
+  argentina: 'argentina.png',
+  colombia: 'colombia.png',
+  uruguai: 'uruguai.png',
   franca: 'franca.png',
   alemanha: 'alemanha.png',
   espanha: 'espanha.png',
