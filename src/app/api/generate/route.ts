@@ -111,6 +111,9 @@ export async function POST(req: NextRequest) {
     if (style === 'pet') {
       const petFile = PET_LAYOUTS[country] || PET_LAYOUTS.brasil;
       layoutUrl = `${protocol}://${host}/assets/layouts/Pet/${petFile}`;
+    } else if (style === 'familia') {
+      const casalFile = CASAL_LAYOUTS[country] || CASAL_LAYOUTS.brasil;
+      layoutUrl = `${protocol}://${host}/assets/layouts/Casal/${casalFile}`;
     } else {
       const layoutFile = COUNTRY_LAYOUTS[country] || COUNTRY_LAYOUTS.brasil;
       layoutUrl = `${protocol}://${host}/assets/layouts/${layoutFile}`;
@@ -222,6 +225,17 @@ const COUNTRY_LAYOUTS: Record<string, string> = {
 };
 
 const PET_LAYOUTS: Record<string, string> = {
+  brasil: 'brasil.png',
+  argentina: 'argentina.png',
+  colombia: 'colombia.png',
+  uruguai: 'uruguai.png',
+  franca: 'franca.png',
+  alemanha: 'alemanha.png',
+  espanha: 'espanha.png',
+  portugal: 'portugal.png',
+};
+
+const CASAL_LAYOUTS: Record<string, string> = {
   brasil: 'brasil.png',
   argentina: 'argentina.png',
   colombia: 'colombia.png',
