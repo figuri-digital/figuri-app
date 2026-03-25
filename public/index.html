@@ -1052,8 +1052,11 @@
 
   .reviews-grid {
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:repeat(4,1fr);
     gap:20px; margin-top:56px;
+  }
+  @media(max-width:1024px){
+    .reviews-grid { grid-template-columns:repeat(2,1fr); }
   }
   .review {
     background: var(--surface);
@@ -1076,12 +1079,16 @@
   }
   .reviewer { display:flex; align-items:center; gap:12px; }
   .reviewer-avatar {
-    width:40px; height:40px; border-radius:50%;
+    width:48px; height:48px; border-radius:50%;
     background: var(--bg-secondary);
     display:flex; align-items:center;
     justify-content:center; font-size:18px;
-    border:2px solid rgba(0,166,81,0.15);
+    border:2px solid rgba(0,166,81,0.3);
     flex-shrink:0;
+    overflow:hidden;
+  }
+  .reviewer-avatar img {
+    width:100%; height:100%; object-fit:cover; border-radius:50%;
   }
   .reviewer-name {
     font-family:'Sora',sans-serif;
@@ -1599,26 +1606,34 @@
     <div class="reviews-grid fade-up">
       <div class="review">
         <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Fiz a figurinha do meu Labrador como goleiro do Brasil. Ficou INCRÍVEL. Todo mundo na família quis uma também. Comprei mais 3 no mesmo dia."</div>
+        <div class="review-text">"Ficou incrível, parece figurinha de verdade do álbum da Panini. Fiz a minha e já pedi mais duas pra dar de presente."</div>
         <div class="reviewer">
-          <div class="reviewer-avatar">🐕</div>
-          <div><div class="reviewer-name">Thiago R.</div><div class="reviewer-info">São Paulo, SP · Figurinha Pet</div></div>
+          <div class="reviewer-avatar"><img src="/assets/depoimentos/guilherme.png" alt="Guilherme"></div>
+          <div><div class="reviewer-name">Guilherme V.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
         </div>
       </div>
       <div class="review">
         <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Dei de presente pro meu pai que é louco por futebol. Ele chorou de emoção! A moldura veio muito bem embalada e com qualidade excelente."</div>
+        <div class="review-text">"Presente perfeito pro meu marido! Ele ficou sem acreditar quando viu. A qualidade da impressão surpreende muito."</div>
         <div class="reviewer">
-          <div class="reviewer-avatar">⚽</div>
-          <div><div class="reviewer-name">Camila M.</div><div class="reviewer-info">Belo Horizonte, MG · Print + Moldura</div></div>
+          <div class="reviewer-avatar"><img src="/assets/depoimentos/karina.png" alt="Karina"></div>
+          <div><div class="reviewer-name">Karina D.</div><div class="reviewer-info">Curitiba, PR · Seleção Brasil</div></div>
         </div>
       </div>
       <div class="review">
         <div class="review-stars">★★★★★</div>
-        <div class="review-text">"Fiz o kit família com a gente toda vestida com a camisa verde. Ficou igual ao álbum Panini de verdade. Já tá emoldurado na sala de casa!"</div>
+        <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
         <div class="reviewer">
-          <div class="reviewer-avatar">👨‍👩‍👧</div>
-          <div><div class="reviewer-name">Família Oliveira</div><div class="reviewer-info">Rio de Janeiro, RJ · Kit Família</div></div>
+          <div class="reviewer-avatar"><img src="/assets/depoimentos/matheus.png" alt="Matheus"></div>
+          <div><div class="reviewer-name">Matheus S.</div><div class="reviewer-info">Belo Horizonte, MG · Seleção Brasil</div></div>
+        </div>
+      </div>
+      <div class="review">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">"Cara, ficou real demais. Mandei pra família no grupo e todo mundo queria saber onde fiz. Recomendo sem hesitar."</div>
+        <div class="reviewer">
+          <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
+          <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
         </div>
       </div>
     </div>
