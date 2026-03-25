@@ -271,7 +271,7 @@
           <label>Data de Nascimento</label>
           <input type="text" id="playerBirth" value="05/02/1992" placeholder="DD/MM/AAAA" maxlength="10" oninput="formatBirth(this); renderCard()" />
         </div>
-        <div class="field">
+        <div class="field" id="alturaGroup">
           <label>Altura</label>
           <input type="text" id="playerHeight" value="1,75" placeholder="1,75" maxlength="4" oninput="formatHeight(this); renderCard()" />
         </div>
@@ -322,23 +322,26 @@
     var paramHiresUrl = editorParams.get('hiresUrl') || '';
     var paramImageId = editorParams.get('imageId') || '';
     var paramCountry = editorParams.get('country') || 'brasil';
+    var paramType = editorParams.get('type') || 'jogador'; // jogador | pet | familia
+
+    var isPetOrCasal = (paramType === 'pet' || paramType === 'familia');
+
+    // Hide Altura field for pet and casal
+    if (isPetOrCasal) {
+      var alturaGroup = document.getElementById('alturaGroup');
+      if (alturaGroup) alturaGroup.style.display = 'none';
+    }
 
     // Country moldura config — how many molduras each country has
     var COUNTRY_MOLDURAS = {
-      brasil: 4,
-      argentina: 4,
-      colombia: 4,
-      uruguai: 4,
-      franca: 4,
-      alemanha: 1,
-      portugal: 1,
-      espanha: 1,
+      brasil: 4, argentina: 4, colombia: 4, uruguai: 4,
+      franca: 4, alemanha: 4, portugal: 4, espanha: 4,
     };
 
     var numMolduras = COUNTRY_MOLDURAS[paramCountry] || 4;
     var MOLDURAS = [];
     for (var i = 1; i <= numMolduras; i++) {
-      MOLDURAS.push('0' + i);
+      MOLDURAS.push(String(i).padStart(2, '0'));
     }
     var currentMolduraIndex = 0;
 
@@ -367,12 +370,15 @@
     layoutImg.onload = onImageLoad;
     layoutImg.src = paramImageUrl || '/assets/layouts/' + paramCountry + '.png';
 
-    // Load molduras dynamically based on country
+    // Load molduras dynamically based on country and type
     MOLDURAS.forEach(function(m) {
       var img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = onImageLoad;
-      img.src = '/assets/molduras/' + paramCountry + '/' + m + '.png';
+      var molduraPath = isPetOrCasal
+        ? '/assets/molduras/' + paramCountry + '/pet-casal/' + m + '-pet-casal.png'
+        : '/assets/molduras/' + paramCountry + '/' + m + '-sozinho.png';
+      img.src = molduraPath;
       molduraImgs[m] = img;
     });
 
@@ -424,9 +430,11 @@
 
       ctx.fillText(name, TEXT_CONFIG.name.x, TEXT_CONFIG.name.y);
 
-      // Height — regular, centered at its position
-      ctx.font = TEXT_CONFIG.height.font;
-      ctx.fillText(height, TEXT_CONFIG.height.x, TEXT_CONFIG.height.y);
+      // Height — only for sozinho
+      if (!isPetOrCasal) {
+        ctx.font = TEXT_CONFIG.height.font;
+        ctx.fillText(height, TEXT_CONFIG.height.x, TEXT_CONFIG.height.y);
+      }
 
       // Birth — regular, centered at its position
       ctx.font = TEXT_CONFIG.birth.font;

@@ -1,0 +1,5 @@
+Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image.
+The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible.
+Keep the exact same pose, body position, facial direction, framing, and proportions.
+Preserve the Uruguay national team light blue jersey exactly as it is, including logo, texture, collar, folds, and lighting. Do not change the clothing.
+Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.

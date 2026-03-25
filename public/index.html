@@ -2303,7 +2303,8 @@
         + '&userId=' + encodeURIComponent(data.userId || '')
         + '&statusUrls=' + encodeURIComponent(statusUrls)
         + '&responseUrls=' + encodeURIComponent(responseUrls)
-        + '&country=' + encodeURIComponent(wizardSelectedCountry || 'brasil');
+        + '&country=' + encodeURIComponent(wizardSelectedCountry || 'brasil')
+        + '&type=' + encodeURIComponent(wizardSelectedType || 'jogador');
 
     } catch (err) {
       clearInterval(msgInterval);

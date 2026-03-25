@@ -526,10 +526,12 @@
     sessionStorage.setItem('figuri_imageId', imageId);
 
     var countryParam = params.get('country') || 'brasil';
+    var typeParam = params.get('type') || 'jogador';
     var editorUrl = 'editor.html?imageUrl=' + encodeURIComponent(selectedVariation.previewUrl)
       + '&hiresUrl=' + encodeURIComponent(selectedVariation.hiresUrl || '')
       + '&imageId=' + encodeURIComponent(imageId)
-      + '&country=' + encodeURIComponent(countryParam);
+      + '&country=' + encodeURIComponent(countryParam)
+      + '&type=' + encodeURIComponent(typeParam);
     window.location.href = editorUrl;
   });
 

@@ -1,0 +1,5 @@
+Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face and appearance to the corresponding position in the original image. Keep the exact same pose, body position, facial direction, framing, and proportions.
+
+Preserve the Brazil national team yellow jerseys exactly as they are, including logo, texture, folds, and lighting. Do not change the clothing.
+
+Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching skin tones, lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.

@@ -1,0 +1,5 @@
+Replace only the dog in the image with a different dog, keeping exactly the same composition, framing, lighting, blue background with abstract shapes, and background typography.
+ The new dog should be in the same position (front-facing, half body), wearing the same Argentina national team jersey (white and light blue stripes with black collar).
+ Maintain a realistic photographic style, studio-quality lighting, and a friendly expression (mouth open, happy look).
+ Ensure the perspective, scale, and pose match perfectly with the original layout.
+ Do not change colors, layout, background, jersey, or graphic elements — only replace the pet.
