@@ -209,6 +209,10 @@ const COUNTRY_LAYOUTS: Record<string, string> = {
   argentina: 'argentina.jpg',
   colombia: 'colombia.jpg',
   uruguai: 'uruguai.jpg',
+  franca: 'franca.png',
+  alemanha: 'alemanha.png',
+  espanha: 'espanha.png',
+  portugal: 'portugal.png',
 };
 
 // ── Prompts ──
@@ -225,6 +229,10 @@ const COUNTRY_PROMPTS: Record<string, string> = {
   argentina: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire blue background with abstract shapes and the large number behind unchanged. Keep the Argentina national team jersey identical (colors, stripes, texture, logo, and details). The new person must be centered, facing forward, with realistic skin tones and natural shadows, seamlessly blended with the original lighting and composition.',
   colombia: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire yellow background with abstract shapes and the large number behind completely unchanged. Keep the Colombia national team jersey identical (colors, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
   uruguai: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and facial expression (slight smile). Preserve the entire light blue background with abstract shapes and the large number behind completely unchanged. Keep the Uruguay national team jersey identical (colors, texture, logo, collar, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
+  franca: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire background with abstract shapes and the large number behind completely unchanged. Keep the France national team jersey identical (dark blue color, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
+  alemanha: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire background with abstract shapes and the large number behind completely unchanged. Keep the Germany national team jersey identical (white color, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
+  espanha: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire background with abstract shapes and the large number behind completely unchanged. Keep the Spain national team jersey identical (red color, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
+  portugal: 'Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, and neutral facial expression. Preserve the entire background with abstract shapes and the large number behind completely unchanged. Keep the Portugal national team jersey identical (dark red/burgundy color, texture, logo, and all details). The new person must be centered, facing forward, with a realistic appearance, natural skin tones, and seamless integration with the original lighting and composition.',
 };
 
 function buildPrompt(style: string, data: StickerData): string {
