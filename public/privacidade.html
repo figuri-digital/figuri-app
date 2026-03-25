@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidade — FIGURI IA</title>
+<link rel="icon" type="image/svg+xml" href="/fav.svg">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #FAFAF7;
+    --dark: #0D0D0B;
+    --text-heading: #111110;
+    --text-body: #444440;
+    --text-muted: #888880;
+    --verde: #00A651;
+    --border-light: rgba(0,0,0,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-body);
+    line-height: 1.7;
+  }
+
+  nav {
+    background: var(--dark);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  nav a.back {
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+  }
+  nav a.back:hover { color: #fff; }
+
+  .page-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+  .page-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--verde);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    color: var(--text-heading);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .updated {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin: 40px 0 12px;
+  }
+  p { margin-bottom: 16px; }
+  ul { margin: 0 0 16px 20px; }
+  ul li { margin-bottom: 8px; }
+  a { color: var(--verde); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 40px 0;
+  }
+  .highlight-box {
+    background: #F0FAF4;
+    border-left: 3px solid var(--verde);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+
+  footer {
+    background: var(--dark);
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="back">← Voltar ao site</a>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-label">Legal</div>
+  <h1>Política de Privacidade</h1>
+  <p class="updated">Última atualização: 25 de março de 2026</p>
+
+  <div class="highlight-box">
+    Resumo: coletamos apenas o necessário para gerar sua figurinha e processar seu pedido. Não vendemos seus dados. Você pode solicitar exclusão a qualquer momento.
+  </div>
+
+  <p>A <strong>FIGURI IA</strong> respeita sua privacidade e está comprometida com a proteção dos seus dados pessoais, em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>.</p>
+
+  <h2>1. Quais dados coletamos</h2>
+  <p>Coletamos os seguintes dados ao longo do uso da plataforma:</p>
+  <ul>
+    <li><strong>Dados de cadastro:</strong> nome, endereço de e-mail e, se aplicável, foto de perfil (via login social);</li>
+    <li><strong>Fotos enviadas:</strong> imagens que você faz upload para a geração da figurinha;</li>
+    <li><strong>Dados de pagamento:</strong> processados diretamente pelo Stripe — não armazenamos dados de cartão;</li>
+    <li><strong>Dados de uso:</strong> páginas acessadas, erros e logs de navegação para melhoria do serviço;</li>
+    <li><strong>Dados de contato:</strong> mensagens enviadas via WhatsApp ou e-mail.</li>
+  </ul>
+
+  <h2>2. Como usamos seus dados</h2>
+  <p>Utilizamos seus dados para:</p>
+  <ul>
+    <li>Gerar a figurinha personalizada com base na foto enviada;</li>
+    <li>Autenticar e gerenciar sua conta;</li>
+    <li>Processar pagamentos e enviar o arquivo comprado;</li>
+    <li>Responder dúvidas e oferecer suporte;</li>
+    <li>Melhorar a qualidade e o desempenho da plataforma;</li>
+    <li>Cumprir obrigações legais quando necessário.</li>
+  </ul>
+
+  <h2>3. Compartilhamento de dados</h2>
+  <p>Seus dados são compartilhados apenas com os seguintes fornecedores, estritamente para a prestação do serviço:</p>
+  <ul>
+    <li><strong>Supabase</strong> — armazenamento de dados e arquivos (servidores na AWS);</li>
+    <li><strong>fal.ai</strong> — processamento de imagem com IA (a foto é enviada para geração e descartada após o resultado);</li>
+    <li><strong>Stripe</strong> — processamento de pagamentos;</li>
+    <li><strong>Vercel</strong> — hospedagem da aplicação.</li>
+  </ul>
+  <p><strong>Não vendemos, alugamos nem compartilhamos seus dados com terceiros para fins de marketing.</strong></p>
+
+  <h2>4. Retenção de dados</h2>
+  <p>Suas fotos e arquivos gerados ficam armazenados enquanto sua conta estiver ativa. Imagens de usuários que não compraram o produto são mantidas por até 30 dias e então excluídas automaticamente.</p>
+  <p>Dados de pagamento são retidos pelo prazo exigido pela legislação fiscal brasileira (5 anos).</p>
+
+  <h2>5. Seus direitos (LGPD)</h2>
+  <p>Como titular dos dados, você tem direito a:</p>
+  <ul>
+    <li>Confirmar a existência de tratamento dos seus dados;</li>
+    <li>Acessar os dados que temos sobre você;</li>
+    <li>Corrigir dados incompletos, inexatos ou desatualizados;</li>
+    <li>Solicitar a exclusão dos seus dados pessoais;</li>
+    <li>Revogar o consentimento a qualquer momento;</li>
+    <li>Solicitar portabilidade dos seus dados.</li>
+  </ul>
+  <p>Para exercer qualquer um desses direitos, entre em contato pelo WhatsApp ou e-mail informados abaixo.</p>
+
+  <h2>6. Cookies e rastreamento</h2>
+  <p>Utilizamos cookies estritamente necessários para o funcionamento da autenticação e da sessão do usuário. Não utilizamos cookies de rastreamento publicitário ou de terceiros para fins de marketing.</p>
+
+  <h2>7. Segurança</h2>
+  <p>Adotamos medidas técnicas e organizacionais para proteger seus dados, incluindo criptografia em trânsito (HTTPS/TLS), controle de acesso baseado em funções e autenticação segura via Supabase Auth.</p>
+
+  <h2>8. Crianças e adolescentes</h2>
+  <p>Nossos serviços são destinados a maiores de 18 anos. Não coletamos intencionalmente dados de menores de idade sem consentimento do responsável legal.</p>
+
+  <h2>9. Alterações nesta política</h2>
+  <p>Podemos atualizar esta política periodicamente. A data de "última atualização" no topo indica quando houve revisão. Para mudanças significativas, notificaremos por e-mail ou aviso no site.</p>
+
+  <h2>10. Contato e encarregado de dados (DPO)</h2>
+  <p>Para dúvidas, solicitações ou exercício dos seus direitos:</p>
+  <ul>
+    <li>WhatsApp: <a href="https://wa.me/5531982668673" target="_blank" rel="noopener">+55 31 98266-8673</a></li>
+    <li>E-mail: <a href="mailto:contato@figuri.com.br">contato@figuri.com.br</a></li>
+  </ul>
+
+  <hr>
+  <p style="font-size:13px;color:var(--text-muted)">Consulte também nossos <a href="/termos.html">Termos de Uso</a>.</p>
+</div>
+
+<footer>© 2026 FIGURI IA · Todos os direitos reservados</footer>
+
+</body>
+</html>
