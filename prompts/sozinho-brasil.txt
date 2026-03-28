@@ -1,1 +1,31 @@
-Replace only the person in the image with a different one (new model), keeping exactly the same framing, lighting, position, neutral expression, and proportions. Preserve the green background with abstract shapes and the large number behind completely unchanged. Also keep the Brazil national team jersey identical (colors, texture, logo, and details). The new person should be centered, facing forward, with a realistic appearance and seamless integration with the original lighting.
+Create a new version of the provided sports poster by replacing only the player, while keeping the entire design exactly the same.
+Use the uploaded image as a strict visual reference and template.
+KEEP EXACTLY THE SAME:
+ Green background with layered shapes
+ Large white number "2" behind the player
+ Color tones and gradients
+ Lighting, shadows, and contrast of the composition
+ Brazil national team jersey style (yellow with green details)
+ Framing and crop (chest-up portrait, centered)
+ Overall layout, spacing, and alignment
+REPLACE ONLY:
+ The player’s face and body with the person from the uploaded image
+REQUIREMENTS FOR THE NEW PERSON:
+ Same pose (front-facing, centered)
+ Same framing (chest up)
+ Neutral/confident expression
+ Wearing the Brazil national team jersey (yellow with green collar and details)
+ Maintain realistic anatomy and proportions
+REALISM AND INTEGRATION:
+ Match lighting direction from the original image
+ Match skin tones to the scene lighting
+ Ensure natural blending between face, neck, and jersey
+ Preserve shadows and highlights consistent with the original
+ Keep photorealistic quality (no artificial or cartoon look)
+STRICT RULES:
+ Do NOT change background, colors, or layout
+ Do NOT modify the number "2"
+ Do NOT alter jersey design or colors
+ Do NOT add or remove any design elements
+ Do NOT change composition or camera angle
+The final image must look like the same original poster, with only the player replaced seamlessly and realistically.
