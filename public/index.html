@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     /* ───────────────────────────────────────
        RESET & BASE
@@ -966,6 +967,158 @@
       .hero-stats { gap: 0.5rem; }
       .navbar-logo img { height: 28px; }
     }
+
+    /* ───────────────────────────────────────
+       USER MENU (logged in state)
+    ─────────────────────────────────────── */
+    .user-menu {
+      position: relative;
+      display: none;
+    }
+    .user-menu.visible { display: flex; align-items: center; }
+    .user-avatar-btn {
+      background: var(--verde-alpha);
+      border: 1.5px solid rgba(237,251,217,0.25);
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .user-avatar-btn:hover { border-color: var(--btn-cta); }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1f3302;
+      border: 1px solid rgba(237,251,217,0.15);
+      border-radius: 10px;
+      min-width: 170px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      padding: 0.4rem 0;
+      display: none;
+      z-index: 200;
+    }
+    .user-dropdown.open { display: block; }
+    .user-dropdown a, .user-dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .user-dropdown a:hover, .user-dropdown button:hover { background: var(--verde-alpha); }
+    .user-dropdown .logout-btn { color: #ff6b6b; }
+
+    /* ───────────────────────────────────────
+       LOGIN MODAL
+    ─────────────────────────────────────── */
+    .login-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(4px);
+    }
+    .login-overlay.open { opacity: 1; pointer-events: all; }
+    .login-box {
+      background: #1f3302;
+      border: 1px solid rgba(237,251,217,0.14);
+      border-radius: 18px;
+      padding: 2.5rem 2rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    .login-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none;
+      color: rgba(237,251,217,0.5);
+      font-size: 1.3rem; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .login-close:hover { color: var(--verde-claro); }
+    .login-logo {
+      display: flex; justify-content: center; margin-bottom: 1.5rem;
+    }
+    .login-logo img { height: 36px; }
+    .login-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.1em;
+      color: var(--verde-claro);
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+    .login-sub {
+      font-size: 0.82rem;
+      color: rgba(237,251,217,0.6);
+      text-align: center;
+      margin-bottom: 1.75rem;
+      line-height: 1.5;
+    }
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.7rem;
+      background: #fff;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .btn-google:hover { background: #f0f0f0; transform: translateY(-1px); }
+    .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .login-error {
+      display: none;
+      background: rgba(255,100,100,0.12);
+      border: 1px solid rgba(255,100,100,0.3);
+      border-radius: 6px;
+      color: #ff8080;
+      font-size: 0.8rem;
+      padding: 0.6rem 0.9rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .login-divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1.25rem 0;
+      color: rgba(237,251,217,0.3);
+      font-size: 0.75rem;
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: rgba(237,251,217,0.12);
+    }
+    .login-terms {
+      font-size: 0.72rem;
+      color: rgba(237,251,217,0.35);
+      text-align: center;
+      margin-top: 1.25rem;
+      line-height: 1.6;
+    }
+    .login-terms a { color: rgba(237,251,217,0.55); }
   </style>
 </head>
 <body>
@@ -989,9 +1142,16 @@
     <a href="#" class="navbar-logo">
       <img src="logo.png" alt="Figuri" />
     </a>
-    <div class="navbar-actions">
-      <button class="btn-entrar">ENTRAR</button>
-      <button class="btn-cta">✦ CRIAR FIGURINHA</button>
+    <div class="navbar-actions" id="navActions">
+      <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">ENTRAR</button>
+      <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()">✦ CRIAR FIGURINHA</button>
+      <div class="user-menu" id="userMenu">
+        <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="/pedidos">Meus Pedidos</a>
+          <button class="logout-btn" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -1067,7 +1227,6 @@
           </div>
 
           <p class="preview-counter">0 de 5 previews usados</p>
-          <button class="btn-card-cta">✦ CRIAR FIGURINHA GRÁTIS</button>
         </div>
       </div>
 
@@ -1147,7 +1306,7 @@
             <p class="product-name">Figurinha Digital</p>
             <div class="product-bottom">
               <p class="product-price">R$19,90</p>
-              <button class="btn-add-cart">🛒</button>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
             </div>
           </div>
         </div>
@@ -1160,7 +1319,7 @@
             <p class="product-name">Figurinha Fisica</p>
             <div class="product-bottom">
               <p class="product-price">R$24,90</p>
-              <button class="btn-add-cart">🛒</button>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
             </div>
           </div>
         </div>
@@ -1173,7 +1332,7 @@
             <p class="product-name">Figurinha com Moldura</p>
             <div class="product-bottom">
               <p class="product-price">R$49,90</p>
-              <button class="btn-add-cart">🛒</button>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
             </div>
           </div>
         </div>
@@ -1186,14 +1345,14 @@
             <p class="product-name">Pack de Figurinhas</p>
             <div class="product-bottom">
               <p class="product-price">R$69,90</p>
-              <button class="btn-add-cart">🛒</button>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
             </div>
           </div>
         </div>
 
       </div>
       <div class="products-cta">
-        <button class="btn-lg-cta">✦ CRIAR FIGURINHA GRÁTIS</button>
+        <button class="btn-lg-cta" onclick="criarFigurinha()">✦ CRIAR FIGURINHA GRÁTIS</button>
       </div>
     </div>
   </section>
@@ -1405,7 +1564,7 @@
           <li>Pague só se gostar</li>
         </ul>
         <div class="cta-final-btns">
-          <button class="btn-cta-dark">✦ CRIAR FIGURINHA GRÁTIS</button>
+          <button class="btn-cta-dark" onclick="criarFigurinha()">✦ CRIAR FIGURINHA GRÁTIS</button>
         </div>
       </div>
     </div>
@@ -1423,8 +1582,148 @@
     <p class="footer-copy">© 2026 FIGURI · Todos os direitos reservados</p>
   </footer>
 
+  <!-- ── LOGIN MODAL ── -->
+  <div class="login-overlay" id="loginOverlay" onclick="handleOverlayClick(event)">
+    <div class="login-box">
+      <button class="login-close" onclick="closeLogin()" aria-label="Fechar">✕</button>
+      <div class="login-logo">
+        <img src="logo.png" alt="Figuri" />
+      </div>
+      <h2 class="login-title">ENTRAR</h2>
+      <p class="login-sub">
+        Acesse sua conta para gerar e gerenciar<br />suas figurinhas da Copa.
+      </p>
+      <button class="btn-google" id="btnGoogle" onclick="loginWithGoogle()">
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        Continuar com Google
+      </button>
+      <div id="loginError" class="login-error"></div>
+      <p class="login-terms">
+        Ao entrar você concorda com os
+        <a href="#">Termos de Uso</a> e a
+        <a href="#">Política de Privacidade</a>.
+      </p>
+    </div>
+  </div>
+
   <!-- ── SCRIPTS ── -->
   <script>
+    /* ── SUPABASE AUTH ── */
+    const SUPABASE_URL      = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let isLoggedIn = false;
+
+    /* Open / Close modal */
+    function openLogin() {
+      hideLoginError();
+      document.getElementById('loginOverlay').classList.add('open');
+    }
+    function closeLogin() {
+      document.getElementById('loginOverlay').classList.remove('open');
+    }
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('loginOverlay')) closeLogin();
+    }
+
+    /* Google OAuth */
+    async function loginWithGoogle() {
+      const btn = document.getElementById('btnGoogle');
+      btn.disabled = true;
+      btn.textContent = 'Redirecionando…';
+      hideLoginError();
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/gerar.html' }
+      });
+      if (error) {
+        showLoginError('Erro ao entrar com Google. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> Continuar com Google';
+      }
+    }
+
+    function showLoginError(msg) {
+      const el = document.getElementById('loginError');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    function hideLoginError() {
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    /* Logout */
+    async function doLogout() {
+      await sb.auth.signOut();
+      isLoggedIn = false;
+      resetUI();
+      closeUserDropdown();
+    }
+
+    /* User dropdown */
+    function toggleUserDropdown() {
+      document.getElementById('userDropdown').classList.toggle('open');
+    }
+    function closeUserDropdown() {
+      document.getElementById('userDropdown').classList.remove('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('userMenu');
+      if (menu && !menu.contains(e.target)) closeUserDropdown();
+    });
+
+    /* Set UI state based on login */
+    function setLoggedIn(user) {
+      isLoggedIn = true;
+      document.getElementById('btnEntrar').style.display = 'none';
+      document.getElementById('btnCriarNav').style.display = 'none';
+      const userMenu = document.getElementById('userMenu');
+      userMenu.classList.add('visible');
+      if (user && user.user_metadata && user.user_metadata.avatar_url) {
+        const btn = document.getElementById('userAvatarBtn');
+        btn.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+      }
+    }
+    function resetUI() {
+      document.getElementById('btnEntrar').style.display = '';
+      document.getElementById('btnCriarNav').style.display = '';
+      document.getElementById('userMenu').classList.remove('visible');
+      document.getElementById('userAvatarBtn').innerHTML = '👤';
+    }
+
+    /* Guard: must be logged in to create */
+    function criarFigurinha() {
+      if (!isLoggedIn) {
+        openLogin();
+        return;
+      }
+      window.location.href = '/gerar.html';
+    }
+
+    /* Check session on load */
+    (async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) {
+        setLoggedIn(session.user);
+      }
+      sb.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+          setLoggedIn(session.user);
+          closeLogin();
+        } else {
+          isLoggedIn = false;
+          resetUI();
+        }
+      });
+    })();
+
     function selectType(btn) {
       btn.closest('.type-selector').querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
