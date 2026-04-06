@@ -5,48 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIGURI IA — Vire Jogador da Copa em 30 Segundos</title>
 <link rel="icon" type="image/svg+xml" href="/fav.svg">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
-    /* Luz */
-    --bg-primary:   #FAFAF7;
-    --bg-secondary: #F2F0EB;
-    --bg-card:      #EBEBЕ6;
-    --surface:      #FFFFFF;
+    /* Identidade visual Figuri */
+    --verde-escuro:    #1A2B01;
+    --verde-principal: #396100;
+    --verde-claro:     #EDFBD9;
+    --verde-alpha:     rgba(237,251,217,0.08);
+    --amarelo:         #FFC300;
+    --amarelo-vivo:    #FFD23D;
+    --btn-claro:       #F9FFF1;
+    --btn-cta:         #94DD2D;
+    --btn-cta-hover:   #a8f033;
 
-    /* Escuro */
-    --dark:         #0D0D0B;
-    --dark-mid:     #1A1A17;
-    --dark-muted:   #2A2A26;
-
-    /* Texto */
-    --text-heading: #111110;
-    --text-body:    #444440;
-    --text-muted:   #888880;
-    --text-light:   rgba(255,255,255,0.85);
-    --text-light-muted: rgba(255,255,255,0.45);
-
-    /* Marca */
-    --verde:        #00A651;
-    --verde-escuro: #007A3A;
-    --verde-neon:   #00E05A;
-    --ouro:         #C9960A;
-    --ouro-claro:   #F5C518;
-    --ouro-bg:      #FFF8E1;
-    --azul-brasil:  #003087;
-
-    /* Bordas */
-    --border-light: rgba(0,0,0,0.08);
-    --border-mid:   rgba(0,0,0,0.14);
-    --border-dark:  rgba(255,255,255,0.1);
+    /* Aliases legados (compatibilidade) */
+    --bg-primary:      #1A2B01;
+    --bg-secondary:    #223502;
+    --bg-card:         rgba(237,251,217,0.06);
+    --surface:         rgba(237,251,217,0.08);
+    --dark:            #1A2B01;
+    --dark-mid:        #223502;
+    --dark-muted:      #2e4903;
+    --text-heading:    #EDFBD9;
+    --text-body:       rgba(237,251,217,0.85);
+    --text-muted:      rgba(237,251,217,0.50);
+    --text-light:      rgba(237,251,217,0.85);
+    --text-light-muted:rgba(237,251,217,0.45);
+    --verde:           #94DD2D;
+    --verde-neon:      #94DD2D;
+    --ouro:            #FFC300;
+    --ouro-claro:      #FFD23D;
+    --ouro-bg:         rgba(255,195,0,0.10);
+    --border-light:    rgba(237,251,217,0.08);
+    --border-mid:      rgba(237,251,217,0.14);
+    --border-dark:     rgba(237,251,217,0.10);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
 
   body {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background: var(--bg-primary);
     color: var(--text-body);
     overflow-x: hidden;
@@ -1318,7 +1319,7 @@
   <div class="hero-content">
     <!-- Nav bar: logo left + buttons right -->
     <nav class="header-nav">
-      <div class="hero-logo"><img src="/logo-figuri.svg" alt="FIGURI IA"></div>
+      <div class="hero-logo"><img src="/logo.png" alt="Figuri"></div>
       <div class="header-right">
         <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
         <div class="user-menu" id="userMenu">
@@ -1777,7 +1778,7 @@
 
 <!-- FOOTER (escuro) -->
 <footer class="footer">
-  <img src="/logo-figuri.svg" alt="FIGURI IA" class="footer-logo" style="height:48px;width:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;">
+  <img src="/logo.png" alt="Figuri" class="footer-logo" style="height:48px;width:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;">
   <div class="footer-links">
     <a href="#precos">Preços</a>
     <a href="#avaliacoes">Avaliações</a>

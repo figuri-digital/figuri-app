@@ -3,21 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Identidade visual Figuri */
+  --verde-escuro:    #1A2B01;
+  --verde-principal: #396100;
+  --verde-claro:     #EDFBD9;
+  --verde-alpha:     rgba(237,251,217,0.08);
+  --amarelo:         #FFC300;
+  --amarelo-vivo:    #FFD23D;
+  --btn-claro:       #F9FFF1;
+  --btn-cta:         #94DD2D;
+  --btn-cta-hover:   #a8f033;
+
+  /* Aliases para Tailwind */
+  --background: #1A2B01;
+  --foreground: #EDFBD9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 @layer utilities {
