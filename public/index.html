@@ -1,2388 +1,1502 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIGURI IA — Vire Jogador da Copa em 30 Segundos</title>
-<link rel="icon" type="image/svg+xml" href="/fav.svg">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<style>
-  :root {
-    /* Identidade visual Figuri */
-    --verde-escuro:    #1A2B01;
-    --verde-principal: #396100;
-    --verde-claro:     #EDFBD9;
-    --verde-alpha:     rgba(237,251,217,0.08);
-    --amarelo:         #FFC300;
-    --amarelo-vivo:    #FFD23D;
-    --btn-claro:       #F9FFF1;
-    --btn-cta:         #94DD2D;
-    --btn-cta-hover:   #a8f033;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Figuri — Vire um Jogador da Copa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ───────────────────────────────────────
+       RESET & BASE
+    ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #1A2B01;
+      color: #EDFBD9;
+      overflow-x: hidden;
+    }
 
-    /* Aliases legados (compatibilidade) */
-    --bg-primary:      #1A2B01;
-    --bg-secondary:    #223502;
-    --bg-card:         rgba(237,251,217,0.06);
-    --surface:         rgba(237,251,217,0.08);
-    --dark:            #1A2B01;
-    --dark-mid:        #223502;
-    --dark-muted:      #2e4903;
-    --text-heading:    #EDFBD9;
-    --text-body:       rgba(237,251,217,0.85);
-    --text-muted:      rgba(237,251,217,0.50);
-    --text-light:      rgba(237,251,217,0.85);
-    --text-light-muted:rgba(237,251,217,0.45);
-    --verde:           #94DD2D;
-    --verde-neon:      #94DD2D;
-    --ouro:            #FFC300;
-    --ouro-claro:      #FFD23D;
-    --ouro-bg:         rgba(255,195,0,0.10);
-    --border-light:    rgba(237,251,217,0.08);
-    --border-mid:      rgba(237,251,217,0.14);
-    --border-dark:     rgba(237,251,217,0.10);
-  }
+    /* ───────────────────────────────────────
+       CSS VARIABLES
+    ─────────────────────────────────────── */
+    :root {
+      --verde-escuro:    #1A2B01;
+      --verde-principal: #396100;
+      --verde-claro:     #EDFBD9;
+      --verde-alpha:     rgba(237,251,217,0.08);
+      --amarelo:         #FFC300;
+      --btn-claro:       #F9FFF1;
+      --btn-cta:         #94DD2D;
+      --btn-cta-hover:   #a8f033;
+      --radius:          12px;
+    }
 
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
+    /* ───────────────────────────────────────
+       TICKER
+    ─────────────────────────────────────── */
+    .ticker {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 7px 0;
+    }
+    .ticker-track {
+      display: inline-flex;
+      gap: 0;
+      animation: ticker-scroll 22s linear infinite;
+    }
+    .ticker-item {
+      padding: 0 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ticker-item::after {
+      content: '⚽';
+      margin-left: 1.5rem;
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
 
-  body {
-    font-family: 'Montserrat', sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-body);
-    overflow-x: hidden;
-  }
+    /* ───────────────────────────────────────
+       NAVBAR
+    ─────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--verde-escuro);
+      border-bottom: 1px solid rgba(237,251,217,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 64px;
+    }
+    .navbar-logo img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-entrar {
+      background: transparent;
+      border: 1.5px solid var(--verde-claro);
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      padding: 0.45rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-entrar:hover { background: var(--verde-alpha); }
+    .btn-cta {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-cta:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
 
-  /* ── TICKER (fixo no topo) ── */
-  .ticker-wrapper {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-  }
+    /* ───────────────────────────────────────
+       HERO
+    ─────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('estadio.png');
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(0.55) saturate(1.2);
+      z-index: 0;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(26,43,1,0.45) 0%,
+        rgba(26,43,1,0.75) 60%,
+        rgba(26,43,1,0.98) 100%
+      );
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5% 5% 6%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero-left {}
+    .hero-tag {
+      display: inline-block;
+      background: var(--amarelo);
+      color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      padding: 0.3rem 0.9rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 7vw, 6.5rem);
+      line-height: 0.95;
+      color: var(--verde-claro);
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+    .hero-title span {
+      color: var(--verde-escuro);
+      background-image: url('fundo-texto.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: inline-block;
+      padding: 0 0.3em;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(237,251,217,0.80);
+      max-width: 440px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+    .hero-stat {
+      background-image: url('fundotext.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 100px;
+    }
+    .hero-stat-value {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #FFD23D;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .hero-stat-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #396100;
+      line-height: 1.3;
+      text-transform: lowercase;
+    }
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-hero-cta {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(148,221,45,0.35);
+    }
+    .btn-hero-cta:hover {
+      background: var(--btn-cta-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(148,221,45,0.45);
+    }
+    .hero-note {
+      font-size: 0.8rem;
+      color: rgba(237,251,217,0.55);
+    }
 
-  /* ── HEADER NAV (logo + botões no hero) ── */
-  .header-nav {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    margin-bottom: 4px;
-  }
+    /* Hero right — card */
+    .hero-card {
+      background: rgba(26,43,1,0.75);
+      border: 1px solid rgba(237,251,217,0.14);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 1.75rem;
+    }
+    .hero-card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      color: var(--verde-escuro);
+      margin-bottom: 1.25rem;
+      text-align: center;
+      display: block;
+      background-image: url('fundo-texto.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding: 0.5rem 2rem;
+    }
+    .hero-steps-mini {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+    }
+    .hero-step-dot.active { background: var(--amarelo); color: var(--verde-escuro); }
+    .hero-step-dot.done   { background: var(--btn-cta); color: var(--verde-escuro); }
+    .hero-step-dot.idle   { background: var(--verde-alpha); border: 1px solid rgba(237,251,217,0.2); color: rgba(237,251,217,0.5); }
+    .hero-step-line {
+      width: 24px; height: 2px;
+      background: rgba(237,251,217,0.15);
+      align-self: center;
+    }
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(237,251,217,0.5);
+      margin-bottom: 0.6rem;
+    }
+    .type-selector {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .type-btn {
+      flex: 1;
+      background: rgba(237,251,217,0.08);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      overflow: hidden;
+      padding: 0;
+    }
+    .type-btn-img {
+      background: rgba(57,97,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+    .type-btn img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      transition: transform 0.2s;
+    }
+    .type-btn-label {
+      background: var(--verde-principal);
+      color: var(--verde-claro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-align: center;
+      padding: 0.35rem 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .type-btn.active {
+      border-color: var(--amarelo);
+    }
+    .type-btn.active .type-btn-img { background: rgba(57,97,0,0.5); }
+    .type-btn.active .type-btn-label {
+      background: var(--amarelo);
+      color: var(--verde-escuro);
+    }
+    .type-btn.active img { transform: scale(1.06); }
+    .type-btn:hover:not(.active) {
+      border-color: rgba(237,251,217,0.3);
+    }
+    .type-btn:hover:not(.active) img { transform: scale(1.04); }
+    .preview-info {
+      background: var(--verde-alpha);
+      border: 1px solid rgba(148,221,45,0.2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .preview-icon {
+      width: 32px; height: 32px;
+      background: rgba(148,221,45,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .preview-text { font-size: 0.78rem; line-height: 1.4; color: rgba(237,251,217,0.75); }
+    .preview-text strong { color: var(--btn-cta); }
+    .preview-counter {
+      font-size: 0.72rem;
+      color: rgba(237,251,217,0.45);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .btn-card-cta {
+      width: 100%;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .btn-card-cta:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
 
-  .header-cta {
-    background: var(--verde);
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 22px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  .header-cta:hover { background: var(--verde-escuro); transform: translateY(-1px); }
+    /* ───────────────────────────────────────
+       SECTION BASE
+    ─────────────────────────────────────── */
+    .section { padding: 5rem 5%; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--btn-cta);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+    .section-title .highlight { color: var(--amarelo); }
 
-  .header-right { display: flex; align-items: center; gap: 12px; }
+    /* ───────────────────────────────────────
+       COMO CRIAR — 3 PASSOS
+    ─────────────────────────────────────── */
+    .steps-section {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+    }
+    .steps-section .section-tag {
+      color: var(--btn-cta);
+      text-align: center;
+      display: block;
+    }
+    .steps-section .section-title {
+      color: var(--verde-claro);
+      text-align: center;
+    }
+    .steps-section .section-title .highlight {
+      color: var(--btn-cta);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+    }
+    .steps-section .section-title strong {
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .step-card {
+      background: var(--verde-claro);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.5rem 1.75rem;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    .step-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .step-icon {
+      width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-icon img {
+      width: 72px; height: 72px;
+      object-fit: contain;
+    }
+    .step-num {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 3rem;
+      line-height: 1;
+      color: rgba(57,97,0,0.25);
+    }
+    .step-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--verde-escuro);
+      margin-bottom: 0.6rem;
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      line-height: 1.65;
+      color: #3a4f10;
+    }
+    .step-badge {
+      display: inline-block;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-top: 0.75rem;
+    }
 
-  .btn-entrar {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.5);
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 22px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  .btn-entrar:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
+    /* ───────────────────────────────────────
+       GALERIA
+    ─────────────────────────────────────── */
+    .gallery-section {
+      background: var(--verde-escuro);
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .gallery-img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
 
-  /* User dropdown (logado) */
-  .user-menu { position: relative; }
-  .user-menu-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.5);
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 22px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: none;
-  }
-  .user-menu-btn:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
-  .user-dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 6px;
-    background: var(--dark-mid);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-    min-width: 170px;
-    overflow: hidden;
-    z-index: 200;
-  }
-  .user-dropdown.open { display: block; }
-  .user-dropdown a {
-    display: block;
-    padding: 12px 18px;
-    color: rgba(255,255,255,0.85);
-    text-decoration: none;
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    transition: background 0.15s;
-  }
-  .user-dropdown a:hover { background: rgba(255,255,255,0.06); }
+    /* ───────────────────────────────────────
+       PRODUTOS
+    ─────────────────────────────────────── */
+    .products-section { background: #F9FFF1; }
+    .products-section .section-tag { color: var(--verde-principal); text-align: center; display: block; }
+    .products-section .section-title { color: var(--verde-escuro); text-align: center; }
+    .products-section .section-title .highlight { color: var(--btn-cta); }
+    .products-header { text-align: center; margin-bottom: 0.5rem; }
+    .products-sub {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--verde-principal);
+      margin-bottom: 2.5rem;
+    }
+    .products-sub strong { color: var(--verde-principal); }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(57,97,0,0.10);
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 36px rgba(57,97,0,0.18);
+    }
+    .product-img-wrap {
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .product-card:hover .product-img-wrap img { transform: scale(1.04); }
+    .product-info {
+      padding: 0.9rem 1rem 1rem;
+      width: 100%;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .product-name {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--verde-escuro);
+      margin-bottom: 0.5rem;
+    }
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-price {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--verde-principal);
+      line-height: 1;
+    }
+    .btn-add-cart {
+      width: 38px; height: 38px;
+      background: var(--verde-principal);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-add-cart:hover { background: var(--btn-cta); color: var(--verde-escuro); transform: scale(1.1); }
+    .products-cta { text-align: center; margin-top: 2.5rem; }
+    .btn-lg-cta {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      padding: 0.9rem 2.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(26,43,1,0.25);
+    }
+    .btn-lg-cta:hover { background: var(--verde-principal); transform: translateY(-2px); }
 
-  /* Login modal */
-  .login-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-  }
-  .login-overlay.open { display: flex; }
-  .login-modal {
-    background: #fff;
-    border-radius: 12px;
-    padding: 40px 36px;
-    max-width: 400px;
-    width: 90%;
-    position: relative;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-  }
-  .login-close {
-    position: absolute;
-    top: 14px; right: 16px;
-    background: none; border: none;
-    font-size: 22px;
-    color: var(--text-muted);
-    cursor: pointer;
-    line-height: 1;
-  }
-  .login-close:hover { color: var(--text-heading); }
-  .login-title {
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    color: var(--text-heading);
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  .btn-google {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 14px;
-    background: var(--verde);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .btn-google:hover { background: var(--verde-escuro); }
-  .login-sep {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    color: var(--text-muted);
-    font-size: 13px;
-    font-family: 'Sora', sans-serif;
-  }
-  .login-sep::before, .login-sep::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border-mid);
-  }
-  .login-field {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--border-mid);
-    border-radius: 6px;
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    margin-bottom: 12px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .login-field:focus { border-color: var(--verde); }
-  .btn-login-submit {
-    width: 100%;
-    padding: 14px;
-    background: var(--dark);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .btn-login-submit:hover { background: var(--dark-muted); }
-  .login-link {
-    display: block;
-    text-align: center;
-    margin-top: 16px;
-    font-size: 13px;
-    color: var(--verde);
-    font-family: 'Sora', sans-serif;
-    text-decoration: none;
-  }
-  .login-link:hover { text-decoration: underline; }
-  .login-error {
-    display: none;
-    background: #FFF0F0;
-    border: 1px solid #E8AAAA;
-    color: #C33;
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .login-error.show { display: block; }
-  .btn-login-submit:disabled, .btn-google:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+    /* ───────────────────────────────────────
+       DEPOIMENTOS
+    ─────────────────────────────────────── */
+    .testimonials-section { background: var(--verde-escuro); }
+    .testimonials-header { text-align: center; margin-bottom: 2.5rem; }
+    .testimonials-count {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      color: var(--verde-claro);
+      line-height: 1;
+    }
+    .testimonials-count span { color: var(--amarelo); }
+    .testimonials-label {
+      font-size: 0.95rem;
+      color: rgba(237,251,217,0.55);
+      margin-top: 0.25rem;
+    }
+    .carousel-wrap {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .testimonials-grid {
+      display: flex;
+      gap: 1.25rem;
+    }
+    .testimonial-card {
+      background: rgba(57,97,0,0.2);
+      border: 1px solid rgba(237,251,217,0.10);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+      flex: 0 0 calc((100% - 2.5rem) / 3);
+      min-width: 0;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(255,195,0,0.3);
+      transform: translateY(-3px);
+    }
+    .carousel-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.75rem;
+    }
+    .carousel-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(57,97,0,0.35);
+      border: 1px solid rgba(237,251,217,0.18);
+      color: var(--verde-claro);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      line-height: 1;
+    }
+    .carousel-btn:hover { background: var(--verde-principal); border-color: var(--amarelo); }
+    .carousel-btn:disabled { opacity: 0.3; cursor: default; }
+    .carousel-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .carousel-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(237,251,217,0.2);
+      transition: background 0.2s, transform 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .carousel-dot.active { background: var(--amarelo); transform: scale(1.3); }
+    .stars {
+      color: var(--amarelo);
+      font-size: 0.9rem;
+      margin-bottom: 0.85rem;
+    }
+    .testimonial-text {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: rgba(237,251,217,0.80);
+      margin-bottom: 1.25rem;
+      font-style: italic;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+    .author-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--verde-principal);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      color: var(--verde-claro);
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid rgba(255,195,0,0.35);
+    }
+    .author-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .author-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--verde-claro);
+    }
+    .author-city {
+      font-size: 0.75rem;
+      color: rgba(237,251,217,0.45);
+    }
 
-  /* Barra de créditos */
-  .credits-bar {
-    margin-top: 12px;
-    text-align: center;
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.7);
-    letter-spacing: 0.5px;
-  }
-  .credits-progress {
-    display: none;
-    margin: 8px auto 0;
-    max-width: 220px;
-    height: 6px;
-    background: rgba(255,255,255,0.12);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .credits-progress-fill {
-    height: 100%;
-    background: var(--verde-neon);
-    border-radius: 3px;
-    transition: width 0.4s ease;
-  }
-  .credits-text-logged { display: none; }
-  .credits-text-guest { display: inline; }
+    /* ───────────────────────────────────────
+       FAQ
+    ─────────────────────────────────────── */
+    .faq-section {
+      background: var(--verde-claro);
+      color: var(--verde-escuro);
+    }
+    .faq-section .section-tag { color: var(--verde-principal); }
+    .faq-section .section-title { color: var(--verde-escuro); }
+    .faq-list { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .faq-item {
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(57,97,0,0.06);
+    }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.5rem;
+      cursor: pointer;
+      text-align: left;
+      gap: 1rem;
+    }
+    .faq-q-text {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--verde-escuro);
+    }
+    .faq-icon {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--verde-claro);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--verde-principal);
+      transition: background 0.2s, transform 0.3s;
+    }
+    .faq-item.open .faq-icon {
+      background: var(--verde-principal);
+      color: #fff;
+      transform: rotate(45deg);
+    }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 1.5rem;
+    }
+    .faq-item.open .faq-a {
+      max-height: 200px;
+      padding: 0 1.5rem 1.1rem;
+    }
+    .faq-a p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #4a5a2a;
+    }
 
-  /* ── WIZARD STEPS ── */
-  .wizard-steps-indicator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-  .wizard-dot {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Sora', sans-serif;
-    font-weight: 700; font-size: 14px;
-    color: rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(255,255,255,0.1);
-    transition: all 0.3s;
-  }
-  .wizard-dot.active {
-    color: #fff;
-    background: var(--verde);
-    border-color: var(--verde-neon);
-    box-shadow: 0 0 12px rgba(0,224,90,0.4);
-  }
-  .wizard-dot.done {
-    color: #fff;
-    background: var(--verde-escuro);
-    border-color: var(--verde);
-  }
-  .wizard-line {
-    width: 28px; height: 2px;
-    background: rgba(255,255,255,0.1);
-    transition: background 0.3s;
-  }
-  .wizard-line.done { background: var(--verde); }
+    /* ───────────────────────────────────────
+       CTA FINAL
+    ─────────────────────────────────────── */
+    .cta-final-section {
+      background: var(--amarelo);
+      padding: 0 5%;
+      overflow: hidden;
+    }
+    .cta-final-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+      gap: 2rem;
+      min-height: 480px;
+    }
+    .cta-final-img {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 100%;
+    }
+    .cta-final-img img {
+      max-height: 480px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 16px 40px rgba(26,43,1,0.3));
+    }
+    .cta-final-text {
+      padding: 4rem 0;
+    }
+    .cta-final-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 0.95;
+      color: var(--verde-escuro);
+      margin-bottom: 1.25rem;
+    }
+    .cta-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .cta-bullets li {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--verde-escuro);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cta-bullets li::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px; height: 20px;
+      background: var(--verde-escuro);
+      color: var(--amarelo);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .cta-final-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-cta-dark {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-cta-dark:hover { background: var(--verde-principal); transform: translateY(-2px); }
 
-  .wizard-step {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-  .wizard-step.active {
-    display: block;
-    opacity: 1;
-  }
+    /* ───────────────────────────────────────
+       FOOTER
+    ─────────────────────────────────────── */
+    .footer {
+      background: var(--verde-escuro);
+      border-top: 1px solid rgba(237,251,217,0.08);
+      padding: 2rem 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-logo img { height: 28px; opacity: 0.75; }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .footer-links a {
+      font-size: 0.8rem;
+      color: rgba(237,251,217,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--verde-claro); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(237,251,217,0.3);
+    }
 
-  .wizard-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 16px;
-    padding: 0;
-    transition: color 0.2s;
-  }
-  .wizard-back:hover { color: rgba(255,255,255,0.8); }
-
-  .wizard-step-title {
-    font-family: 'Sora', sans-serif; font-weight: 700;
-    font-size: 26px;
-    color: #fff;
-    text-align: center;
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-  .wizard-step-sub {
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.45);
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  /* Step 1: Upload dropzone */
-  .wizard-dropzone {
-    border: 2px dashed rgba(201,150,10,0.35);
-    border-radius: 12px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: rgba(255,255,255,0.03);
-  }
-  .wizard-dropzone:hover {
-    border-color: var(--ouro-claro);
-    background: rgba(255,255,255,0.06);
-  }
-  .wizard-dropzone.dragover {
-    border-color: var(--verde-neon);
-    background: rgba(0,224,90,0.06);
-  }
-  .wizard-dropzone-icon { font-size: 48px; margin-bottom: 10px; }
-  .wizard-dropzone-text {
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    color: rgba(255,255,255,0.5);
-  }
-  .wizard-dropzone-text strong { color: var(--ouro-claro); }
-  .wizard-file-name {
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    color: var(--verde-neon);
-    margin-top: 10px;
-  }
-
-  /* Step 2: Type cards */
-  .wizard-type-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  .wizard-type-card {
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 28px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-  }
-  .wizard-type-card:hover {
-    border-color: var(--ouro-claro);
-    background: rgba(255,255,255,0.08);
-    transform: translateY(-3px);
-  }
-  .wizard-type-card.selected {
-    border-color: var(--verde-neon);
-    background: rgba(0,224,90,0.08);
-    box-shadow: 0 0 20px rgba(0,224,90,0.15);
-  }
-  .wizard-type-icon { font-size: 42px; display: block; margin-bottom: 10px; }
-  .wizard-type-label {
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* Step 3: Country selection */
-  .wizard-confed-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 16px;
-  }
-  .wizard-confed-tab {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.5);
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 8px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .wizard-confed-tab:hover { color: rgba(255,255,255,0.7); }
-  .wizard-confed-tab.active {
-    background: rgba(201,150,10,0.15);
-    border-color: var(--ouro-claro);
-    color: var(--ouro-claro);
-  }
-  .wizard-country-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .wizard-country-card {
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 16px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-  }
-  .wizard-country-card:hover {
-    border-color: var(--ouro-claro);
-    background: rgba(255,255,255,0.08);
-  }
-  .wizard-country-card.selected {
-    border-color: var(--verde-neon);
-    background: rgba(0,224,90,0.08);
-  }
-  .wizard-country-flag { font-size: 32px; display: block; margin-bottom: 6px; }
-  .wizard-country-name {
-    font-family: 'Sora', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .wizard-country-group { display: none; }
-  .wizard-country-group.active { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
-
-  .btn-generate {
-    display: block;
-    width: 100%;
-    background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-weight: 900;
-    font-size: 18px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 32px rgba(0,166,81,0.3);
-    margin-top: 8px;
-  }
-  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,166,81,0.5); }
-  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-  @media(max-width:480px) {
-    .wizard-type-grid { grid-template-columns: 1fr; }
-    .wizard-country-group.active { grid-template-columns: 1fr; }
-  }
-
-  @media(max-width:600px){
-    .btn-entrar { font-size: 12px; padding: 8px 14px; }
-    .user-menu-btn { font-size: 12px; padding: 8px 14px; }
-    .header-cta { font-size: 12px; padding: 8px 14px; }
-  }
-
-  .ticker {
-    background: var(--verde-escuro);
-    overflow: hidden;
-    height: 40px;
-    border-bottom: 2px solid var(--ouro);
-    display: flex;
-    align-items: center;
-  }
-  .ticker-track {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    flex-shrink: 0;
-    animation: ticker 25s linear infinite;
-    white-space: nowrap;
-  }
-  .ticker-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 0 36px;
-    height: 40px;
-    font-family: 'Sora', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.7);
-    flex-shrink: 0;
-    line-height: 40px;
-  }
-  .ticker-item span { color: var(--ouro-claro); }
-  @keyframes ticker {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
-
-  /* ── HERO (escuro — seção de impacto) ── */
-  .hero {
-    background: var(--dark);
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    padding: 60px 32px 80px;
-  }
-  .hero-glow {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 65% 40%, rgba(0,166,81,0.14) 0%, transparent 55%),
-      radial-gradient(ellipse at 15% 75%, rgba(201,150,10,0.08) 0%, transparent 50%);
-    pointer-events: none;
-  }
-  .hero-grid-bg {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 56px 56px;
-    pointer-events: none;
-  }
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 1160px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 64px;
-    align-items: center;
-    width: 100%;
-  }
-
-  .hero-logo img {
-    height: 56px;
-    width: auto;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(0,166,81,0.15);
-    border: 1px solid rgba(0,166,81,0.35);
-    color: var(--verde-neon);
-    font-family: 'Sora', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border-radius: 100px;
-    margin-bottom: 24px;
-  }
-  .hero-badge::before {
-    content:'';
-    width:7px; height:7px;
-    background: var(--verde-neon);
-    border-radius:50%;
-    animation: blink 1.5s ease-in-out infinite;
-  }
-  @keyframes blink {
-    0%,100%{ opacity:1; } 50%{ opacity:0.25; }
-  }
-
-  .hero-title {
-    font-family: 'Sora', sans-serif;
-    font-weight: 800;
-    font-size: clamp(42px, 5.5vw, 72px);
-    line-height: 1;
-    letter-spacing: -1px;
-    margin-bottom: 28px;
-  }
-  .hero-title .l1 { display:block; color:#fff; }
-  .hero-title .l2 { display:block; color: var(--ouro-claro); text-shadow: 0 0 48px rgba(245,197,24,0.35); }
-  .hero-title .l3 { display:block; color: var(--verde-neon); }
-
-  .hero-sub {
-    font-family: 'Sora', sans-serif;
-    font-size: 16px;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.75;
-    margin-bottom: 36px;
-    max-width: 460px;
-  }
-  .hero-sub strong { color: rgba(255,255,255,0.9); }
-
-  .hero-stats {
-    display: flex;
-    gap: 36px;
-    margin-bottom: 0;
-    flex-wrap: wrap;
-  }
-  .stat-num {
-    font-family: 'Sora', sans-serif; font-weight: 700;
-    font-size: 40px;
-    line-height: 1;
-    color: var(--ouro-claro);
-    display: block;
-  }
-  .stat-lbl {
-    font-family: 'Sora', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-  }
-
-  /* ── UPLOAD BOX (no hero escuro) ── */
-  .upload-box {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(201,150,10,0.2);
-    border-radius: 16px;
-    padding: 36px 28px;
-    transition: all 0.3s;
-    position: relative;
-    backdrop-filter: blur(8px);
-  }
-  .upload-icon { font-size: 44px; margin-bottom: 14px; display:block; text-align:center; }
-  .upload-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 22px; font-weight:700;
-    color: #fff;
-    margin-bottom: 6px;
-    text-align: center;
-  }
-  .upload-sub { font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:22px; text-align:center; }
-  .upload-input { display:none; }
-
-  .upload-note { font-size:11px; color:rgba(255,255,255,0.25); margin-top:14px; text-align:center; }
-
-  /* ── LAYOUT BASE (claro) ── */
-  .section { padding: 96px 32px; }
-  .container { max-width:1160px; margin:0 auto; }
-
-  .sec-label {
-    font-family: 'Sora', sans-serif;
-    font-size:11px; font-weight:700;
-    letter-spacing:4px; text-transform:uppercase;
-    color: var(--verde);
-    margin-bottom:14px; display:block;
-  }
-  .sec-title {
-    font-family: 'Sora', sans-serif; font-weight: 700;
-    font-size: clamp(40px,5vw,64px);
-    line-height:1; letter-spacing:1px;
-    color: var(--text-heading);
-    margin-bottom: 16px;
-  }
-  .sec-title em { color: var(--ouro); font-style:normal; }
-  .sec-sub {
-    font-size:15px; color: var(--text-muted);
-    line-height:1.75; max-width:500px;
-  }
-
-  /* ── HOW IT WORKS (fundo claro) ── */
-  .how-section { background: var(--bg-primary); }
-
-  .steps-grid {
-    display:grid;
-    grid-template-columns: repeat(3,1fr);
-    gap:24px;
-    margin-top:56px;
-  }
-  .step {
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: 16px;
-    padding: 40px 32px;
-    position:relative;
-    transition: all 0.3s;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  }
-  .step:hover {
-    border-color: rgba(0,166,81,0.25);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-    transform: translateY(-4px);
-  }
-  .step-num {
-    font-family: 'Sora', sans-serif; font-weight: 700;
-    font-size:88px; line-height:1;
-    color: rgba(0,166,81,0.06);
-    position:absolute; top:12px; right:20px;
-  }
-  .step-icon { font-size:36px; margin-bottom:20px; display:block; }
-  .step-title {
-    font-family: 'Sora', sans-serif;
-    font-size:22px; font-weight:700;
-    color: var(--text-heading);
-    margin-bottom:10px;
-  }
-  .step-desc { font-size:14px; color: var(--text-muted); line-height:1.7; }
-
-  /* ── GALLERY (fundo neutro — cards destacados) ── */
-  .gallery-section { background: var(--bg-secondary); }
-
-  .gallery-scroll {
-    display:grid;
-    grid-template-columns: repeat(6,190px);
-    gap:16px;
-    overflow-x:auto;
-    padding-bottom:16px;
-    margin-top:48px;
-    scrollbar-width:none;
-  }
-  .gallery-scroll::-webkit-scrollbar { display:none; }
-
-  /* Card wrapper: fundo neutro evita cor sobre cor */
-  .card-wrap {
-    background: #E8E6E0;
-    border-radius:14px;
-    padding:10px;
-    flex-shrink:0;
-    transition: all 0.3s;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-  }
-  .card-wrap:hover {
-    transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 20px 48px rgba(0,0,0,0.15);
-  }
-
-  .card {
-    border-radius: 8px;
-    overflow:hidden;
-    aspect-ratio: 5.5/7.5;
-    position:relative;
-  }
-  .card-bg {
-    position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    justify-content:space-between;
-    padding:12px;
-  }
-  .card-top { display:flex; justify-content:space-between; align-items:center; }
-  .card-flag { font-size:18px; }
-  .card-num { font-family:'Sora',sans-serif; font-weight:700; font-size:26px; opacity:0.55; }
-  .card-figure { flex:1; display:flex; align-items:center; justify-content:center; font-size:60px; }
-  .card-bottom {
-    text-align:center; padding-top:8px;
-    border-top: 1px solid rgba(255,255,255,0.15);
-  }
-  .card-name { font-family:'Sora',sans-serif; font-weight:700; font-size:17px; letter-spacing:1px; display:block; }
-  .card-pos { font-size:9px; text-transform:uppercase; letter-spacing:2px; opacity:0.5; }
-
-  .card-verde  { background:linear-gradient(155deg,#004D20 0%,#001A0A 100%); color:#fff; }
-  .card-azul   { background:linear-gradient(155deg,#002060 0%,#000D33 100%); color:#fff; }
-  .card-verm   { background:linear-gradient(155deg,#5C0000 0%,#2A0000 100%); color:#fff; }
-  .card-ouro-g {
-    background:linear-gradient(155deg,#3D2800 0%,#1A1000 100%);
-    color:#fff;
-    border: 1.5px solid rgba(245,197,24,0.5);
-  }
-  .card-ouro-g .card-name { color: var(--ouro-claro); }
-
-  .card-holo {
-    background:linear-gradient(155deg,#1E0040 0%,#000D26 100%);
-    color:#fff;
-  }
-  .card-holo::after {
-    content:'';
-    position:absolute; inset:0;
-    background:linear-gradient(135deg,
-      transparent 0%, rgba(255,100,200,0.12) 25%,
-      transparent 45%, rgba(100,220,255,0.12) 65%,
-      transparent 85%, rgba(255,215,0,0.1) 100%);
-    animation: holo 3s ease-in-out infinite alternate;
-    pointer-events:none;
-  }
-  @keyframes holo {
-    0%  { opacity:0.3; transform:translateX(-8px); }
-    100%{ opacity:1;   transform:translateX(8px); }
-  }
-  .rare-badge {
-    position:absolute; top:8px; left:8px; z-index:2;
-    background:linear-gradient(135deg,#9B59B6,#3498DB);
-    font-size:8px; font-family:'Sora',sans-serif;
-    font-weight:700; letter-spacing:1px;
-    padding:2px 8px; border-radius:100px;
-    text-transform:uppercase; color:#fff;
-  }
-
-  /* ── PRICING (branco puro — legibilidade máxima) ── */
-  .pricing-section { background: var(--surface); }
-
-  .pricing-grid {
-    display:grid;
-    grid-template-columns: repeat(3,1fr);
-    gap:24px;
-    margin-top:56px;
-    align-items:start;
-  }
-  .plan {
-    background: var(--bg-primary);
-    border: 1.5px solid var(--border-mid);
-    border-radius: 16px;
-    padding: 36px 28px;
-    transition: all 0.3s;
-    position:relative;
-  }
-  .plan:hover {
-    border-color: rgba(0,166,81,0.3);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-    transform: translateY(-4px);
-  }
-  .plan.featured {
-    background: var(--dark);
-    border-color: var(--verde);
-    box-shadow: 0 16px 56px rgba(0,0,0,0.2);
-    transform: translateY(-8px);
-  }
-  .plan.featured:hover { transform: translateY(-12px); }
-
-  .plan-badge {
-    display:inline-block;
-    background: var(--verde);
-    font-family:'Sora',sans-serif;
-    font-size:11px; font-weight:700;
-    letter-spacing:2px; text-transform:uppercase;
-    padding:4px 14px; border-radius:100px;
-    color:#fff; margin-bottom:20px;
-  }
-
-  .plan-name {
-    font-family:'Sora',sans-serif;
-    font-size:13px; font-weight:700;
-    letter-spacing:3px; text-transform:uppercase;
-    color: var(--text-muted);
-    margin-bottom:12px;
-  }
-  .plan.featured .plan-name { color:rgba(255,255,255,0.45); }
-
-  .plan-price {
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:64px; line-height:1;
-    color: var(--text-heading);
-    margin-bottom:4px;
-  }
-  .plan-price span { font-size:26px; color: var(--text-muted); }
-  .plan.featured .plan-price { color:#fff; }
-  .plan.featured .plan-price span { color:rgba(255,255,255,0.4); }
-
-  .plan-desc { font-size:13px; color: var(--text-muted); margin-bottom:28px; }
-  .plan.featured .plan-desc { color:rgba(255,255,255,0.45); }
-
-  .plan-features { list-style:none; margin-bottom:28px; }
-  .plan-features li {
-    font-size:14px; color: var(--text-body);
-    padding:10px 0;
-    border-bottom:1px solid var(--border-light);
-    display:flex; align-items:center; gap:10px;
-  }
-  .plan.featured .plan-features li {
-    color:rgba(255,255,255,0.75);
-    border-bottom-color: rgba(255,255,255,0.08);
-  }
-  .plan-features li::before {
-    content:'✓';
-    font-family:'Sora',sans-serif;
-    font-weight:900; color: var(--verde);
-    font-size:15px; flex-shrink:0;
-  }
-
-  .btn-plan {
-    display:block; text-align:center; width:100%;
-    font-family:'Sora',sans-serif;
-    font-weight:900; font-size:16px;
-    letter-spacing:1px; text-transform:uppercase;
-    padding:14px; border-radius:8px;
-    cursor:pointer; border:none;
-    transition: all 0.3s; text-decoration:none;
-  }
-  .btn-plan-outline {
-    background:transparent;
-    border:1.5px solid var(--border-mid);
-    color: var(--text-heading);
-  }
-  .btn-plan-outline:hover {
-    border-color: var(--verde);
-    color: var(--verde);
-  }
-  .btn-plan-primary {
-    background:linear-gradient(135deg, var(--verde), var(--verde-escuro));
-    color:#fff;
-    box-shadow:0 8px 28px rgba(0,166,81,0.35);
-  }
-  .btn-plan-primary:hover {
-    transform:translateY(-2px);
-    box-shadow:0 12px 40px rgba(0,166,81,0.5);
-  }
-
-  /* ── COUNTDOWN (escuro — seção de destaque) ── */
-  .countdown-section {
-    background: var(--dark);
-    padding:80px 32px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .countdown-section::before {
-    content:'⚽';
-    position:absolute;
-    font-size:360px; opacity:0.04;
-    top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    pointer-events:none;
-  }
-  .cd-label {
-    font-family:'Sora',sans-serif;
-    font-size:13px; font-weight:700;
-    letter-spacing:4px; text-transform:uppercase;
-    color:rgba(255,255,255,0.35);
-    margin-bottom:10px; display:block;
-  }
-  .cd-title {
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:clamp(32px,5vw,60px);
-    color:#fff; margin-bottom:48px;
-  }
-  .cd-title span { color: var(--ouro-claro); }
-
-  .cd-grid {
-    display:flex; justify-content:center;
-    gap:12px; margin-bottom:48px; flex-wrap:wrap;
-  }
-  .cd-unit {
-    background: rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.12);
-    border-radius:10px;
-    padding:18px 28px; min-width:90px;
-  }
-  .cd-num {
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:52px; line-height:1;
-    color: var(--ouro-claro); display:block;
-  }
-  .cd-unit-lbl {
-    font-size:10px; text-transform:uppercase;
-    letter-spacing:2px; color:rgba(255,255,255,0.35);
-    margin-top:4px; display:block;
-    font-family:'Sora',sans-serif;
-  }
-
-  .btn-cd {
-    background:linear-gradient(135deg, var(--ouro-claro), #E5A800);
-    color: var(--dark);
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:22px; letter-spacing:2px;
-    padding:18px 56px; border-radius:8px;
-    border:none; cursor:pointer;
-    box-shadow:0 12px 48px rgba(245,197,24,0.3);
-    transition:all 0.3s; text-decoration:none;
-    display:inline-block;
-  }
-  .btn-cd:hover {
-    transform:translateY(-3px);
-    box-shadow:0 20px 64px rgba(245,197,24,0.45);
-  }
-
-  /* ── REVIEWS (fundo claro) ── */
-  .reviews-section { background: var(--bg-primary); }
-
-  .reviews-carousel { position:relative; margin-top:48px; }
-  .reviews-track-wrap { overflow:hidden; }
-  .reviews-grid {
-    display:flex;
-    gap:16px;
-    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-    will-change: transform;
-  }
-  .review { flex: 0 0 calc(33.333% - 11px); max-width: calc(33.333% - 11px); }
-  @media(max-width:768px){
-    .review { flex: 0 0 calc(33.333% - 11px); max-width: calc(33.333% - 11px); }
-  }
-  @media(max-width:560px){
-    .review { flex: 0 0 calc(80vw); max-width: calc(80vw); }
-  }
-  .carousel-nav {
-    display:flex; justify-content:center; align-items:center;
-    gap:12px; margin-top:24px;
-  }
-  .carousel-btn {
-    width:36px; height:36px; border-radius:50%;
-    background:var(--surface); border:1px solid var(--border-light);
-    color:var(--text-heading); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    transition:all 0.2s;
-  }
-  .carousel-btn:hover { background:var(--verde-vivo); border-color:var(--verde-vivo); color:#fff; }
-  .carousel-dots { display:flex; gap:6px; }
-  .carousel-dot {
-    width:8px; height:8px; border-radius:50%;
-    background:var(--border-light); cursor:pointer; transition:all 0.2s;
-  }
-  .carousel-dot.active { background:var(--verde-vivo); width:20px; border-radius:4px; }
-  .review {
-    background: var(--surface);
-    border:1px solid var(--border-light);
-    border-radius:14px; padding:28px;
-    transition:all 0.3s;
-    box-shadow:0 2px 8px rgba(0,0,0,0.04);
-  }
-  .review:hover {
-    border-color:rgba(0,166,81,0.2);
-    box-shadow:0 12px 36px rgba(0,0,0,0.08);
-    transform:translateY(-4px);
-  }
-  .review-stars { color: var(--ouro); font-size:15px; margin-bottom:14px; letter-spacing:2px; }
-  .review-text {
-    font-family:'Sora',sans-serif;
-    font-size:14px; color: var(--text-body);
-    line-height:1.75; margin-bottom:20px;
-    font-style:italic;
-  }
-  .reviewer { display:flex; align-items:center; gap:12px; }
-  .reviewer-avatar {
-    width:48px; height:48px; border-radius:50%;
-    background: var(--bg-secondary);
-    display:flex; align-items:center;
-    justify-content:center; font-size:18px;
-    border:2px solid rgba(0,166,81,0.3);
-    flex-shrink:0;
-    overflow:hidden;
-  }
-  .reviewer-avatar img {
-    width:100%; height:100%; object-fit:cover; border-radius:50%;
-  }
-  .reviewer-name {
-    font-family:'Sora',sans-serif;
-    font-size:16px; font-weight:700;
-    color: var(--text-heading);
-  }
-  .reviewer-info { font-size:12px; color: var(--text-muted); }
-
-  /* ── FAQ (fundo secundário) ── */
-  .faq-section { background: var(--bg-secondary); }
-
-  .faq-list {
-    max-width:700px; margin:56px auto 0;
-  }
-  .faq-item {
-    background: var(--surface);
-    border:1px solid var(--border-light);
-    border-radius:10px; margin-bottom:8px;
-    overflow:hidden;
-    box-shadow:0 1px 4px rgba(0,0,0,0.04);
-  }
-  .faq-q {
-    display:flex; justify-content:space-between;
-    align-items:center;
-    padding:20px 24px; cursor:pointer;
-    font-family:'Sora',sans-serif;
-    font-size:17px; font-weight:700;
-    color: var(--text-heading);
-    transition:color 0.2s;
-    background:none; border:none; width:100%;
-    text-align:left; gap:16px;
-  }
-  .faq-q:hover { color: var(--verde); }
-  .faq-icon {
-    font-family:monospace; font-weight:900;
-    color: var(--verde); font-size:20px;
-    flex-shrink:0; transition:transform 0.3s;
-  }
-  .faq-a {
-    font-size:14px; color: var(--text-body);
-    line-height:1.75; padding:0 24px 20px;
-    display:none;
-  }
-  .faq-item.open .faq-a { display:block; }
-  .faq-item.open .faq-icon { transform:rotate(45deg); }
-  .faq-item.open .faq-q { color: var(--verde); }
-
-  /* ── CTA FINAL (escuro — fechamento de impacto) ── */
-  .cta-section {
-    background: var(--dark-mid);
-    padding:120px 32px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .cta-section::before {
-    content:'';
-    position:absolute; inset:0;
-    background:radial-gradient(ellipse at 50% 60%, rgba(0,166,81,0.1) 0%, transparent 65%);
-    pointer-events:none;
-  }
-  .cta-title {
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:clamp(52px,8vw,100px);
-    line-height:0.9; margin-bottom:24px;
-    position:relative; z-index:1;
-  }
-  .cta-title .ct1 { display:block; color:#fff; }
-  .cta-title .ct2 { display:block; color: var(--ouro-claro); }
-  .cta-title .ct3 { display:block; color: var(--verde-neon); }
-
-  .cta-sub {
-    font-size:17px; color:rgba(255,255,255,0.5);
-    margin-bottom:44px; max-width:460px;
-    margin-left:auto; margin-right:auto;
-    line-height:1.7; position:relative; z-index:1;
-  }
-
-  .btn-cta-big {
-    background:linear-gradient(135deg, var(--verde), var(--verde-escuro));
-    color:#fff;
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:26px; letter-spacing:2px;
-    padding:20px 64px; border-radius:8px;
-    border:none; cursor:pointer;
-    box-shadow:0 16px 56px rgba(0,166,81,0.35);
-    transition:all 0.3s; text-decoration:none;
-    display:inline-block; position:relative; z-index:1;
-  }
-  .btn-cta-big:hover {
-    transform:translateY(-4px);
-    box-shadow:0 24px 72px rgba(0,166,81,0.5);
-  }
-
-  .guarantee {
-    display:flex; align-items:center;
-    justify-content:center; gap:8px;
-    margin-top:22px; font-size:12px;
-    color:rgba(255,255,255,0.3);
-    position:relative; z-index:1;
-    font-family:'Sora',sans-serif;
-    letter-spacing:0.5px;
-  }
-
-  /* ── FLOATING BTN ── */
-  .floating-cta {
-    position:fixed; bottom:24px; right:24px; z-index:90;
-    background: var(--verde);
-    color:#fff;
-    font-family:'Sora',sans-serif;
-    font-weight:900; font-size:14px;
-    letter-spacing:1px; text-transform:uppercase;
-    padding:13px 24px; border-radius:100px;
-    border:none; cursor:pointer;
-    box-shadow:0 8px 28px rgba(0,166,81,0.4);
-    transition:all 0.3s;
-    display:flex; align-items:center; gap:8px;
-    text-decoration:none;
-    animation:floatbtn 3s ease-in-out infinite;
-  }
-  @keyframes floatbtn {
-    0%,100%{ transform:translateY(0); }
-    50%    { transform:translateY(-4px); }
-  }
-  .floating-cta:hover {
-    animation:none;
-    transform:scale(1.06);
-    box-shadow:0 12px 40px rgba(0,166,81,0.55);
-  }
-
-  /* ── FOOTER (escuro) ── */
-  .footer {
-    background: var(--dark);
-    border-top:1px solid rgba(255,255,255,0.06);
-    padding:40px 32px; text-align:center;
-  }
-  .footer-logo {
-    font-family:'Sora',sans-serif; font-weight:700;
-    font-size:28px; color: var(--ouro-claro);
-    margin-bottom:16px; display:block;
-  }
-  .footer-links {
-    display:flex; justify-content:center;
-    gap:28px; margin-bottom:20px; flex-wrap:wrap;
-  }
-  .footer-links a {
-    font-size:13px; color:rgba(255,255,255,0.3);
-    text-decoration:none; transition:color 0.2s;
-    font-family:'Sora',sans-serif;
-    letter-spacing:0.5px;
-  }
-  .footer-links a:hover { color:rgba(255,255,255,0.7); }
-  .footer-copy { font-size:11px; color:rgba(255,255,255,0.15); }
-
-  /* ── FADE UP ── */
-  .fade-up {
-    opacity:0; transform:translateY(28px);
-    transition:opacity 0.65s ease, transform 0.65s ease;
-  }
-  .fade-up.visible { opacity:1; transform:translateY(0); }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width:768px){
-    .hero-content { grid-template-columns:1fr; gap:40px; }
-    .steps-grid   { grid-template-columns:1fr; }
-    .pricing-grid { grid-template-columns:1fr; }
-    .plan.featured { transform:none; }
-    .reviews-grid { flex-wrap:nowrap; }
-    .gallery-scroll { grid-template-columns:repeat(6,160px); }
-    .section { padding:72px 20px; }
-  }
-</style>
+    /* ───────────────────────────────────────
+       RESPONSIVE
+    ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        padding: 6% 5% 5%;
+      }
+      .hero-card { max-width: 480px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .testimonial-card { flex: 0 0 100%; }
+      .cta-final-inner { grid-template-columns: 1fr; }
+      .cta-final-img { display: none; }
+      .footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+    @media (max-width: 520px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 0.5rem; }
+      .navbar-logo img { height: 28px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- TICKER (fixo no topo) -->
-<div class="ticker-wrapper">
-  <div class="ticker">
+  <!-- ── TICKER ── -->
+  <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
-      <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
-      <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
-      <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
-      <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
-      <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
-      <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
-    </div>
-    <div class="ticker-track" aria-hidden="true">
-      <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
-      <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
-      <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
-      <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
-      <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
-      <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
     </div>
   </div>
-</div>
 
-<!-- HERO (escuro — impacto) -->
-<section class="hero" id="inicio">
-  <div class="hero-glow"></div>
-  <div class="hero-grid-bg"></div>
-  <div class="hero-content">
-    <!-- Nav bar: logo left + buttons right -->
-    <nav class="header-nav">
-      <div class="hero-logo"><img src="/logo.png" alt="Figuri"></div>
-      <div class="header-right">
-        <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">Entrar</button>
-        <div class="user-menu" id="userMenu">
-          <button class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu()"></button>
-          <div class="user-dropdown" id="userDropdown">
-            <a href="#meus-pedidos">Meus Pedidos</a>
-            <a href="#" onclick="doLogout(); return false;">Sair</a>
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <a href="#" class="navbar-logo">
+      <img src="logo.png" alt="Figuri" />
+    </a>
+    <div class="navbar-actions">
+      <button class="btn-entrar">ENTRAR</button>
+      <button class="btn-cta">✦ CRIAR FIGURINHA</button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+
+      <div class="hero-left">
+        <h1 class="hero-title">
+          VIRE UM<br />
+          <span>JOGADOR</span><br />
+          DA COPA
+        </h1>
+        <p class="hero-subtitle">
+          Envie qualquer foto e nós transformamos você, seu pet ou
+          alguém especial em uma <strong>figurinha oficial da Copa.</strong>
+          <span style="color: #FFD23D; font-weight: 700;">Preview grátis antes de comprar.</span>
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-value">30s</span>
+            <span class="hero-stat-label">gere na<br>hora</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">R$19</span>
+            <span class="hero-stat-label">preço<br>inicial</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">100%</span>
+            <span class="hero-stat-label">preview<br>grátis</span>
           </div>
         </div>
-        <a href="#upload" class="header-cta">⚽ Criar Minha Figurinha</a>
       </div>
-    </nav>
-    <div>
-      <div class="hero-badge">⚽ Ativo durante a Copa 2026</div>
-      <h1 class="hero-title">
-        <span class="l1">VIRE UM</span>
-        <span class="l2">JOGADOR</span>
-        <span class="l3">DA COPA</span>
-      </h1>
-      <p class="hero-sub">
-        Envie qualquer foto e nós transformamos você, seu pet ou seu amor em uma <strong>figurinha oficial da Copa</strong>. Preview grátis antes de comprar.
+
+      <div class="hero-right">
+        <div class="hero-card">
+          <p class="hero-card-title">GERE NA HORA</p>
+          <div class="hero-steps-mini">
+            <div class="hero-step-dot done">1</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot active">2</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot idle">3</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot idle">4</div>
+          </div>
+
+          <p class="card-label">Escolha o tipo</p>
+          <p style="font-size:0.78rem;color:rgba(237,251,217,0.5);margin-bottom:0.6rem;">Quem vai virar figurinha?</p>
+          <div class="type-selector">
+            <button class="type-btn active" onclick="selectType(this)">
+              <div class="type-btn-img"><img src="sozinho.png" alt="Sozinho" /></div>
+              <div class="type-btn-label">SOZINHO</div>
+            </button>
+            <button class="type-btn" onclick="selectType(this)">
+              <div class="type-btn-img"><img src="pet.png" alt="PET" /></div>
+              <div class="type-btn-label">PET</div>
+            </button>
+            <button class="type-btn" onclick="selectType(this)">
+              <div class="type-btn-img"><img src="casal.png" alt="CASAL" /></div>
+              <div class="type-btn-label">CASAL</div>
+            </button>
+          </div>
+
+          <div class="preview-info">
+            <div class="preview-icon">👁️</div>
+            <div class="preview-text">
+              <strong>Preview gratuito</strong> com marca d'água<br />
+              Pague só se gostar
+            </div>
+          </div>
+
+          <p class="preview-counter">0 de 5 previews usados</p>
+          <button class="btn-card-cta">✦ CRIAR FIGURINHA GRÁTIS</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── COMO CRIAR ── -->
+  <section class="section steps-section">
+    <div class="section-inner">
+      <span class="section-tag">COMO CRIAR</span>
+      <h2 class="section-title"><span class="highlight">3 passos,</span> <strong>Simples assim</strong></h2>
+      <div class="steps-grid">
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="icon-camera.png" alt="Câmera" /></div>
+            <span class="step-num">01</span>
+          </div>
+          <h3 class="step-title">Suba sua foto</h3>
+          <p class="step-desc">
+            Qualquer foto do celular ou galeria. Funciona com selfie, pet
+            ou foto de alguém especial. Quanto mais nítido o rosto, melhor
+            o resultado.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="icon-pessoa.png" alt="Preview" /></div>
+            <span class="step-num">02</span>
+          </div>
+          <h3 class="step-title">Preview em 30s</h3>
+          <p class="step-desc">
+            Você vê o preview da sua figurinha com marca d'água. Escolha
+            o estilo: jogador, pet mascote, casal ou figurinha rara brilhante.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="icon-entrega.png" alt="Entrega" /></div>
+            <span class="step-num">03</span>
+          </div>
+          <h3 class="step-title">Receba em casa</h3>
+          <p class="step-desc">
+            Gostou? É só baixar a versão paga. E se quiser sua figurinha
+            física, a gente imprime e entrega com moldura acrílica premium.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GALERIA ── -->
+  <div class="gallery-section">
+    <img class="gallery-img" src="fotos.png" alt="Figurinhas da Copa" />
+  </div>
+
+  <!-- ── PRODUTOS ── -->
+  <section class="section products-section">
+    <div class="section-inner">
+      <div class="products-header">
+        <span class="section-tag">NOSSAS FIGURINHAS</span>
+        <h2 class="section-title"><span class="highlight">Compre agora,</span> personalize depois</h2>
+      </div>
+      <p class="products-sub">
+        <strong>PREVIEW É SEMPRE GRATUITO.</strong> PAGUE SÓ QUANDO QUISER O ARQUIVO COMPLETO.
       </p>
-      <div class="hero-stats">
-        <div><span class="stat-num">30s</span><span class="stat-lbl">preview grátis</span></div>
-        <div><span class="stat-num">R$19</span><span class="stat-lbl">preço inicial</span></div>
-        <div><span class="stat-num">100%</span><span class="stat-lbl">preview grátis</span></div>
+      <div class="products-grid">
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="figurinha-digital.png" alt="Figurinha Digital" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha Digital</p>
+            <div class="product-bottom">
+              <p class="product-price">R$19,90</p>
+              <button class="btn-add-cart">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="figurinha-fisica.png" alt="Figurinha Física" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha Fisica</p>
+            <div class="product-bottom">
+              <p class="product-price">R$24,90</p>
+              <button class="btn-add-cart">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="fiurinha-com-moldura.png" alt="Figurinha com Moldura" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha com Moldura</p>
+            <div class="product-bottom">
+              <p class="product-price">R$49,90</p>
+              <button class="btn-add-cart">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="pack-de-figurinhas.png" alt="Pack de Figurinhas" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Pack de Figurinhas</p>
+            <div class="product-bottom">
+              <p class="product-price">R$69,90</p>
+              <button class="btn-add-cart">🛒</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="products-cta">
+        <button class="btn-lg-cta">✦ CRIAR FIGURINHA GRÁTIS</button>
       </div>
     </div>
+  </section>
 
-    <div id="upload">
-      <div class="upload-box" id="uploadBox">
-        <!-- Step indicator -->
-        <div class="wizard-steps-indicator">
-          <div class="wizard-dot active" data-step="1">1</div>
-          <div class="wizard-line"></div>
-          <div class="wizard-dot" data-step="2">2</div>
-          <div class="wizard-line"></div>
-          <div class="wizard-dot" data-step="3">3</div>
+  <!-- ── DEPOIMENTOS ── -->
+  <section class="section testimonials-section">
+    <div class="section-inner">
+      <div class="testimonials-header">
+        <span class="section-tag">O que dizem por aí</span>
+        <div class="testimonials-count">
+          <span>+3.200</span> figurinhas
+        </div>
+        <p class="testimonials-label">geradas e amadas</p>
+      </div>
+
+      <div class="carousel-wrap">
+        <div class="testimonials-grid" id="carouselTrack">
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/pedro.jpeg" alt="Pedro Rosa" /></div>
+              <div>
+                <p class="author-name">Pedro Rosa</p>
+                <p class="author-city">Belo Horizonte • MG</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Eu ameiii muitoo, fiz várias figurinhas com meus pets e eles ficaram lindos demais."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/fernanda d.jpeg" alt="Fernanda Dias" /></div>
+              <div>
+                <p class="author-name">Fernanda Dias</p>
+                <p class="author-city">Curitiba • PR</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/matheus.png" alt="Matheus Fonseca" /></div>
+              <div>
+                <p class="author-name">Matheus Fonseca</p>
+                <p class="author-city">São Paulo • SP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Fiz de surpresa pra minha mãe e ela chorou de emoção! A qualidade da impressão ficou incrível, superou minhas expectativas."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/amanda F.jpeg" alt="Amanda Ferreira" /></div>
+              <div>
+                <p class="author-name">Amanda Ferreira</p>
+                <p class="author-city">São Paulo • SP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Processo super simples, em menos de 1 minuto já tava com o preview na tela. Comprei na hora, não tinha como não comprar!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/guilherme.png" alt="Guilherme Santos" /></div>
+              <div>
+                <p class="author-name">Guilherme Santos</p>
+                <p class="author-city">Rio de Janeiro • RJ</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Presenteei meu namorado e ele ficou sem acreditar! A moldura acrílica é premium mesmo, dá pra ver a diferença na hora."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/karina.png" alt="Karina Oliveira" /></div>
+              <div>
+                <p class="author-name">Karina Oliveira</p>
+                <p class="author-city">Salvador • BA</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Muito fácil de usar e o resultado ficou idêntico a uma figurinha de verdade. Todo mundo achou que era oficial!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="depoimentos/Yohano C.jpeg" alt="Yohano Costa" /></div>
+              <div>
+                <p class="author-name">Yohano Costa</p>
+                <p class="author-city">Fortaleza • CE</p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- STEP 1: Upload Photo -->
-        <div class="wizard-step active" id="wizardStep1">
-          <div class="wizard-step-title">Suba sua foto</div>
-          <div class="wizard-step-sub">JPG, PNG ou WEBP — funciona com selfie do celular</div>
-          <div class="wizard-dropzone" id="wizardDropzone">
-            <div class="wizard-dropzone-icon">📸</div>
-            <div class="wizard-dropzone-text">
-              Arraste sua foto aqui ou <strong>clique para selecionar</strong>
-            </div>
-            <div class="wizard-file-name" id="wizardFileName"></div>
-          </div>
-          <input type="file" id="fileInput" class="upload-input" accept="image/*" style="display:none">
-          <div class="upload-note" style="margin-top:14px; text-align:center;">Preview gratuito com marca d'agua — Pague so se gostar</div>
+        <div class="carousel-nav">
+          <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)" aria-label="Anterior">&#8592;</button>
+          <div class="carousel-dots" id="carouselDots"></div>
+          <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)" aria-label="Próximo">&#8594;</button>
         </div>
+      </div>
 
-        <!-- STEP 2: Type Selection -->
-        <div class="wizard-step" id="wizardStep2">
-          <button class="wizard-back" onclick="wizardGoTo(1)">&larr; Voltar</button>
-          <div class="wizard-step-title">Escolha o tipo</div>
-          <div class="wizard-step-sub">Quem vai virar figurinha?</div>
-          <div class="wizard-type-grid">
-            <div class="wizard-type-card" onclick="selectType('jogador', this)">
-              <span class="wizard-type-icon">&#9917;</span>
-              <span class="wizard-type-label">Sozinho</span>
-            </div>
-            <div class="wizard-type-card" onclick="selectType('pet', this)">
-              <span class="wizard-type-icon">&#128054;</span>
-              <span class="wizard-type-label">Pet</span>
-            </div>
-            <div class="wizard-type-card" onclick="selectType('familia', this)">
-              <span class="wizard-type-icon">&#128145;</span>
-              <span class="wizard-type-label">Casal</span>
-            </div>
-          </div>
-        </div>
+    </div>
+  </section>
 
-        <!-- STEP 3: Country Selection -->
-        <div class="wizard-step" id="wizardStep3">
-          <button class="wizard-back" onclick="wizardGoTo(2)">&larr; Voltar</button>
-          <div class="wizard-step-title">Selecione o pais</div>
-          <div class="wizard-step-sub">De qual selecao voce quer ser?</div>
-          <div class="wizard-confed-tabs">
-            <button class="wizard-confed-tab active" onclick="switchConfed('conmebol', this)">CONMEBOL</button>
-            <button class="wizard-confed-tab" onclick="switchConfed('uefa', this)">UEFA</button>
-          </div>
-          <div class="wizard-country-group active" id="confed-conmebol">
-            <div class="wizard-country-card selected" onclick="selectCountry('brasil', this)">
-              <span class="wizard-country-flag">&#127463;&#127479;</span>
-              <span class="wizard-country-name">Brasil</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('argentina', this)">
-              <span class="wizard-country-flag">&#127462;&#127479;</span>
-              <span class="wizard-country-name">Argentina</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('uruguai', this)">
-              <span class="wizard-country-flag">&#127482;&#127486;</span>
-              <span class="wizard-country-name">Uruguai</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('colombia', this)">
-              <span class="wizard-country-flag">&#127464;&#127476;</span>
-              <span class="wizard-country-name">Colombia</span>
-            </div>
-          </div>
-          <div class="wizard-country-group" id="confed-uefa">
-            <div class="wizard-country-card" onclick="selectCountry('franca', this)">
-              <span class="wizard-country-flag">&#127467;&#127479;</span>
-              <span class="wizard-country-name">Franca</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('alemanha', this)">
-              <span class="wizard-country-flag">&#127465;&#127466;</span>
-              <span class="wizard-country-name">Alemanha</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('espanha', this)">
-              <span class="wizard-country-flag">&#127466;&#127480;</span>
-              <span class="wizard-country-name">Espanha</span>
-            </div>
-            <div class="wizard-country-card" onclick="selectCountry('portugal', this)">
-              <span class="wizard-country-flag">&#127477;&#127481;</span>
-              <span class="wizard-country-name">Portugal</span>
-            </div>
-          </div>
-          <button class="btn-generate" id="btnGenerate" onclick="generateSticker()" style="margin-top:20px;">
-            &#9917; Gerar Minha Figurinha
+  <!-- ── FAQ ── -->
+  <section class="section faq-section">
+    <div class="section-inner">
+      <span class="section-tag">Perguntas &amp; Respostas</span>
+      <h2 class="section-title">Ficou com <span class="highlight">dúvida?</span></h2>
+      <div class="faq-list">
+
+        <div class="faq-item open">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">O preview realmente é gratuito?</span>
+            <span class="faq-icon">+</span>
           </button>
+          <div class="faq-a">
+            <p>Sim, 100%. Você envia a foto e, ao gerar a figurinha, vê o resultado com marca d'água antes de decidir. Só paga se gostar — sem surpresa.</p>
+          </div>
         </div>
 
-        <!-- Credits bar (shown on all steps) -->
-        <div class="credits-bar">
-          <span class="credits-text-guest">&#9889; 5 previews gratuitos disponiveis</span>
-          <span class="credits-text-logged"></span>
-          <div class="credits-progress"><div class="credits-progress-fill" id="creditsFill"></div></div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Que tipo de foto funciona melhor?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Fotos com rosto nítido, boa iluminação e fundo simples garantem o melhor resultado. Selfies do celular funcionam muito bem!</p>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- HOW IT WORKS (claro) -->
-<section class="section how-section">
-  <div class="container">
-    <div class="fade-up" style="text-align:center">
-      <span class="sec-label">Como funciona</span>
-      <h2 class="sec-title">Simples assim, <em>3 passos</em></h2>
-    </div>
-    <div class="steps-grid fade-up">
-      <div class="step">
-        <span class="step-num">01</span>
-        <span class="step-icon">📸</span>
-        <div class="step-title">Suba sua foto</div>
-        <div class="step-desc">Qualquer foto do celular ou galeria. Funciona com selfie, pet ou foto de casal. Quanto mais nítido o rosto, melhor o resultado.</div>
-      </div>
-      <div class="step">
-        <span class="step-num">02</span>
-        <span class="step-icon">⚡</span>
-        <div class="step-title">Preview em 30s</div>
-        <div class="step-desc">Você vê o preview da sua figurinha com marca d'água. Escolha o estilo: jogador, pet mascote, casal ou figurinha rara brilhante.</div>
-      </div>
-      <div class="step">
-        <span class="step-num">03</span>
-        <span class="step-icon">🏆</span>
-        <div class="step-title">Receba em casa</div>
-        <div class="step-desc">Gostou? É só baixar a versão paga. E se quiser sua figurinha física, a gente imprime e entrega com moldura acrílica premium.</div>
-      </div>
-    </div>
-  </div>
-</section>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Como funciona a entrega digital?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Após o pagamento, você recebe um link para download da figurinha em alta resolução, pronta para compartilhar ou imprimir.</p>
+          </div>
+        </div>
 
-<!-- GALLERY (neutro — cards se destacam sem cor sobre cor) -->
-<section class="section gallery-section">
-  <div class="container">
-    <div class="fade-up">
-      <span class="sec-label">Galeria de exemplos</span>
-      <h2 class="sec-title">Você no <em>álbum</em></h2>
-      <p class="sec-sub">Veja como fica — pessoas, pets, famílias e figurinhas raras holográficas.</p>
-    </div>
-    <div class="gallery-scroll fade-up">
-      <div class="card-wrap">
-        <div class="card card-verde">
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">10</span></div>
-            <div class="card-figure">🧔</div>
-            <div class="card-bottom"><span class="card-name">GUILHERME</span><span class="card-pos">Meia-atacante</span></div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">A figurinha impressa fica do tamanho real?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Sim! A figurinha impressa tem o tamanho padrão de figurinhas da Copa, com opção de moldura acrílica premium.</p>
           </div>
         </div>
-      </div>
-      <div class="card-wrap">
-        <div class="card card-azul">
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">7</span></div>
-            <div class="card-figure">🐕</div>
-            <div class="card-bottom"><span class="card-name" style="color:var(--ouro-claro)">REX</span><span class="card-pos">Mascote Oficial</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-wrap">
-        <div class="card card-holo">
-          <span class="rare-badge">✦ RARA</span>
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">1</span></div>
-            <div class="card-figure">👸</div>
-            <div class="card-bottom"><span class="card-name" style="color:#CF9FFF">MARIA</span><span class="card-pos">Capitã</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-wrap">
-        <div class="card card-verm">
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">11</span></div>
-            <div class="card-figure">👨‍👩‍👧</div>
-            <div class="card-bottom"><span class="card-name">FAMÍLIA</span><span class="card-pos">Time da Copa</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-wrap">
-        <div class="card card-ouro-g">
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">9</span></div>
-            <div class="card-figure">🐈</div>
-            <div class="card-bottom"><span class="card-name">BISCUIT</span><span class="card-pos">Goleador</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-wrap">
-        <div class="card card-azul">
-          <div class="card-bg">
-            <div class="card-top"><span class="card-flag">🇧🇷</span><span class="card-num">8</span></div>
-            <div class="card-figure">👩</div>
-            <div class="card-bottom"><span class="card-name">ISABELA</span><span class="card-pos">Lateral-direita</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PRICING (branco puro) -->
-<section class="section pricing-section" id="precos">
-  <div class="container">
-    <div class="fade-up" style="text-align:center">
-      <span class="sec-label">Planos e preços</span>
-      <h2 class="sec-title">Escolha o <em>seu</em></h2>
-      <p class="sec-sub" style="margin:0 auto">Preview sempre gratuito. Pague só quando quiser o arquivo completo.</p>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Posso fazer a figurinha do meu pet?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Com certeza! Temos o tipo "PET" especialmente para isso. Seu bichinho vira um mascote oficial da Copa!</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Tem desconto para mais de uma figurinha?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Sim! O Pack de Figurinhas oferece o melhor custo-benefício para quem quer fazer múltiplas figurinhas.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">E se eu não gostar do resultado?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Não tem problema! O preview é gratuito justamente para você ver antes de pagar. Se não gostar, não cobra nada.</p>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="pricing-grid fade-up">
-      <div class="plan">
-        <div class="plan-name">Digital</div>
-        <div class="plan-price"><span>R$</span>19,90</div>
-        <div class="plan-desc">Arquivo de alta resolução para download</div>
-        <ul class="plan-features">
-          <li>1 figurinha em alta resolução</li>
-          <li>Download imediato (JPG/PNG)</li>
-          <li>Pronto para imprimir</li>
-          <li>Compartilhar nas redes</li>
+  </section>
+
+  <!-- ── CTA FINAL ── -->
+  <section class="cta-final-section">
+    <div class="cta-final-inner">
+      <div class="cta-final-img">
+        <img src="imagem-segurando-figuri.png" alt="Jogador segurando figurinha" />
+      </div>
+      <div class="cta-final-text">
+        <h2 class="cta-final-title">
+          A FIGURINHA<br />QUE FALTAVA<br />ERA A SUA
+        </h2>
+        <ul class="cta-bullets">
+          <li>Preview gratuito em 30 segundos</li>
+          <li>Funciona com selfie no celular</li>
+          <li>Pague só se gostar</li>
         </ul>
-        <a href="#upload" class="btn-plan btn-plan-outline">Começar grátis</a>
-      </div>
-
-      <div class="plan featured">
-        <div class="plan-badge">⭐ Mais Popular</div>
-        <div class="plan-name">Print + Moldura</div>
-        <div class="plan-price"><span>R$</span>69,90</div>
-        <div class="plan-desc">Impresso + moldura acrílica 35PT UV</div>
-        <ul class="plan-features">
-          <li>Arquivo digital incluso</li>
-          <li>Impressão profissional 5,5×7,5cm</li>
-          <li>Moldura acrílica 35PT com UV</li>
-          <li>Embalagem premium presenteável</li>
-          <li>Entrega em 5–7 dias úteis</li>
-        </ul>
-        <a href="#upload" class="btn-plan btn-plan-primary">Quero esse ⚽</a>
-      </div>
-
-      <div class="plan">
-        <div class="plan-name">Kit Família</div>
-        <div class="plan-price"><span>R$</span>99,90</div>
-        <div class="plan-desc">Digital + 2 prints para a família</div>
-        <ul class="plan-features">
-          <li>3 figurinhas digitais</li>
-          <li>2 prints tamanho real</li>
-          <li>Desconto de até 40%</li>
-          <li>Ótimo para presente da Copa</li>
-          <li>Entrega em 5–7 dias úteis</li>
-        </ul>
-        <a href="#upload" class="btn-plan btn-plan-outline">Montar kit</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- COUNTDOWN (escuro) -->
-<section class="countdown-section fade-up">
-  <span class="cd-label">Faltam para a Copa 2026</span>
-  <h2 class="cd-title">⏱ Sua figurinha ainda <span>dá tempo</span></h2>
-  <div class="cd-grid">
-    <div class="cd-unit"><span class="cd-num" id="d-days">87</span><span class="cd-unit-lbl">Dias</span></div>
-    <div class="cd-unit"><span class="cd-num" id="d-hours">14</span><span class="cd-unit-lbl">Horas</span></div>
-    <div class="cd-unit"><span class="cd-num" id="d-mins">32</span><span class="cd-unit-lbl">Minutos</span></div>
-    <div class="cd-unit"><span class="cd-num" id="d-secs">08</span><span class="cd-unit-lbl">Segundos</span></div>
-  </div>
-  <a href="#upload" class="btn-cd">⚽ Criar minha figurinha agora</a>
-</section>
-
-<!-- REVIEWS (claro) -->
-<section class="section reviews-section" id="avaliacoes">
-  <div class="container">
-    <div class="fade-up" style="text-align:center">
-      <span class="sec-label">O que estão dizendo</span>
-      <h2 class="sec-title">+3.200 figurinhas <em>geradas e amadas</em></h2>
-    </div>
-    <div class="reviews-carousel fade-up">
-      <div class="reviews-track-wrap">
-        <div class="reviews-grid" id="reviewsTrack">
-          <!-- M --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Ficou incrível, parece figurinha de verdade do álbum da Panini. Fiz a minha e já pedi mais duas pra dar de presente."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/guilherme.png" alt="Guilherme"></div>
-              <div><div class="reviewer-name">Guilherme V.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <!-- F --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Presente perfeito pro meu marido! Ele ficou sem acreditar quando viu. A qualidade da impressão surpreende muito."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/karina.png" alt="Karina"></div>
-              <div><div class="reviewer-name">Karina D.</div><div class="reviewer-info">Curitiba, PR · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <!-- M --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/matheus.png" alt="Matheus"></div>
-              <div><div class="reviewer-name">Matheus S.</div><div class="reviewer-info">Belo Horizonte, MG · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <!-- F --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Eu ameiii muitoo, fiz várias figurinhas com meus pets e eles ficaram lindos demais."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/fernanda d.jpeg" alt="Fernanda"></div>
-              <div><div class="reviewer-name">Fernanda D.</div><div class="reviewer-info">Brasil · Figurinha Pet</div></div>
-            </div>
-          </div>
-          <!-- M --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/pedro.jpeg" alt="Pedro"></div>
-              <div><div class="reviewer-name">Pedro R.</div><div class="reviewer-info">São Paulo, SP · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <!-- F --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Fiz uma do meu filho, ele amou e já está querendo mais!"</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/amanda F.jpeg" alt="Amanda"></div>
-              <div><div class="reviewer-name">Amanda F.</div><div class="reviewer-info">Brasil · Seleção Brasil</div></div>
-            </div>
-          </div>
-          <!-- M --> <div class="review">
-            <div class="review-stars">★★★★★</div>
-            <div class="review-text">"Minhas figurinhas ficam ótimas! Foi muito rápido e com muita qualidade."</div>
-            <div class="reviewer">
-              <div class="reviewer-avatar"><img src="/assets/depoimentos/yohano.png" alt="Yohano"></div>
-              <div><div class="reviewer-name">Yohano M.</div><div class="reviewer-info">Rio de Janeiro, RJ · Seleção Brasil</div></div>
-            </div>
-          </div>
+        <div class="cta-final-btns">
+          <button class="btn-cta-dark">✦ CRIAR FIGURINHA GRÁTIS</button>
         </div>
       </div>
-      <div class="carousel-nav">
-        <button class="carousel-btn" onclick="reviewsPrev()" aria-label="Anterior">&#8249;</button>
-        <div class="carousel-dots" id="reviewsDots"></div>
-        <button class="carousel-btn" onclick="reviewsNext()" aria-label="Próximo">&#8250;</button>
-      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FAQ (fundo secundário) -->
-<section class="section faq-section" id="faq">
-  <div class="container">
-    <div class="fade-up" style="text-align:center">
-      <span class="sec-label">Dúvidas frequentes</span>
-      <h2 class="sec-title">Perguntas <em>&amp; Respostas</em></h2>
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-logo">
+      <img src="logo.png" alt="Figuri" />
     </div>
-    <div class="faq-list fade-up">
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">O preview realmente é gratuito?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Sim, 100%. Você sobe a foto, a IA gera a figurinha e você vê o resultado com marca d'água antes de decidir. Só paga se gostar — sem surpresa.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Que tipo de foto funciona melhor?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Qualquer foto com boa iluminação e rosto visível. Selfie funciona ótimo. Evite fotos escuras, desfocadas ou com óculos escuros. Quanto mais nítido o rosto, mais fiel fica a figurinha.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Como funciona a entrega digital?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Após o pagamento (Pix ou cartão), você recebe o arquivo hi-res por e-mail e WhatsApp. O download fica disponível quantas vezes precisar.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">A figurinha impressa fica do tamanho real?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Sim! Imprimimos no tamanho exato: 5,5 × 7,5 cm. A moldura acrílica 35PT com proteção UV é a mesma usada para cards colecionáveis premium.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Posso fazer a figurinha do meu pet?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Com certeza! Pets são um dos estilos mais populares. Sobe uma foto do seu cachorro, gato ou qualquer bichinho — fica absurdamente fofo.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Tem desconto para mais de uma figurinha?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Sim! Kit 3 digitais por R$ 49,90. Kit Família (3 digitais + 2 prints) por R$ 99,90. Para pedidos corporativos (10+) fale no WhatsApp para preço especial.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">E se eu não gostar do resultado?<span class="faq-icon">+</span></button>
-        <div class="faq-a">Você vê o preview ANTES de pagar. Se mesmo assim não ficar satisfeito, oferecemos 1 regeneração gratuita sem custo adicional.</div>
-      </div>
+    <div class="footer-links">
+      <a href="#">Termos de uso</a>
+      <a href="#">Privacidade</a>
     </div>
-  </div>
-</section>
+    <p class="footer-copy">© 2026 FIGURI · Todos os direitos reservados</p>
+  </footer>
 
-<!-- CTA FINAL (escuro) -->
-<section class="cta-section">
-  <h2 class="cta-title fade-up">
-    <span class="ct1">A FIGURINHA</span>
-    <span class="ct2">QUE FALTAVA</span>
-    <span class="ct3">ERA A SUA</span>
-  </h2>
-  <p class="cta-sub fade-up">Preview gratuito em 30 segundos. Sem cadastro. Funciona no celular.</p>
-  <a href="#upload" class="btn-cta-big fade-up">⚽ Criar Minha Figurinha Grátis</a>
-  <div class="guarantee fade-up">
-    <span>🔒</span>
-    <span>Pagamento seguro · Pague só se gostar · Entrega garantida</span>
-  </div>
-</section>
-
-<!-- FLOATING BTN -->
-<a href="#upload" class="floating-cta">⚽ Criar figurinha grátis</a>
-
-<!-- LOGIN MODAL -->
-<div class="login-overlay" id="loginOverlay" onclick="if(event.target===this) closeLogin()">
-  <div class="login-modal">
-    <button class="login-close" onclick="closeLogin()">&times;</button>
-    <div class="login-title" id="loginTitle">Crie sua conta grátis para ver seu resultado</div>
-    <div class="login-error" id="loginError"></div>
-    <button class="btn-google" id="btnGoogle" onclick="loginWithGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
-      Entrar com Google
-    </button>
-    <div class="login-sep">ou</div>
-    <input type="text" class="login-field" id="loginName" placeholder="Seu nome" style="display:none">
-    <input type="email" class="login-field" id="loginEmail" placeholder="E-mail">
-    <input type="password" class="login-field" id="loginPassword" placeholder="Senha">
-    <button class="btn-login-submit" id="btnEmailSubmit" onclick="loginWithEmail()">Entrar</button>
-    <a href="#" class="login-link" id="loginToggle" onclick="event.preventDefault(); toggleLoginMode()">Ainda não tem conta? Cadastre-se</a>
-  </div>
-</div>
-
-<!-- FOOTER (escuro) -->
-<footer class="footer">
-  <img src="/logo.png" alt="Figuri" class="footer-logo" style="height:48px;width:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;">
-  <div class="footer-links">
-    <a href="#precos">Preços</a>
-    <a href="#avaliacoes">Avaliações</a>
-    <a href="#faq">FAQ</a>
-    <a href="https://wa.me/5531982668673" target="_blank" rel="noopener">WhatsApp</a>
-    <a href="/termos.html">Termos de uso</a>
-    <a href="/privacidade.html">Privacidade</a>
-  </div>
-  <div class="footer-copy">© 2026 FIGURI IA · Arte personalizada por IA · Todos os direitos reservados</div>
-</footer>
-
-<script>
-  // ── SUPABASE CLIENT ──
-  const SUPABASE_URL = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // ── COUNTDOWN ──
-  function updateCountdown(){
-    const copa = new Date('2026-06-11T17:00:00');
-    const diff = copa - new Date();
-    if(diff<=0) return;
-    const d=Math.floor(diff/86400000);
-    const h=Math.floor((diff%86400000)/3600000);
-    const m=Math.floor((diff%3600000)/60000);
-    const s=Math.floor((diff%60000)/1000);
-    document.getElementById('d-days').textContent  = String(d).padStart(2,'0');
-    document.getElementById('d-hours').textContent = String(h).padStart(2,'0');
-    document.getElementById('d-mins').textContent  = String(m).padStart(2,'0');
-    document.getElementById('d-secs').textContent  = String(s).padStart(2,'0');
-  }
-  updateCountdown(); setInterval(updateCountdown,1000);
-
-  // ── REVIEWS CAROUSEL (infinite loop) ──
-  (function(){
-    var track = document.getElementById('reviewsTrack');
-    var dotsEl = document.getElementById('reviewsDots');
-    if (!track) return;
-
-    var origItems = Array.from(track.querySelectorAll('.review'));
-    var N = origItems.length;
-
-    // Clone all originals before and after for seamless infinite loop
-    origItems.forEach(function(el){
-      track.insertBefore(el.cloneNode(true), track.firstChild);
-    });
-    origItems.forEach(function(el){
-      track.appendChild(el.cloneNode(true));
-    });
-    // Layout: [N clones] [N originals] [N clones]
-
-    var perPage = getPerPage();
-    var offset = N; // start at first real item
-    var busy = false;
-
-    function getPerPage(){ return window.innerWidth <= 560 ? 1 : 3; }
-
-    function getItemW(){
-      var el = track.querySelector('.review');
-      return el ? el.offsetWidth + 16 : 0;
+  <!-- ── SCRIPTS ── -->
+  <script>
+    function selectType(btn) {
+      btn.closest('.type-selector').querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
     }
 
-    function moveTo(newOffset, animate){
-      offset = newOffset;
-      track.style.transition = animate ? 'transform 0.4s cubic-bezier(0.4,0,0.2,1)' : 'none';
-      track.style.transform = 'translateX(-' + (offset * getItemW()) + 'px)';
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
     }
 
-    track.addEventListener('transitionend', function(){
-      busy = false;
-      // Silently jump if we've drifted into clone territory
-      if (offset < N) {
-        moveTo(offset + N, false);
-      } else if (offset >= N * 2) {
-        moveTo(offset - N, false);
-      }
-      updateDots();
+    // Navbar scroll shadow
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      navbar.style.boxShadow = window.scrollY > 10
+        ? '0 4px 24px rgba(0,0,0,0.35)'
+        : 'none';
     });
 
-    function getLogicalPage(){
-      var logical = ((offset - N) % N + N) % N;
-      return Math.floor(logical / perPage) % Math.ceil(N / perPage);
-    }
+    // Carousel
+    (function () {
+      const track    = document.getElementById('carouselTrack');
+      const dotsWrap = document.getElementById('carouselDots');
+      const prevBtn  = document.getElementById('prevBtn');
+      const nextBtn  = document.getElementById('nextBtn');
+      const cards    = Array.from(track.querySelectorAll('.testimonial-card'));
+      const total    = cards.length;
+      let perView    = window.innerWidth <= 900 ? 1 : 3;
+      let current    = 0;
 
-    function updateDots(){
-      var page = getLogicalPage();
-      dotsEl.querySelectorAll('.carousel-dot').forEach(function(d, i){
-        d.classList.toggle('active', i === page);
-      });
-    }
+      function pages() { return Math.ceil(total / perView); }
 
-    function buildDots(){
-      dotsEl.innerHTML = '';
-      var pages = Math.ceil(N / perPage);
-      for (var i = 0; i < pages; i++){
-        var d = document.createElement('button');
-        d.className = 'carousel-dot';
-        d.setAttribute('aria-label', 'Página ' + (i + 1));
-        d.dataset.page = i;
-        d.onclick = function(){
-          moveTo(N + (+this.dataset.page * perPage), true);
-          updateDots();
-        };
-        dotsEl.appendChild(d);
-      }
-      updateDots();
-    }
-
-    window.reviewsPrev = function(){
-      if (busy) return; busy = true;
-      moveTo(offset - perPage, true);
-      updateDots();
-    };
-    window.reviewsNext = function(){
-      if (busy) return; busy = true;
-      moveTo(offset + perPage, true);
-      updateDots();
-    };
-
-    moveTo(N, false);
-    buildDots();
-
-    // Auto-advance every 5s
-    var autoTimer = setInterval(reviewsNext, 5000);
-    track.addEventListener('touchstart', function(){ clearInterval(autoTimer); }, {passive:true, once:true});
-
-    window.addEventListener('resize', function(){
-      perPage = getPerPage();
-      moveTo(N, false);
-      buildDots();
-    });
-
-    // Touch/swipe
-    var startX = 0;
-    track.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
-    track.addEventListener('touchend', function(e){
-      var dx = e.changedTouches[0].clientX - startX;
-      if (dx < -40) reviewsNext();
-      else if (dx > 40) reviewsPrev();
-    }, {passive:true});
-  })();
-
-  // ── FAQ ──
-  function toggleFaq(btn){
-    const item=btn.parentElement;
-    const was=item.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
-    if(!was) item.classList.add('open');
-  }
-
-  // ── WIZARD STATE ──
-  let wizardCurrentStep = 1;
-  let wizardSelectedFile = null;
-  let wizardSelectedType = 'jogador';
-  let wizardSelectedCountry = 'brasil';
-  let wizardSelectedConfed = 'conmebol';
-
-  // ── AUTH STATE ──
-  let isLoggedIn = false;
-  let userName = '';
-  let creditsUsed = 0;
-  const creditsTotal = 5;
-  let isSignUpMode = false;
-
-  function openLogin() {
-    hideLoginError();
-    document.getElementById('loginOverlay').classList.add('open');
-  }
-  function closeLogin() {
-    document.getElementById('loginOverlay').classList.remove('open');
-    hideLoginError();
-    // Reset to login mode
-    if (isSignUpMode) toggleLoginMode();
-  }
-  function toggleUserMenu() {
-    document.getElementById('userDropdown').classList.toggle('open');
-  }
-  document.addEventListener('click', function(e) {
-    const menu = document.getElementById('userMenu');
-    if (menu && !menu.contains(e.target)) {
-      document.getElementById('userDropdown').classList.remove('open');
-    }
-  });
-
-  function showLoginError(msg) {
-    const el = document.getElementById('loginError');
-    el.textContent = msg;
-    el.classList.add('show');
-  }
-  function hideLoginError() {
-    document.getElementById('loginError').classList.remove('show');
-  }
-
-  function toggleLoginMode() {
-    isSignUpMode = !isSignUpMode;
-    hideLoginError();
-    const nameField = document.getElementById('loginName');
-    const title = document.getElementById('loginTitle');
-    const btn = document.getElementById('btnEmailSubmit');
-    const link = document.getElementById('loginToggle');
-    if (isSignUpMode) {
-      nameField.style.display = 'block';
-      title.textContent = 'Crie sua conta grátis';
-      btn.textContent = 'Criar conta';
-      link.textContent = 'Já tem conta? Entrar';
-    } else {
-      nameField.style.display = 'none';
-      title.textContent = 'Crie sua conta grátis para ver seu resultado';
-      btn.textContent = 'Entrar';
-      link.textContent = 'Ainda não tem conta? Cadastre-se';
-    }
-  }
-
-  function setLoggedIn(name, credits) {
-    isLoggedIn = true;
-    userName = name;
-    creditsUsed = credits || 0;
-    document.getElementById('btnEntrar').style.display = 'none';
-    const menuBtn = document.getElementById('userMenuBtn');
-    menuBtn.style.display = 'block';
-    menuBtn.textContent = name + ' ▾';
-    // Update credits bar
-    document.querySelector('.credits-text-guest').style.display = 'none';
-    const loggedText = document.querySelector('.credits-text-logged');
-    loggedText.style.display = 'inline';
-    loggedText.textContent = creditsUsed + ' de ' + creditsTotal + ' usados';
-    const progress = document.querySelector('.credits-progress');
-    progress.style.display = 'block';
-    document.getElementById('creditsFill').style.width = ((creditsUsed / creditsTotal) * 100) + '%';
-  }
-
-  function resetUI() {
-    isLoggedIn = false;
-    userName = '';
-    creditsUsed = 0;
-    document.getElementById('btnEntrar').style.display = '';
-    document.getElementById('userMenuBtn').style.display = 'none';
-    document.getElementById('userDropdown').classList.remove('open');
-    document.querySelector('.credits-text-guest').style.display = 'inline';
-    document.querySelector('.credits-text-logged').style.display = 'none';
-    document.querySelector('.credits-progress').style.display = 'none';
-  }
-
-  // ── SUPABASE AUTH FUNCTIONS ──
-  async function loginWithGoogle() {
-    document.getElementById('btnGoogle').disabled = true;
-    hideLoginError();
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    });
-    if (error) {
-      showLoginError(error.message);
-      document.getElementById('btnGoogle').disabled = false;
-    }
-  }
-
-  async function loginWithEmail() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const btn = document.getElementById('btnEmailSubmit');
-    hideLoginError();
-
-    if (!email || !password) {
-      showLoginError('Preencha e-mail e senha.');
-      return;
-    }
-    if (password.length < 6) {
-      showLoginError('A senha deve ter no mínimo 6 caracteres.');
-      return;
-    }
-
-    btn.disabled = true;
-
-    if (isSignUpMode) {
-      // CADASTRO
-      const name = document.getElementById('loginName').value.trim();
-      const { data, error } = await sb.auth.signUp({
-        email: email,
-        password: password,
-        options: { data: { name: name || email.split('@')[0] } }
-      });
-      if (error) {
-        showLoginError(error.message);
-        btn.disabled = false;
-        return;
-      }
-      if (data.user && !data.session) {
-        showLoginError('Verifique seu e-mail para confirmar o cadastro.');
-        btn.disabled = false;
-        return;
-      }
-      // Auto-login after signup
-      closeLogin();
-    } else {
-      // LOGIN
-      const { error } = await sb.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-      if (error) {
-        if (error.message === 'Invalid login credentials') {
-          showLoginError('E-mail ou senha incorretos.');
-        } else {
-          showLoginError(error.message);
+      function buildDots() {
+        dotsWrap.innerHTML = '';
+        for (let i = 0; i < pages(); i++) {
+          const d = document.createElement('button');
+          d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+          d.setAttribute('aria-label', 'Página ' + (i + 1));
+          d.addEventListener('click', () => goTo(i));
+          dotsWrap.appendChild(d);
         }
-        btn.disabled = false;
-        return;
-      }
-      closeLogin();
-    }
-    btn.disabled = false;
-  }
-
-  async function doLogout() {
-    await sb.auth.signOut();
-    resetUI();
-  }
-
-  async function loadCredits(userId) {
-    const { data } = await sb.from('usage_credits')
-      .select('credits_used, credits_limit')
-      .eq('user_id', userId)
-      .single();
-    return data;
-  }
-
-  async function handleSession(session) {
-    if (!session) {
-      resetUI();
-      return;
-    }
-    const user = session.user;
-    const fullName = user.user_metadata?.name
-      || user.user_metadata?.full_name
-      || user.email?.split('@')[0]
-      || 'Usuário';
-    const name = fullName.split(' ')[0];
-
-    // Load credits
-    const credits = await loadCredits(user.id);
-    setLoggedIn(name, credits?.credits_used || 0);
-  }
-
-  // ── INIT: check session on page load ──
-  (async function() {
-    // Clean up # fragment left by Supabase OAuth redirect
-    if (window.location.hash && window.location.hash.length <= 1) {
-      history.replaceState(null, '', window.location.pathname);
-    }
-
-    const { data: { session } } = await sb.auth.getSession();
-    await handleSession(session);
-
-    // Listen for auth changes (login, logout, token refresh)
-    sb.auth.onAuthStateChange(async (event, session) => {
-      await handleSession(session);
-    });
-  })();
-
-  function requireAuth(callback) {
-    if (!isLoggedIn) {
-      openLogin();
-      return;
-    }
-    if (callback) callback();
-  }
-
-  // ── WIZARD LOGIC ──
-  function wizardGoTo(step) {
-    // Hide current step
-    var current = document.getElementById('wizardStep' + wizardCurrentStep);
-    if (current) { current.classList.remove('active'); }
-
-    wizardCurrentStep = step;
-
-    // Show target step
-    var target = document.getElementById('wizardStep' + step);
-    if (target) {
-      // Small delay to trigger CSS transition
-      setTimeout(function() { target.classList.add('active'); }, 30);
-    }
-
-    // Update dots
-    document.querySelectorAll('.wizard-dot').forEach(function(dot) {
-      var s = parseInt(dot.getAttribute('data-step'));
-      dot.classList.remove('active', 'done');
-      if (s === step) dot.classList.add('active');
-      else if (s < step) dot.classList.add('done');
-    });
-    // Update lines
-    var lines = document.querySelectorAll('.wizard-line');
-    lines.forEach(function(line, i) {
-      if (i + 1 < step) line.classList.add('done');
-      else line.classList.remove('done');
-    });
-  }
-
-  // Step 1: Dropzone + file input
-  (function() {
-    var dropzone = document.getElementById('wizardDropzone');
-    var fileInput = document.getElementById('fileInput');
-
-    dropzone.addEventListener('click', function() {
-      requireAuth(function() { fileInput.click(); });
-    });
-
-    dropzone.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-    dropzone.addEventListener('dragleave', function() {
-      dropzone.classList.remove('dragover');
-    });
-    dropzone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-      if (!isLoggedIn) { openLogin(); return; }
-      if (e.dataTransfer.files.length > 0) {
-        handleFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    fileInput.addEventListener('change', function(e) {
-      if (e.target.files.length === 0) return;
-      if (!isLoggedIn) { openLogin(); e.target.value = ''; return; }
-      handleFile(e.target.files[0]);
-      e.target.value = '';
-    });
-  })();
-
-  function compressImage(file, maxWidth, quality) {
-    return new Promise(function(resolve) {
-      // If not an image, return as-is
-      if (!file.type.startsWith('image/')) { resolve(file); return; }
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var img = new Image();
-        img.onload = function() {
-          var w = img.width;
-          var h = img.height;
-
-          // Only resize if larger than maxWidth
-          if (w > maxWidth) {
-            h = Math.round(h * maxWidth / w);
-            w = maxWidth;
-          }
-
-          var canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-
-          canvas.toBlob(function(blob) {
-            var compressed = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), {
-              type: 'image/jpeg',
-              lastModified: Date.now(),
-            });
-            console.log('Compressao: ' + (file.size / 1024).toFixed(0) + 'KB → ' + (compressed.size / 1024).toFixed(0) + 'KB (' + w + 'x' + h + ')');
-            resolve(compressed);
-          }, 'image/jpeg', quality);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function handleFile(file) {
-    if (file.size > 20 * 1024 * 1024) {
-      alert('Arquivo muito grande. Maximo 20MB.');
-      return;
-    }
-
-    // Show compressing feedback
-    var fileNameEl = document.getElementById('wizardFileName');
-    fileNameEl.textContent = 'Otimizando imagem...';
-
-    // Compress: max 1500px width, 80% quality → typically 200-400KB
-    var compressed = await compressImage(file, 1500, 0.8);
-
-    // Safety check: if still over 4MB after compression, try harder
-    if (compressed.size > 4 * 1024 * 1024) {
-      compressed = await compressImage(file, 1200, 0.6);
-    }
-
-    wizardSelectedFile = compressed;
-    fileNameEl.textContent = compressed.name + ' (' + (compressed.size / 1024).toFixed(0) + 'KB)';
-    // Advance to step 2
-    wizardGoTo(2);
-  }
-
-  // Step 2: Type selection
-  function selectType(type, card) {
-    wizardSelectedType = type;
-    document.querySelectorAll('.wizard-type-card').forEach(function(c) { c.classList.remove('selected'); });
-    card.classList.add('selected');
-    // Advance after short visual feedback
-    setTimeout(function() { wizardGoTo(3); }, 200);
-  }
-
-  // Step 3: Confederation tabs + country selection
-  function switchConfed(confed, tab) {
-    wizardSelectedConfed = confed;
-    document.querySelectorAll('.wizard-confed-tab').forEach(function(t) { t.classList.remove('active'); });
-    tab.classList.add('active');
-    document.querySelectorAll('.wizard-country-group').forEach(function(g) { g.classList.remove('active'); });
-    document.getElementById('confed-' + confed).classList.add('active');
-  }
-
-  function selectCountry(country, card) {
-    wizardSelectedCountry = country;
-    document.querySelectorAll('.wizard-country-card').forEach(function(c) { c.classList.remove('selected'); });
-    card.classList.add('selected');
-  }
-
-  // Step 3: Generate sticker
-  async function generateSticker() {
-    var btn = document.getElementById('btnGenerate');
-    btn.disabled = true;
-
-    // Progressive messages while API processes
-    var msgIndex = 0;
-    var btnMessages = [
-      '📤 Enviando sua foto...',
-      '🔍 Preparando geração...',
-      '⚙️ Conectando com a IA...',
-      '⏳ Quase lá...',
-    ];
-    btn.innerHTML = btnMessages[0];
-    var msgInterval = setInterval(function() {
-      msgIndex++;
-      if (msgIndex < btnMessages.length) {
-        btn.innerHTML = btnMessages[msgIndex];
-      }
-    }, 3000);
-
-    try {
-      // Validate all fields before sending
-      if (!wizardSelectedFile) {
-        throw new Error('Nenhuma foto selecionada. Volte ao passo 1 e envie uma foto.');
-      }
-      if (!wizardSelectedType) {
-        throw new Error('Selecione o tipo de figurinha (passo 2).');
-      }
-      if (!wizardSelectedCountry) {
-        throw new Error('Selecione uma seleção (passo 3).');
       }
 
-      var session = (await sb.auth.getSession()).data.session;
-      if (!session) { clearInterval(msgInterval); openLogin(); btn.disabled = false; btn.textContent = '⚽ Gerar Minha Figurinha'; return; }
+      function goTo(page) {
+        current = Math.max(0, Math.min(page, pages() - 1));
+        const firstCard = cards[current * perView];
+        const offset    = firstCard ? firstCard.offsetLeft : 0;
+        track.style.transition = 'transform 0.4s cubic-bezier(.4,0,.2,1)';
+        track.style.transform  = `translateX(-${offset}px)`;
+        dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) =>
+          d.classList.toggle('active', i === current)
+        );
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current >= pages() - 1;
+      }
 
-      console.log('Gerando figurinha:', {
-        file: wizardSelectedFile.name,
-        size: wizardSelectedFile.size,
-        type: wizardSelectedType,
-        country: wizardSelectedCountry,
+      window.moveCarousel = function (dir) { goTo(current + dir); };
+
+      window.addEventListener('resize', () => {
+        perView  = window.innerWidth <= 900 ? 1 : 3;
+        current  = 0;
+        track.style.transition = 'none';
+        track.style.transform  = 'translateX(0)';
+        buildDots();
+        setTimeout(() => goTo(0), 50);
       });
 
-      var formData = new FormData();
-      formData.append('photo', wizardSelectedFile);
-      formData.append('style', wizardSelectedType);
-      formData.append('country', wizardSelectedCountry);
+      buildDots();
+      goTo(0);
+    })();
+  </script>
 
-      var res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + session.access_token },
-        body: formData,
-      });
-
-      clearInterval(msgInterval);
-      var resText = await res.text();
-      console.log('API response:', res.status, resText.slice(0, 500));
-      var data;
-      try { data = JSON.parse(resText); } catch(e) { throw new Error('Resposta inválida do servidor: ' + resText.slice(0, 200)); }
-      if (!res.ok) throw new Error(data.error || 'Erro ao gerar figurinha (status ' + res.status + ')');
-
-      // Redirect to gerar.html with all needed params (including fal.ai URLs)
-      var taskIds = data.taskIds ? data.taskIds.join(',') : (data.taskId || '');
-      var statusUrls = data.statusUrls ? data.statusUrls.join('|') : '';
-      var responseUrls = data.responseUrls ? data.responseUrls.join('|') : '';
-      window.location.href = '/gerar.html?imageId=' + encodeURIComponent(data.imageId)
-        + '&taskIds=' + encodeURIComponent(taskIds)
-        + '&userId=' + encodeURIComponent(data.userId || '')
-        + '&statusUrls=' + encodeURIComponent(statusUrls)
-        + '&responseUrls=' + encodeURIComponent(responseUrls)
-        + '&country=' + encodeURIComponent(wizardSelectedCountry || 'brasil')
-        + '&type=' + encodeURIComponent(wizardSelectedType || 'jogador');
-
-    } catch (err) {
-      clearInterval(msgInterval);
-      alert(err.message || 'Erro ao gerar figurinha. Tente novamente.');
-      btn.disabled = false;
-      btn.textContent = '⚽ Gerar Minha Figurinha';
-    }
-  }
-
-  // ── SCROLL ANIMATIONS ──
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-  },{threshold:0.1});
-  document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
-</script>
 </body>
 </html>
