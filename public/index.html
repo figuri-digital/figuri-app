@@ -1204,15 +1204,15 @@
           <p class="card-label">Escolha o tipo</p>
           <p style="font-size:0.78rem;color:rgba(237,251,217,0.5);margin-bottom:0.6rem;">Quem vai virar figurinha?</p>
           <div class="type-selector">
-            <button class="type-btn active" onclick="selectType(this)">
+            <button class="type-btn active" onclick="criarFigurinha('sozinho')">
               <div class="type-btn-img"><img src="sozinho.png" alt="Sozinho" /></div>
               <div class="type-btn-label">SOZINHO</div>
             </button>
-            <button class="type-btn" onclick="selectType(this)">
+            <button class="type-btn" onclick="criarFigurinha('pet')">
               <div class="type-btn-img"><img src="pet.png" alt="PET" /></div>
               <div class="type-btn-label">PET</div>
             </button>
-            <button class="type-btn" onclick="selectType(this)">
+            <button class="type-btn" onclick="criarFigurinha('casal')">
               <div class="type-btn-img"><img src="casal.png" alt="CASAL" /></div>
               <div class="type-btn-label">CASAL</div>
             </button>
@@ -1699,12 +1699,13 @@
     }
 
     /* Guard: must be logged in to create */
-    function criarFigurinha() {
+    function criarFigurinha(tipo) {
       if (!isLoggedIn) {
         openLogin();
         return;
       }
-      window.location.href = '/gerar.html';
+      const t = tipo || 'sozinho';
+      window.location.href = '/gerar.html?tipo=' + t;
     }
 
     /* Check session on load */

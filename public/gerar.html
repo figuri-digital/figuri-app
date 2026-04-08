@@ -859,6 +859,16 @@
     /* ── INIT ── */
     buildCountries();
     buildLayouts();
+
+    // Lê o tipo passado pela landing page via ?tipo=sozinho/pet/casal
+    (function initTipo() {
+      const params = new URLSearchParams(window.location.search);
+      const tipo = params.get('tipo');
+      if (tipo && ['sozinho', 'pet', 'casal'].includes(tipo)) {
+        const tab = document.querySelector(`.type-tab[data-tipo="${tipo}"]`);
+        if (tab) selectTipo(tipo, tab);
+      }
+    })();
   </script>
 </body>
 </html>
