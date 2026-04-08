@@ -3,872 +3,1237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerar Figurinha — Figuri</title>
+  <title>Gerar Figurinha – Figuri</title>
   <link rel="icon" type="image/svg+xml" href="/fav.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: var(--verde-escuro);
-      color: var(--verde-claro);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
     :root {
       --verde-escuro:    #1A2B01;
       --verde-principal: #396100;
       --verde-claro:     #EDFBD9;
-      --verde-alpha:     rgba(237,251,217,0.08);
       --amarelo:         #FFC300;
       --btn-cta:         #94DD2D;
-      --btn-cta-hover:   #a8f033;
     }
 
-    /* ── NAVBAR ── */
-    .navbar {
-      position: sticky; top: 0; z-index: 100;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
       background: var(--verde-escuro);
-      border-bottom: 1px solid rgba(237,251,217,0.10);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 5%; height: 64px;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
+
+    /* ────────────────────────────────────────
+       NAVBAR
+    ──────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(26,43,1,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(148,221,45,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 62px;
+      flex-shrink: 0;
+    }
+    .navbar-logo { display: flex; align-items: center; text-decoration: none; }
     .navbar-logo img { height: 36px; width: auto; display: block; }
-    .navbar-right {
-      display: flex; align-items: center; gap: 0.75rem;
-    }
-    .preview-badge {
-      font-size: 0.75rem; font-weight: 700;
-      color: rgba(237,251,217,0.55);
-      letter-spacing: 0.06em;
-    }
-    .preview-badge span { color: var(--btn-cta); }
-
-    /* ── MAIN ── */
-    .main-wrap {
-      display: flex; justify-content: center; align-items: flex-start;
-      padding: 2.5rem 1rem 4rem;
-      min-height: calc(100vh - 64px);
+    .navbar-badge {
+      background: rgba(148,221,45,0.10);
+      border: 1px solid rgba(148,221,45,0.28);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--btn-cta);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
     }
 
-    /* ── WIZARD CARD ── */
-    .wizard-card {
-      background: rgba(26,43,1,0.85);
-      border: 1px solid rgba(237,251,217,0.14);
-      backdrop-filter: blur(16px);
-      border-radius: 18px;
-      padding: 2rem 2rem 2rem;
-      width: 100%; max-width: 480px;
+    /* ────────────────────────────────────────
+       MAIN
+    ──────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 36px 16px 72px;
     }
 
-    /* ── STEPS INDICATOR ── */
-    .steps-bar {
-      display: flex; align-items: center; justify-content: center;
-      gap: 0; margin-bottom: 1.75rem;
+    /* ────────────────────────────────────────
+       CARD
+    ──────────────────────────────────────── */
+    .card {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(148,221,45,0.16);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 480px;
+      padding: 34px 30px;
+    }
+
+    /* ────────────────────────────────────────
+       STEP INDICATOR
+    ──────────────────────────────────────── */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 26px;
     }
     .step-dot {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
-      flex-shrink: 0; transition: all 0.3s;
-      border: 2px solid transparent;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      transition: all 0.3s;
     }
-    .step-dot.done    { background: var(--btn-cta); color: var(--verde-escuro); border-color: var(--btn-cta); }
-    .step-dot.active  { background: var(--amarelo); color: var(--verde-escuro); border-color: var(--amarelo); }
-    .step-dot.idle    { background: transparent; border-color: rgba(237,251,217,0.2); color: rgba(237,251,217,0.35); }
-    .step-line {
-      flex: 1; max-width: 40px; height: 2px;
-      background: rgba(237,251,217,0.12); margin: 0 4px;
-    }
+    .step-dot.active { background: var(--btn-cta); box-shadow: 0 0 7px var(--btn-cta); }
+    .step-dot.done   { background: var(--verde-principal); }
 
-    /* ── BACK BUTTON ── */
-    .btn-back {
-      background: none; border: none; cursor: pointer;
-      color: rgba(237,251,217,0.55);
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0; margin-bottom: 1.25rem;
-      transition: color 0.2s;
-    }
-    .btn-back:hover { color: var(--verde-claro); }
-
-    /* ── STEP TITLE ── */
-    .step-title {
+    /* ────────────────────────────────────────
+       TYPOGRAPHY
+    ──────────────────────────────────────── */
+    .phase-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem; letter-spacing: 0.1em;
-      color: var(--verde-claro); margin-bottom: 0.3rem;
+      font-size: 28px;
+      letter-spacing: 1.2px;
+      color: #fff;
+      margin-bottom: 4px;
     }
-    .step-sub {
-      font-size: 0.78rem; color: rgba(237,251,217,0.55);
-      margin-bottom: 1.4rem; line-height: 1.5;
+    .phase-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 26px;
     }
 
-    /* ── TYPE TABS ── */
+    /* ────────────────────────────────────────
+       TYPE TABS
+    ──────────────────────────────────────── */
     .type-tabs {
-      display: flex; gap: 0.5rem; margin-bottom: 1.4rem;
+      display: flex;
+      gap: 6px;
+      background: rgba(0,0,0,0.28);
+      border-radius: 13px;
+      padding: 5px;
+      margin-bottom: 22px;
     }
     .type-tab {
-      flex: 1; padding: 0.5rem 0.25rem;
-      background: var(--verde-alpha);
-      border: 2px solid transparent;
-      border-radius: 8px; cursor: pointer;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1rem; letter-spacing: 0.08em;
-      color: rgba(237,251,217,0.6);
-      transition: all 0.2s; text-align: center;
-    }
-    .type-tab:hover { border-color: rgba(237,251,217,0.25); color: var(--verde-claro); }
-    .type-tab.active {
-      background: rgba(255,195,0,0.12);
-      border-color: var(--amarelo);
-      color: var(--amarelo);
-    }
-
-    /* ── UPLOAD AREA ── */
-    .upload-zone {
-      border: 2px dashed rgba(237,251,217,0.2);
-      border-radius: 12px;
-      background: var(--verde-alpha);
-      padding: 2rem 1rem;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 0.75rem;
-      cursor: pointer; transition: all 0.2s;
-      position: relative; overflow: hidden;
-      min-height: 160px;
-    }
-    .upload-zone:hover, .upload-zone.drag-over {
-      border-color: var(--btn-cta);
-      background: rgba(148,221,45,0.06);
-    }
-    .upload-zone input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .upload-icon { font-size: 2.2rem; }
-    .upload-text { font-size: 0.78rem; color: rgba(237,251,217,0.55); text-align: center; line-height: 1.5; }
-    .upload-text .link { color: var(--btn-cta); font-weight: 700; text-decoration: underline; }
-    .upload-preview {
-      display: none; position: absolute; inset: 0;
-      border-radius: 10px; overflow: hidden;
-    }
-    .upload-preview img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    .upload-preview-overlay {
-      position: absolute; inset: 0;
-      background: rgba(26,43,1,0.55);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 0.4rem;
-    }
-    .upload-preview-overlay span { font-size: 0.75rem; color: var(--verde-claro); font-weight: 700; }
-    .upload-preview-change {
-      background: rgba(26,43,1,0.8); border: 1px solid rgba(237,251,217,0.3);
-      border-radius: 6px; padding: 0.3rem 0.8rem;
-      font-size: 0.72rem; font-weight: 700; color: var(--verde-claro);
-      cursor: pointer; letter-spacing: 0.06em;
-    }
-
-    /* Casal: two upload zones side by side */
-    .upload-casal {
-      display: none; gap: 0.75rem;
-    }
-    .upload-casal.visible { display: flex; }
-    .upload-casal .upload-zone { flex: 1; min-height: 140px; }
-    .upload-casal-label {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: rgba(237,251,217,0.5);
-      text-align: center; margin-bottom: 0.4rem;
-    }
-    .upload-casal-col { flex: 1; display: flex; flex-direction: column; }
-
-    /* Single upload (sozinho/pet) */
-    .upload-single { display: none; }
-    .upload-single.visible { display: block; }
-
-    /* ── FOOTER INFO ── */
-    .upload-footer {
-      margin-top: 1rem;
-      display: flex; flex-direction: column; gap: 0.3rem;
-    }
-    .upload-note {
-      font-size: 0.73rem; color: rgba(237,251,217,0.45);
-      text-align: center; line-height: 1.5;
-    }
-    .upload-note strong { color: var(--btn-cta); }
-    .preview-count {
-      font-size: 0.7rem; font-weight: 700;
-      color: rgba(237,251,217,0.35);
-      text-align: center; letter-spacing: 0.04em;
-    }
-
-    /* ── NEXT BUTTON ── */
-    .btn-next {
-      width: 100%; margin-top: 1.5rem;
-      background: var(--btn-cta); color: var(--verde-escuro);
-      border: none; border-radius: 8px;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em;
-      padding: 0.9rem; cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      box-shadow: 0 4px 20px rgba(148,221,45,0.3);
-    }
-    .btn-next:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
-    .btn-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-    /* ── COUNTRY SELECTOR ── */
-    .group-tabs {
-      display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.1rem;
-    }
-    .group-tab {
-      padding: 0.35rem 0.85rem;
-      background: var(--verde-alpha);
-      border: 1.5px solid transparent;
-      border-radius: 20px; cursor: pointer;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-      color: rgba(237,251,217,0.55); transition: all 0.2s;
-    }
-    .group-tab:hover { border-color: rgba(237,251,217,0.25); color: var(--verde-claro); }
-    .group-tab.active { border-color: var(--btn-cta); color: var(--btn-cta); background: rgba(148,221,45,0.08); }
-    .countries-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
-      max-height: 280px; overflow-y: auto;
-      scrollbar-width: thin; scrollbar-color: rgba(237,251,217,0.15) transparent;
-    }
-    .country-card {
-      background: var(--verde-alpha);
-      border: 2px solid transparent;
-      border-radius: 10px; padding: 0.6rem 0.4rem;
-      cursor: pointer; transition: all 0.2s;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 0.35rem; text-align: center;
-    }
-    .country-card:hover { border-color: rgba(237,251,217,0.2); }
-    .country-card.active {
-      border-color: var(--amarelo);
-      background: rgba(255,195,0,0.08);
-    }
-    .country-flag { font-size: 1.8rem; line-height: 1; }
-    .country-name {
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em;
-      color: rgba(237,251,217,0.75); line-height: 1.3;
-    }
-
-    /* ── LAYOUT SELECTOR ── */
-    .layout-carousel {
-      position: relative; overflow: hidden;
-    }
-    .layout-track {
-      display: flex; gap: 0.75rem;
-      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
-    }
-    .layout-card {
-      flex: 0 0 calc(50% - 0.375rem);
-      background: var(--verde-alpha);
-      border: 2px solid transparent;
-      border-radius: 12px; overflow: hidden; cursor: pointer;
-      transition: border-color 0.2s; position: relative;
-    }
-    .layout-card.active { border-color: var(--amarelo); }
-    .layout-card-img {
-      background: rgba(57,97,0,0.35);
-      aspect-ratio: 0.72;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; position: relative;
-    }
-    .layout-card-img img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    .layout-placeholder {
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 0.5rem;
-      background: linear-gradient(160deg, rgba(57,97,0,0.6) 0%, rgba(26,43,1,0.8) 100%);
-    }
-    .layout-placeholder-icon { font-size: 2.5rem; opacity: 0.6; }
-    .layout-card-label {
-      padding: 0.5rem 0.6rem;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.9rem; letter-spacing: 0.1em;
-      color: rgba(237,251,217,0.75); text-align: center;
-    }
-    .layout-card.active .layout-card-label { color: var(--amarelo); }
-    .layout-badge {
-      position: absolute; top: 0.4rem; right: 0.4rem;
-      background: var(--amarelo); color: var(--verde-escuro);
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.65rem; letter-spacing: 0.08em;
-      padding: 0.15rem 0.4rem; border-radius: 4px;
-    }
-    .layout-nav {
-      display: flex; align-items: center; justify-content: center;
-      gap: 0.75rem; margin-top: 0.85rem;
-    }
-    .layout-nav-btn {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--verde-alpha); border: 1px solid rgba(237,251,217,0.15);
-      color: var(--verde-claro); font-size: 1rem;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
-    }
-    .layout-nav-btn:hover { background: rgba(237,251,217,0.12); }
-
-    /* ── GENERATE (STEP 4) ── */
-    .gen-processing {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 1rem; padding: 1rem 0;
-    }
-    .gen-spinner {
-      width: 56px; height: 56px; border-radius: 50%;
-      border: 4px solid rgba(237,251,217,0.1);
-      border-top-color: var(--btn-cta);
-      animation: spin 0.9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .gen-processing-text {
+      flex: 1;
       text-align: center;
+      padding: 9px 4px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      transition: all 0.2s;
+      user-select: none;
     }
-    .gen-processing-text h3 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; letter-spacing: 0.1em;
-      margin-bottom: 0.3rem;
+    .type-tab.active {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
     }
-    .gen-processing-text p {
-      font-size: 0.78rem; color: rgba(237,251,217,0.5);
-    }
-    .gen-steps-mini {
-      display: flex; flex-direction: column; gap: 0.4rem; width: 100%;
-    }
-    .gen-step-row {
-      display: flex; align-items: center; gap: 0.6rem;
-      font-size: 0.75rem; color: rgba(237,251,217,0.45);
-      padding: 0.4rem 0.75rem;
-      background: var(--verde-alpha); border-radius: 6px;
-    }
-    .gen-step-row.done { color: var(--btn-cta); }
-    .gen-step-row.active { color: var(--verde-claro); }
-    .gen-step-icon { font-size: 0.9rem; }
+    .type-tab:not(.active):hover { color: rgba(255,255,255,0.75); }
 
-    /* Preview result */
-    .gen-result { display: none; }
-    .gen-result.visible { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-    .sticker-preview-wrap {
-      position: relative; width: 180px;
+    /* ────────────────────────────────────────
+       UPLOAD AREAS
+    ──────────────────────────────────────── */
+    .upload-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
     }
-    .sticker-preview-wrap img {
-      width: 100%; border-radius: 10px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    .upload-box {
+      flex: 1;
+      border: 2px dashed rgba(148,221,45,0.32);
+      border-radius: 14px;
+      min-height: 164px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      background: rgba(0,0,0,0.14);
+      transition: border-color 0.2s, background 0.2s;
     }
-    .sticker-watermark {
+    .upload-box:hover    { border-color: var(--btn-cta); background: rgba(148,221,45,0.05); }
+    .upload-box.dragover { border-color: var(--amarelo); background: rgba(255,195,0,0.07); }
+    .upload-box input[type="file"] {
       position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
+      opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon  { font-size: 34px; pointer-events: none; }
+    .upload-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.48);
+      text-align: center;
+      padding: 0 10px;
+      line-height: 1.55;
       pointer-events: none;
     }
-    .sticker-watermark span {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; letter-spacing: 0.18em;
-      color: rgba(255,255,255,0.55);
-      transform: rotate(-35deg);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    .upload-sublabel {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.28);
+      pointer-events: none;
     }
-    .gen-result-info { text-align: center; }
-    .gen-result-info h3 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem; letter-spacing: 0.1em;
-      color: var(--btn-cta); margin-bottom: 0.3rem;
+    .upload-person-tag {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.7);
+      pointer-events: none;
+      z-index: 2;
     }
-    .gen-result-info p {
-      font-size: 0.78rem; color: rgba(237,251,217,0.55); line-height: 1.5;
+    .upload-preview {
+      position: absolute; inset: 0;
+      object-fit: cover;
+      width: 100%; height: 100%;
+      border-radius: 12px;
     }
-    .gen-result-btns {
-      display: flex; flex-direction: column; gap: 0.6rem; width: 100%;
-    }
-    .btn-comprar {
-      width: 100%; padding: 0.9rem;
-      background: var(--btn-cta); color: var(--verde-escuro);
-      border: none; border-radius: 8px;
+    .upload-change-btn {
+      position: absolute; bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.72);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11px;
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em;
-      cursor: pointer; transition: background 0.2s;
-      box-shadow: 0 4px 20px rgba(148,221,45,0.3);
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      z-index: 3;
     }
-    .btn-comprar:hover { background: var(--btn-cta-hover); }
-    .btn-refazer {
-      width: 100%; padding: 0.65rem;
-      background: transparent;
-      border: 1.5px solid rgba(237,251,217,0.2);
-      border-radius: 8px; color: rgba(237,251,217,0.6);
+
+    /* ────────────────────────────────────────
+       INFO BARS
+    ──────────────────────────────────────── */
+    .watermark-notice {
+      background: rgba(255,195,0,0.09);
+      border: 1px solid rgba(255,195,0,0.22);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--amarelo);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .credits-line {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.42);
+      margin-bottom: 22px;
+    }
+    .credits-line span { color: var(--btn-cta); font-weight: 700; }
+
+    /* ────────────────────────────────────────
+       COUNTRY GRID
+    ──────────────────────────────────────── */
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .country-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 14px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .country-card:hover   { border-color: rgba(148,221,45,0.5); background: rgba(148,221,45,0.07); }
+    .country-card.selected {
+      border-color: var(--btn-cta);
+      background: rgba(148,221,45,0.12);
+      box-shadow: 0 0 14px rgba(148,221,45,0.22);
+    }
+    .country-flag { font-size: 28px; line-height: 1; }
+    .country-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.84); }
+
+    /* ────────────────────────────────────────
+       BUTTONS
+    ──────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 19px;
+      letter-spacing: 1.2px;
+      border: none;
+      border-radius: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #a8f030;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(148,221,45,0.32);
+    }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.33; cursor: not-allowed; }
+
+    .btn-link {
+      display: block;
+      text-align: center;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.45);
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;
-      cursor: pointer; transition: all 0.2s;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 10px 4px;
+      text-decoration: underline;
+      width: 100%;
+      transition: color 0.2s;
     }
-    .btn-refazer:hover { border-color: rgba(237,251,217,0.4); color: var(--verde-claro); }
+    .btn-link:hover { color: #fff; }
 
-    /* ── WIZARD STEPS VISIBILITY ── */
-    .wizard-step { display: none; }
-    .wizard-step.active { display: block; }
+    /* ────────────────────────────────────────
+       PHASE B – LOADING
+    ──────────────────────────────────────── */
+    .loading-card { max-width: 360px; }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 520px) {
-      .wizard-card { padding: 1.5rem 1.25rem; }
-      .countries-grid { grid-template-columns: repeat(3, 1fr); }
-      .layout-card { flex: 0 0 calc(50% - 0.375rem); }
+    .scanner-wrap {
+      width: 190px; height: 254px;
+      margin: 0 auto 24px;
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #0c1800;
+      border: 2px solid rgba(148,221,45,0.28);
+    }
+    /* corner brackets */
+    .scanner-wrap::before,
+    .scanner-wrap::after {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+      border-color: var(--btn-cta);
+      border-style: solid;
+      z-index: 4;
+    }
+    .scanner-wrap::before { top: 8px; left: 8px; border-width: 3px 0 0 3px; border-radius: 2px 0 0 0; }
+    .scanner-wrap::after  { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; border-radius: 0 0 2px 0; }
+    .corner-tr {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px;
+      border-top: 3px solid var(--btn-cta);
+      border-right: 3px solid var(--btn-cta);
+      border-radius: 0 2px 0 0;
+      z-index: 4;
+    }
+    .corner-bl {
+      position: absolute; bottom: 8px; left: 8px;
+      width: 22px; height: 22px;
+      border-bottom: 3px solid var(--btn-cta);
+      border-left: 3px solid var(--btn-cta);
+      border-radius: 0 0 0 2px;
+      z-index: 4;
+    }
+    .scanner-silhouette {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 90px;
+      opacity: 0.07;
+      z-index: 1;
+    }
+    .scan-line {
+      position: absolute;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--btn-cta) 50%, transparent 100%);
+      box-shadow: 0 0 14px var(--btn-cta), 0 0 4px var(--btn-cta);
+      animation: scanMove 2.4s ease-in-out infinite;
+      z-index: 3;
+    }
+    @keyframes scanMove {
+      0%   { top: 0; }
+      50%  { top: calc(100% - 3px); }
+      100% { top: 0; }
+    }
+
+    .loading-status {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--btn-cta);
+      text-align: center;
+      margin-bottom: 18px;
+      min-height: 22px;
+      transition: opacity 0.3s;
+    }
+
+    .progress-track {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--verde-principal), var(--btn-cta));
+      border-radius: 20px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+    .progress-pct {
+      text-align: right;
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      margin-bottom: 20px;
+    }
+
+    .live-counter {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.48);
+      font-weight: 500;
+    }
+
+    /* ────────────────────────────────────────
+       PHASE C – RESULTS
+    ──────────────────────────────────────── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .variation-card {
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .variation-card:hover { border-color: rgba(148,221,45,0.5); }
+    .variation-card.selected {
+      border-color: var(--amarelo);
+      box-shadow: 0 0 20px rgba(255,195,0,0.28);
+    }
+    .variation-card img { width: 100%; display: block; }
+    .variation-label {
+      position: absolute; top: 8px; left: 8px;
+      background: rgba(0,0,0,0.68);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .variation-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 26px; height: 26px;
+      background: var(--amarelo);
+      border-radius: 50%;
+      display: none;
+      align-items: center; justify-content: center;
+      font-size: 13px;
+      color: #000;
+      font-weight: 900;
+    }
+    .variation-card.selected .variation-check { display: flex; }
+
+    .results-footer {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      margin-bottom: 18px;
+    }
+
+    /* ────────────────────────────────────────
+       PHASE D – ERROR
+    ──────────────────────────────────────── */
+    .error-icon { font-size: 54px; text-align: center; margin-bottom: 14px; }
+    .error-body {
+      text-align: center;
+      font-size: 14px;
+      color: rgba(255,255,255,0.58);
+      line-height: 1.65;
+      margin-bottom: 26px;
+    }
+
+    /* ────────────────────────────────────────
+       SPINNER
+    ──────────────────────────────────────── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(26,43,1,0.35);
+      border-top-color: var(--verde-escuro);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ────────────────────────────────────────
+       TOASTS
+    ──────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px; left: 20px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: rgba(22,38,2,0.97);
+      border: 1px solid rgba(148,221,45,0.28);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #fff;
+      max-width: 250px;
+      line-height: 1.5;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+      animation: toastIn 0.32s ease;
+    }
+    .toast.out { animation: toastOut 0.32s ease forwards; }
+    @keyframes toastIn  { from { opacity:0; transform:translateX(-18px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-18px); } }
+
+    /* ────────────────────────────────────────
+       UTILS
+    ──────────────────────────────────────── */
+    .hidden { display: none !important; }
+    .center { text-align: center; }
+
+    @media (max-width: 400px) {
+      .card { padding: 24px 14px; }
+      .country-grid { gap: 7px; }
+      .country-card { padding: 10px 4px; }
+      .country-flag { font-size: 22px; }
+      .country-name { font-size: 10px; }
+      .results-grid { gap: 10px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── NAVBAR ── -->
-  <nav class="navbar">
-    <a href="/index.html" class="navbar-logo">
-      <img src="logo.png" alt="Figuri" />
-    </a>
-    <div class="navbar-right">
-      <span class="preview-badge" id="previewBadge"><span id="previewUsed">0</span> de 5 previews usados</span>
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a href="/index.html" class="navbar-logo">
+    <img src="/logo.png" alt="Figuri" />
+  </a>
+  <div class="navbar-badge" id="navbar-badge">Carregando...</div>
+</nav>
+
+<!-- ── TOASTS ── -->
+<div id="toast-container"></div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- ██████████  PHASE A: WIZARD  ██████████ -->
+  <div class="card" id="phase-wizard">
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot"        id="dot-2"></div>
     </div>
-  </nav>
 
-  <!-- ── MAIN ── -->
-  <main class="main-wrap">
-    <div class="wizard-card">
+    <!-- ──── STEP 1: UPLOAD ──── -->
+    <div id="step-1">
+      <h2 class="phase-title">Envie sua foto</h2>
+      <p class="phase-sub">Escolha o tipo e faça o upload</p>
 
-      <!-- Steps indicator -->
-      <div class="steps-bar" id="stepsBar">
-        <div class="step-dot active" id="sdot1">1</div>
-        <div class="step-line"></div>
-        <div class="step-dot idle" id="sdot2">2</div>
-        <div class="step-line"></div>
-        <div class="step-dot idle" id="sdot3">3</div>
-        <div class="step-line"></div>
-        <div class="step-dot idle" id="sdot4">4</div>
+      <!-- Type tabs -->
+      <div class="type-tabs" id="type-tabs">
+        <div class="type-tab" data-tipo="sozinho">SOZINHO</div>
+        <div class="type-tab" data-tipo="pet">PET</div>
+        <div class="type-tab" data-tipo="casal">CASAL</div>
       </div>
 
-      <!-- ──────────────────────────────── -->
-      <!-- STEP 1: Tipo + Foto             -->
-      <!-- ──────────────────────────────── -->
-      <div class="wizard-step active" id="step1">
-        <button class="btn-back" onclick="window.location.href='/index.html'">← Voltar</button>
-        <h2 class="step-title">Envie sua foto</h2>
-        <p class="step-sub">Uma foto frontal, com o rosto nítido e sem o uso de acessórios.</p>
-
-        <!-- Tipo tabs -->
-        <div class="type-tabs">
-          <button class="type-tab active" data-tipo="sozinho" onclick="selectTipo('sozinho', this)">SOZINHO</button>
-          <button class="type-tab" data-tipo="pet" onclick="selectTipo('pet', this)">PET</button>
-          <button class="type-tab" data-tipo="casal" onclick="selectTipo('casal', this)">CASAL</button>
-        </div>
-
-        <!-- Upload single (sozinho / pet) -->
-        <div class="upload-single visible" id="uploadSingle">
-          <div class="upload-zone" id="dropSingle" ondragover="onDragOver(event, 'dropSingle')" ondragleave="onDragLeave('dropSingle')" ondrop="onDrop(event, 'fileSingle', 'previewSingle')">
-            <input type="file" id="fileSingle" accept="image/*" onchange="onFileChange('fileSingle', 'previewSingle', 'dropSingle')" />
-            <div class="upload-icon">📷</div>
-            <p class="upload-text">Arraste sua foto aqui ou <span class="link">clique para selecionar</span></p>
-            <div class="upload-preview" id="previewSingle">
-              <img id="previewSingleImg" src="" alt="Preview" />
-              <div class="upload-preview-overlay">
-                <span>✓ Foto selecionada</span>
-                <button class="upload-preview-change" onclick="clearFile('fileSingle', 'previewSingle', 'dropSingle'); event.stopPropagation();">Trocar foto</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Upload casal (dois campos) -->
-        <div class="upload-casal" id="uploadCasal">
-          <div class="upload-casal-col">
-            <p class="upload-casal-label">Pessoa 1</p>
-            <div class="upload-zone" id="dropP1" ondragover="onDragOver(event, 'dropP1')" ondragleave="onDragLeave('dropP1')" ondrop="onDrop(event, 'fileP1', 'previewP1')">
-              <input type="file" id="fileP1" accept="image/*" onchange="onFileChange('fileP1', 'previewP1', 'dropP1')" />
-              <div class="upload-icon">📷</div>
-              <p class="upload-text" style="font-size:0.7rem">Clique para selecionar</p>
-              <div class="upload-preview" id="previewP1">
-                <img id="previewP1Img" src="" alt="Preview" />
-                <div class="upload-preview-overlay">
-                  <span>✓ Selecionado</span>
-                  <button class="upload-preview-change" onclick="clearFile('fileP1', 'previewP1', 'dropP1'); event.stopPropagation();">Trocar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="upload-casal-col">
-            <p class="upload-casal-label">Pessoa 2</p>
-            <div class="upload-zone" id="dropP2" ondragover="onDragOver(event, 'dropP2')" ondragleave="onDragLeave('dropP2')" ondrop="onDrop(event, 'fileP2', 'previewP2')">
-              <input type="file" id="fileP2" accept="image/*" onchange="onFileChange('fileP2', 'previewP2', 'dropP2')" />
-              <div class="upload-icon">📷</div>
-              <p class="upload-text" style="font-size:0.7rem">Clique para selecionar</p>
-              <div class="upload-preview" id="previewP2">
-                <img id="previewP2Img" src="" alt="Preview" />
-                <div class="upload-preview-overlay">
-                  <span>✓ Selecionado</span>
-                  <button class="upload-preview-change" onclick="clearFile('fileP2', 'previewP2', 'dropP2'); event.stopPropagation();">Trocar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="upload-footer">
-          <p class="upload-note"><strong>Preview gratuito</strong> com marca d'água — Pague só se gostar</p>
-          <p class="preview-count" id="previewCount1">0 de 5 previews usados</p>
-        </div>
-
-        <button class="btn-next" id="btnNext1" onclick="goToStep(2)" disabled>Continuar →</button>
-      </div>
-
-      <!-- ──────────────────────────────── -->
-      <!-- STEP 2: País                    -->
-      <!-- ──────────────────────────────── -->
-      <div class="wizard-step" id="step2">
-        <button class="btn-back" onclick="goToStep(1)">← Voltar</button>
-        <h2 class="step-title">Selecione o país</h2>
-        <p class="step-sub">Qual vai ser a sua seleção?</p>
-
-        <div class="group-tabs" id="groupTabs"></div>
-        <div class="countries-grid" id="countriesGrid"></div>
-
-        <button class="btn-next" id="btnNext2" onclick="goToStep(3)" disabled>Continuar →</button>
-      </div>
-
-      <!-- ──────────────────────────────── -->
-      <!-- STEP 3: Layout                  -->
-      <!-- ──────────────────────────────── -->
-      <div class="wizard-step" id="step3">
-        <button class="btn-back" onclick="goToStep(2)">← Voltar</button>
-        <h2 class="step-title">Escolha o layout</h2>
-        <p class="step-sub">Qual layout você prefere?</p>
-
-        <div class="layout-carousel">
-          <div class="layout-track" id="layoutTrack"></div>
-        </div>
-        <div class="layout-nav">
-          <button class="layout-nav-btn" onclick="moveLayouts(-1)">←</button>
-          <button class="layout-nav-btn" onclick="moveLayouts(1)">→</button>
-        </div>
-
-        <button class="btn-next" id="btnNext3" onclick="startGenerate()" disabled>✦ Gerar Figurinha</button>
-      </div>
-
-      <!-- ──────────────────────────────── -->
-      <!-- STEP 4: Gerando / Preview       -->
-      <!-- ──────────────────────────────── -->
-      <div class="wizard-step" id="step4">
-        <!-- Processing state -->
-        <div class="gen-processing" id="genProcessing">
-          <div class="gen-spinner"></div>
-          <div class="gen-processing-text">
-            <h3>Gerando sua figurinha</h3>
-            <p>Isso leva menos de 30 segundos…</p>
-          </div>
-          <div class="gen-steps-mini" id="genStepsList">
-            <div class="gen-step-row active" id="gstep1"><span class="gen-step-icon">🖼️</span> Processando foto…</div>
-            <div class="gen-step-row idle" id="gstep2"><span class="gen-step-icon">⚽</span> Aplicando layout da figurinha…</div>
-            <div class="gen-step-row idle" id="gstep3"><span class="gen-step-icon">✨</span> Finalizando preview…</div>
-          </div>
-        </div>
-        <!-- Result state -->
-        <div class="gen-result" id="genResult">
-          <div class="sticker-preview-wrap">
-            <img src="figurinha-digital.png" alt="Sua figurinha" id="resultImg" />
-            <div class="sticker-watermark"><span>FIGURI</span></div>
-          </div>
-          <div class="gen-result-info">
-            <h3>Preview pronto!</h3>
-            <p>Gostou? Compre a versão em alta resolução<br />sem marca d'água por apenas <strong style="color:var(--btn-cta)">R$19,90</strong></p>
-          </div>
-          <div class="gen-result-btns">
-            <button class="btn-comprar">✦ Comprar sem marca d'água — R$19,90</button>
-            <button class="btn-refazer" onclick="goToStep(1)">Gerar outra figurinha</button>
-          </div>
+      <!-- Single upload -->
+      <div class="upload-row" id="upload-single">
+        <div class="upload-box" id="box-single">
+          <input type="file" id="file-single" accept="image/*" />
+          <div class="upload-icon">📷</div>
+          <div class="upload-label">Arraste sua foto aqui ou clique para selecionar</div>
+          <div class="upload-sublabel">JPG · PNG · WEBP</div>
         </div>
       </div>
 
-    </div><!-- end wizard-card -->
-  </main>
+      <!-- Casal upload -->
+      <div class="upload-row hidden" id="upload-casal">
+        <div class="upload-box" id="box-casal1">
+          <input type="file" id="file-casal1" accept="image/*" />
+          <div class="upload-person-tag">Pessoa 1</div>
+          <div class="upload-icon">👤</div>
+          <div class="upload-label">Foto da Pessoa 1</div>
+        </div>
+        <div class="upload-box" id="box-casal2">
+          <input type="file" id="file-casal2" accept="image/*" />
+          <div class="upload-person-tag">Pessoa 2</div>
+          <div class="upload-icon">👤</div>
+          <div class="upload-label">Foto da Pessoa 2</div>
+        </div>
+      </div>
 
-  <script>
-    /* ── SUPABASE AUTH ── */
-    const SUPABASE_URL      = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      <div class="watermark-notice">Preview gratuito com marca d'água — Pague só se gostar</div>
+      <div class="credits-line" id="credits-line">Carregando previews...</div>
 
-    (async function authGuard() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        window.location.href = '/index.html';
+      <button class="btn-primary" id="btn-next" disabled>Continuar →</button>
+    </div>
+
+    <!-- ──── STEP 2: COUNTRY ──── -->
+    <div id="step-2" class="hidden">
+      <h2 class="phase-title">Selecione o país</h2>
+      <p class="phase-sub">Qual vai ser a sua seleção?</p>
+
+      <div class="country-grid">
+        <div class="country-card" data-country="brasil">
+          <span class="country-flag">🇧🇷</span>
+          <span class="country-name">Brasil</span>
+        </div>
+        <div class="country-card" data-country="argentina">
+          <span class="country-flag">🇦🇷</span>
+          <span class="country-name">Argentina</span>
+        </div>
+        <div class="country-card" data-country="colombia">
+          <span class="country-flag">🇨🇴</span>
+          <span class="country-name">Colômbia</span>
+        </div>
+        <div class="country-card" data-country="uruguai">
+          <span class="country-flag">🇺🇾</span>
+          <span class="country-name">Uruguai</span>
+        </div>
+        <div class="country-card" data-country="franca">
+          <span class="country-flag">🇫🇷</span>
+          <span class="country-name">França</span>
+        </div>
+        <div class="country-card" data-country="alemanha">
+          <span class="country-flag">🇩🇪</span>
+          <span class="country-name">Alemanha</span>
+        </div>
+        <div class="country-card" data-country="espanha">
+          <span class="country-flag">🇪🇸</span>
+          <span class="country-name">Espanha</span>
+        </div>
+        <div class="country-card" data-country="portugal">
+          <span class="country-flag">🇵🇹</span>
+          <span class="country-name">Portugal</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-gerar" disabled>Gerar Figurinha →</button>
+      <button class="btn-link"    id="btn-back-step1">← Voltar</button>
+    </div>
+  </div><!-- /phase-wizard -->
+
+
+  <!-- ██████████  PHASE B: LOADING  ██████████ -->
+  <div class="card loading-card hidden" id="phase-loading">
+
+    <h2 class="phase-title center" style="margin-bottom:6px;">Gerando sua figurinha</h2>
+    <p  class="phase-sub center"   style="margin-bottom:28px;">Nossa IA está trabalhando para você...</p>
+
+    <!-- Animated scanner card -->
+    <div class="scanner-wrap">
+      <div class="scanner-silhouette">🧍</div>
+      <div class="corner-tr"></div>
+      <div class="corner-bl"></div>
+      <div class="scan-line"></div>
+    </div>
+
+    <div class="loading-status" id="loading-status">Analisando sua foto...</div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-pct" id="progress-pct">0%</div>
+
+    <div class="live-counter">
+      🔴 <span id="live-num">847</span> figurinhas geradas hoje
+    </div>
+  </div><!-- /phase-loading -->
+
+
+  <!-- ██████████  PHASE C: RESULTS  ██████████ -->
+  <div class="card hidden" id="phase-results">
+
+    <h2 class="phase-title center">Escolha sua figurinha favorita</h2>
+    <p  class="phase-sub center"  style="margin-bottom:26px;">Clique na que você mais gostou</p>
+
+    <div class="results-grid" id="results-grid"></div>
+
+    <div class="results-footer" id="results-footer"></div>
+
+    <button class="btn-primary" id="btn-personalizar" disabled>✦ PERSONALIZAR FIGURINHA</button>
+    <button class="btn-link"    id="btn-regenerate">↩ Gerar novas opções</button>
+  </div><!-- /phase-results -->
+
+
+  <!-- ██████████  PHASE D: ERROR  ██████████ -->
+  <div class="card hidden" id="phase-error">
+    <div class="error-icon">⚠️</div>
+    <h2 class="phase-title center" style="margin-bottom:10px;">Algo deu errado</h2>
+    <p  class="error-body" id="error-body">Não foi possível gerar sua figurinha. Tente novamente com outra foto.</p>
+    <button class="btn-primary" id="btn-retry">← Voltar e tentar novamente</button>
+  </div><!-- /phase-error -->
+
+</div><!-- /main -->
+
+<script>
+(function () {
+  'use strict';
+
+  /* ────────── SUPABASE ────────── */
+  const SB_URL  = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+  const sb = window.supabase.createClient(SB_URL, SB_ANON);
+
+  /* ────────── STATE ────────── */
+  let session         = null;
+  let userId          = null;
+  let creditsUsed     = 0;
+  let creditsLimit    = 5;
+  let currentTipo     = 'sozinho';
+  let selectedCountry = null;
+  let photoFile       = null;
+  let photo1File      = null;
+  let photo2File      = null;
+
+  // Phase B
+  let taskIds       = [];
+  let imageId       = null;
+  let pollStatusUrls   = [];
+  let pollResponseUrls = [];
+  let pollCount     = 0;
+  let pollTimerId   = null;
+  let progressTimerId = null;
+  let statusTimerId   = null;
+  let counterTimerId  = null;
+  let toastTimerId    = null;
+  let currentPct      = 0;
+
+  // Phase C
+  let resultPayload       = null;
+  let selectedVariation   = null;
+
+  /* ────────── DOM ────────── */
+  const phaseWizard  = q('phase-wizard');
+  const phaseLoading = q('phase-loading');
+  const phaseResults = q('phase-results');
+  const phaseError   = q('phase-error');
+
+  const step1El     = q('step-1');
+  const step2El     = q('step-2');
+  const dot1        = q('dot-1');
+  const dot2        = q('dot-2');
+
+  const navbarBadge   = q('navbar-badge');
+  const creditsLine   = q('credits-line');
+
+  const uploadSingle  = q('upload-single');
+  const uploadCasal   = q('upload-casal');
+  const boxSingle     = q('box-single');
+  const fileSingle    = q('file-single');
+  const boxCasal1     = q('box-casal1');
+  const boxCasal2     = q('box-casal2');
+  const fileCasal1    = q('file-casal1');
+  const fileCasal2    = q('file-casal2');
+  const btnNext       = q('btn-next');
+
+  const btnGerar      = q('btn-gerar');
+  const btnBackStep1  = q('btn-back-step1');
+
+  const loadingStatus = q('loading-status');
+  const progressFill  = q('progress-fill');
+  const progressPct   = q('progress-pct');
+  const liveNum       = q('live-num');
+
+  const resultsGrid   = q('results-grid');
+  const resultsFooter = q('results-footer');
+  const btnPersonalizar = q('btn-personalizar');
+  const btnRegenerate   = q('btn-regenerate');
+
+  const errorBody   = q('error-body');
+  const btnRetry    = q('btn-retry');
+
+  function q(id) { return document.getElementById(id); }
+
+  /* ────────── HELPERS ────────── */
+  function showPhase(name) {
+    [phaseWizard, phaseLoading, phaseResults, phaseError]
+      .forEach(el => el.classList.add('hidden'));
+    document.getElementById('phase-' + name).classList.remove('hidden');
+  }
+
+  function updateCreditsUI() {
+    navbarBadge.textContent = creditsUsed + ' de ' + creditsLimit + ' previews usados';
+    creditsLine.innerHTML   = '<span>' + creditsUsed + ' de ' + creditsLimit + '</span> previews usados';
+  }
+
+  /* ────────── BOOT ────────── */
+  async function init() {
+    const { data: { session: s } } = await sb.auth.getSession();
+    if (!s) { window.location.href = '/index.html'; return; }
+    session = s;
+    userId  = s.user.id;
+
+    await fetchCredits();
+    readURLParams();
+    applyTipo(currentTipo);
+    bindTabs();
+    bindUploads();
+    bindCountryGrid();
+    bindButtons();
+  }
+
+  /* ────────── CREDITS ────────── */
+  async function fetchCredits() {
+    try {
+      const { data } = await sb
+        .from('usage_credits')
+        .select('credits_used, credits_limit')
+        .eq('user_id', userId)
+        .single();
+      if (data) {
+        creditsUsed  = data.credits_used  || 0;
+        creditsLimit = data.credits_limit || 5;
       }
-    })();
+    } catch (_) {}
+    updateCreditsUI();
+  }
 
-    /* ── STATE ── */
-    let currentTipo = 'sozinho';
-    let currentStep = 1;
-    let selectedCountry = null;
-    let selectedLayout = null;
-    let layoutOffset = 0;
-    const previewsUsed = 0;
+  /* ────────── URL PARAMS ────────── */
+  function readURLParams() {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get('tipo');
+    if (t && ['sozinho','pet','casal'].includes(t)) currentTipo = t;
+  }
 
-    /* ── TIPO SELECTION ── */
-    function selectTipo(tipo, btn) {
-      currentTipo = tipo;
-      document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
+  /* ────────── TYPE TABS ────────── */
+  function bindTabs() {
+    document.querySelectorAll('.type-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentTipo = tab.dataset.tipo;
+        applyTipo(currentTipo);
+      });
+    });
+  }
 
-      const single = document.getElementById('uploadSingle');
-      const casal  = document.getElementById('uploadCasal');
+  function applyTipo(tipo) {
+    document.querySelectorAll('.type-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tipo === tipo));
 
-      if (tipo === 'casal') {
-        single.classList.remove('visible');
-        casal.classList.add('visible');
-      } else {
-        single.classList.add('visible');
-        casal.classList.remove('visible');
-      }
-      checkStep1Ready();
+    if (tipo === 'casal') {
+      uploadSingle.classList.add('hidden');
+      uploadCasal.classList.remove('hidden');
+    } else {
+      uploadSingle.classList.remove('hidden');
+      uploadCasal.classList.add('hidden');
     }
+    validateStep1();
+  }
 
-    /* ── FILE UPLOAD ── */
-    function onFileChange(inputId, previewId, dropId) {
-      const file = document.getElementById(inputId).files[0];
-      if (!file) return;
-      showPreview(file, previewId, dropId);
-      checkStep1Ready();
-    }
+  /* ────────── UPLOADS ────────── */
+  function bindUploads() {
+    wireBox(boxSingle, fileSingle, f => { photoFile  = f; validateStep1(); });
+    wireBox(boxCasal1, fileCasal1, f => { photo1File = f; validateStep1(); });
+    wireBox(boxCasal2, fileCasal2, f => { photo2File = f; validateStep1(); });
+  }
 
-    function showPreview(file, previewId, dropId) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const previewEl = document.getElementById(previewId);
-        const img = document.getElementById(previewId + 'Img');
-        if (img) img.src = e.target.result;
-        previewEl.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function clearFile(inputId, previewId, dropId) {
-      document.getElementById(inputId).value = '';
-      const previewEl = document.getElementById(previewId);
-      previewEl.style.display = 'none';
-      const img = document.getElementById(previewId + 'Img');
-      if (img) img.src = '';
-      checkStep1Ready();
-    }
-
-    function onDragOver(e, dropId) {
+  function wireBox(box, input, onFile) {
+    input.addEventListener('change', () => {
+      if (input.files[0]) applyPreview(box, input.files[0], onFile);
+    });
+    box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('dragover'); });
+    box.addEventListener('dragleave', () => box.classList.remove('dragover'));
+    box.addEventListener('drop', e => {
       e.preventDefault();
-      document.getElementById(dropId).classList.add('drag-over');
-    }
-    function onDragLeave(dropId) {
-      document.getElementById(dropId).classList.remove('drag-over');
-    }
-    function onDrop(e, inputId, previewId) {
-      e.preventDefault();
-      const dropId = e.currentTarget.id;
-      document.getElementById(dropId).classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
-      if (!file || !file.type.startsWith('image/')) return;
-      const input = document.getElementById(inputId);
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-      showPreview(file, previewId, dropId);
-      checkStep1Ready();
-    }
+      box.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) applyPreview(box, e.dataTransfer.files[0], onFile);
+    });
+  }
 
-    function checkStep1Ready() {
-      let ready = false;
-      if (currentTipo === 'casal') {
-        const p1 = document.getElementById('fileP1').files[0];
-        const p2 = document.getElementById('fileP2').files[0];
-        ready = !!(p1 && p2);
-      } else {
-        const f = document.getElementById('fileSingle').files[0];
-        ready = !!f;
-      }
-      document.getElementById('btnNext1').disabled = !ready;
-    }
-
-    /* ── STEP NAVIGATION ── */
-    function goToStep(n) {
-      document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step' + n).classList.add('active');
-      currentStep = n;
-      updateStepsBar(n);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function updateStepsBar(n) {
-      for (let i = 1; i <= 4; i++) {
-        const dot = document.getElementById('sdot' + i);
-        dot.classList.remove('done', 'active', 'idle');
-        if (i < n)       dot.classList.add('done');
-        else if (i === n) dot.classList.add('active');
-        else             dot.classList.add('idle');
-      }
-    }
-
-    /* ── COUNTRIES DATA ── */
-    const groups = [
-      {
-        label: 'Grupo A', countries: [
-          { flag: '🇧🇷', name: 'Brasil' },
-          { flag: '🇦🇷', name: 'Argentina' },
-          { flag: '🇺🇾', name: 'Uruguai' },
-          { flag: '🇨🇱', name: 'Chile' },
-        ]
-      },
-      {
-        label: 'Grupo B', countries: [
-          { flag: '🇫🇷', name: 'França' },
-          { flag: '🇩🇪', name: 'Alemanha' },
-          { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'Inglaterra' },
-          { flag: '🇳🇱', name: 'Holanda' },
-        ]
-      },
-      {
-        label: 'Grupo C', countries: [
-          { flag: '🇵🇹', name: 'Portugal' },
-          { flag: '🇪🇸', name: 'Espanha' },
-          { flag: '🇮🇹', name: 'Itália' },
-          { flag: '🇧🇪', name: 'Bélgica' },
-        ]
-      },
-      {
-        label: 'Grupo D', countries: [
-          { flag: '🇲🇽', name: 'México' },
-          { flag: '🇺🇸', name: 'EUA' },
-          { flag: '🇨🇦', name: 'Canadá' },
-          { flag: '🇯🇵', name: 'Japão' },
-        ]
-      },
-    ];
-    let activeGroup = 0;
-
-    function buildCountries() {
-      const tabsEl = document.getElementById('groupTabs');
-      const gridEl = document.getElementById('countriesGrid');
-
-      tabsEl.innerHTML = groups.map((g, i) =>
-        `<button class="group-tab ${i === 0 ? 'active' : ''}" onclick="selectGroup(${i}, this)">${g.label}</button>`
-      ).join('');
-
-      renderCountryGroup(0);
-    }
-
-    function selectGroup(i, btn) {
-      activeGroup = i;
-      document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      renderCountryGroup(i);
-    }
-
-    function renderCountryGroup(i) {
-      const gridEl = document.getElementById('countriesGrid');
-      gridEl.innerHTML = groups[i].countries.map((c, j) =>
-        `<div class="country-card ${selectedCountry === c.name ? 'active' : ''}" onclick="selectCountry('${c.name}', this)">
-          <div class="country-flag">${c.flag}</div>
-          <div class="country-name">${c.name}</div>
-        </div>`
-      ).join('');
-    }
-
-    function selectCountry(name, el) {
-      selectedCountry = name;
-      document.querySelectorAll('.country-card').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById('btnNext2').disabled = false;
-    }
-
-    /* ── LAYOUTS DATA ── */
-    const layouts = [
-      { label: 'CLÁSSICO', icon: '⚽', badge: null },
-      { label: 'BRILHANTE', icon: '✨', badge: 'RARO' },
-      { label: 'RETRÔ', icon: '🏆', badge: null },
-      { label: 'DOURADO', icon: '🥇', badge: 'PREMIUM' },
-    ];
-
-    function buildLayouts() {
-      const track = document.getElementById('layoutTrack');
-      track.innerHTML = layouts.map((l, i) =>
-        `<div class="layout-card ${i === 0 ? 'active' : ''}" onclick="selectLayout(${i}, this)">
-          <div class="layout-card-img">
-            <div class="layout-placeholder">
-              <div class="layout-placeholder-icon">${l.icon}</div>
-            </div>
-            ${l.badge ? `<div class="layout-badge">${l.badge}</div>` : ''}
-          </div>
-          <div class="layout-card-label">${l.label}</div>
-        </div>`
-      ).join('');
-      selectedLayout = 0;
-      document.getElementById('btnNext3').disabled = false;
-    }
-
-    function selectLayout(i, el) {
-      selectedLayout = i;
-      document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById('btnNext3').disabled = false;
-    }
-
-    function moveLayouts(dir) {
-      const track = document.getElementById('layoutTrack');
-      const cardW = track.querySelector('.layout-card').offsetWidth + 12;
-      layoutOffset = Math.max(0, Math.min(layoutOffset + dir * cardW, cardW * (layouts.length - 2)));
-      track.style.transform = `translateX(-${layoutOffset}px)`;
-    }
-
-    /* ── GENERATE ── */
-    function startGenerate() {
-      goToStep(4);
-
-      const steps = ['gstep1', 'gstep2', 'gstep3'];
-      const delays = [0, 1400, 2600];
-
-      steps.forEach((id, i) => {
-        const el = document.getElementById(id);
-        el.classList.remove('active', 'done');
-        el.classList.add(i === 0 ? 'active' : 'idle');
+  function applyPreview(box, file, onFile) {
+    onFile(file);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      // Remove previous preview
+      box.querySelectorAll('.upload-preview, .upload-change-btn').forEach(el => el.remove());
+      // Hide text inside box
+      box.querySelectorAll('.upload-icon, .upload-label, .upload-sublabel').forEach(el => {
+        el.style.display = 'none';
       });
 
-      delays.forEach((delay, i) => {
-        setTimeout(() => {
-          if (i > 0) {
-            const prev = document.getElementById(steps[i - 1]);
-            prev.classList.remove('active');
-            prev.classList.add('done');
-          }
-          const curr = document.getElementById(steps[i]);
-          curr.classList.remove('idle');
-          curr.classList.add('active');
-        }, delay);
+      const img = Object.assign(document.createElement('img'), {
+        className: 'upload-preview',
+        src: ev.target.result,
+        alt: 'Preview',
       });
 
-      setTimeout(() => {
-        document.getElementById(steps[steps.length - 1]).classList.remove('active');
-        document.getElementById(steps[steps.length - 1]).classList.add('done');
-        document.getElementById('genProcessing').style.display = 'none';
-        document.getElementById('genResult').classList.add('visible');
-      }, 4000);
+      const btn = Object.assign(document.createElement('button'), {
+        className: 'upload-change-btn',
+        textContent: 'Trocar foto',
+      });
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        box.querySelector('input[type="file"]').click();
+      });
+
+      box.appendChild(img);
+      box.appendChild(btn);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function validateStep1() {
+    btnNext.disabled = (currentTipo === 'casal')
+      ? !(photo1File && photo2File)
+      : !photoFile;
+  }
+
+  /* ────────── COUNTRY GRID ────────── */
+  function bindCountryGrid() {
+    document.querySelectorAll('.country-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedCountry = card.dataset.country;
+        btnGerar.disabled = false;
+      });
+    });
+  }
+
+  /* ────────── STEP NAVIGATION ────────── */
+  function bindButtons() {
+    btnNext.addEventListener('click', goStep2);
+    btnBackStep1.addEventListener('click', goStep1);
+    btnGerar.addEventListener('click', startGeneration);
+    btnRetry.addEventListener('click', () => { window.location.href = '/gerar.html'; });
+    btnRegenerate.addEventListener('click', () => { window.location.href = '/gerar.html'; });
+    btnPersonalizar.addEventListener('click', goToEditor);
+  }
+
+  function goStep1() {
+    step1El.classList.remove('hidden');
+    step2El.classList.add('hidden');
+    dot1.classList.add('active');    dot1.classList.remove('done');
+    dot2.classList.remove('active'); dot2.classList.remove('done');
+  }
+
+  function goStep2() {
+    step1El.classList.add('hidden');
+    step2El.classList.remove('hidden');
+    dot1.classList.remove('active'); dot1.classList.add('done');
+    dot2.classList.add('active');    dot2.classList.remove('done');
+  }
+
+  /* ────────── GENERATE API CALL ────────── */
+  async function startGeneration() {
+    btnGerar.disabled = true;
+    btnGerar.innerHTML = '<span class="spinner"></span> Enviando...';
+
+    const fd = new FormData();
+    if (currentTipo === 'casal') {
+      fd.append('photo',  photo1File);
+      fd.append('photo2', photo2File);
+      fd.append('style',  'familia');
+    } else {
+      fd.append('photo', photoFile);
+      fd.append('style', currentTipo);
+    }
+    fd.append('country', selectedCountry);
+
+    let res, data;
+    try {
+      res  = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + session.access_token },
+        body: fd,
+      });
+      data = await res.json();
+    } catch (err) {
+      showError('Falha ao conectar. Verifique sua internet e tente novamente.');
+      return;
     }
 
-    /* ── INIT ── */
-    buildCountries();
-    buildLayouts();
+    if (!res.ok || !data.success) {
+      showError(data.error || 'Erro ao iniciar a geração. Tente novamente.');
+      return;
+    }
 
-    // Lê o tipo passado pela landing page via ?tipo=sozinho/pet/casal
-    (function initTipo() {
-      const params = new URLSearchParams(window.location.search);
-      const tipo = params.get('tipo');
-      if (tipo && ['sozinho', 'pet', 'casal'].includes(tipo)) {
-        const tab = document.querySelector(`.type-tab[data-tipo="${tipo}"]`);
-        if (tab) selectTipo(tipo, tab);
+    // Store phase B vars
+    taskIds          = data.taskIds      || [];
+    imageId          = data.imageId      || null;
+    userId           = data.userId       || userId;
+    pollStatusUrls   = data.statusUrls   || [];
+    pollResponseUrls = data.responseUrls || [];
+
+    showPhase('loading');
+    startLoadingPhase();
+  }
+
+  /* ────────── PHASE B: LOADING ────────── */
+  const STATUS_MSGS = [
+    'Analisando sua foto...',
+    'Identificando características do rosto...',
+    'Preparando o template da seleção...',
+    'Gerando sua figurinha com IA...',
+    'A imagem está quase pronta...',
+    'Aplicando detalhes finais...',
+    'Finalizando suas opções...',
+    'Só mais um instante...',
+  ];
+  let statusIdx = 0;
+
+  function startLoadingPhase() {
+    pollCount  = 0;
+    currentPct = 0;
+    setProgress(0);
+
+    // Rotate status text
+    statusIdx = 0;
+    loadingStatus.textContent = STATUS_MSGS[0];
+    statusTimerId = setInterval(() => {
+      statusIdx = (statusIdx + 1) % STATUS_MSGS.length;
+      loadingStatus.textContent = STATUS_MSGS[statusIdx];
+    }, 3500);
+
+    // Fake progress crawl (stops at 90%)
+    progressTimerId = setInterval(() => {
+      if (currentPct < 90) {
+        currentPct = Math.min(currentPct + Math.random() * 2.2, 90);
+        setProgress(currentPct);
       }
-    })();
-  </script>
+    }, 320);
+
+    // Live counter
+    let liveCount = 800 + Math.floor(Math.random() * 201);
+    liveNum.textContent = liveCount;
+    counterTimerId = setInterval(() => {
+      if (Math.random() < 0.38) { liveCount++; liveNum.textContent = liveCount; }
+    }, 2600);
+
+    startToastLoop();
+
+    // Start polling
+    doPoll();
+    pollTimerId = setInterval(doPoll, 3000);
+  }
+
+  function setProgress(pct) {
+    progressFill.style.width = pct.toFixed(1) + '%';
+    progressPct.textContent  = Math.round(pct) + '%';
+  }
+
+  async function doPoll() {
+    pollCount++;
+    if (pollCount > 80) {
+      stopLoadingPhase();
+      showError('A geração demorou mais do que o esperado. Por favor, tente novamente.');
+      return;
+    }
+
+    const params = new URLSearchParams({
+      taskIds:      taskIds.join(','),
+      imageId:      imageId             || '',
+      userId:       userId              || '',
+      statusUrls:   pollStatusUrls.join(','),
+      responseUrls: pollResponseUrls.join(','),
+    });
+
+    let data;
+    try {
+      const res = await fetch('/api/generate/status?' + params.toString(), {
+        headers: { 'Authorization': 'Bearer ' + session.access_token },
+      });
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (_) { return; }
+
+    if (data.status === 'completed') {
+      stopLoadingPhase();
+      setProgress(100);
+      setTimeout(() => showResults(data), 500);
+    } else if (data.status === 'failed') {
+      stopLoadingPhase();
+      showError(data.error || 'A geração falhou. Tente novamente com outra foto.');
+    }
+  }
+
+  function stopLoadingPhase() {
+    clearInterval(pollTimerId);
+    clearInterval(progressTimerId);
+    clearInterval(statusTimerId);
+    clearInterval(counterTimerId);
+    clearTimeout(toastTimerId);
+    pollTimerId = progressTimerId = statusTimerId = counterTimerId = toastTimerId = null;
+  }
+
+  /* ────────── PHASE C: RESULTS ────────── */
+  function showResults(data) {
+    resultPayload     = data;
+    selectedVariation = null;
+    btnPersonalizar.disabled = true;
+    resultsGrid.innerHTML    = '';
+
+    const images = Array.isArray(data.images) ? data.images : [];
+
+    if (images.length > 0) {
+      images.forEach((img, idx) => buildVariationCard(img.watermarkUrl || img.url, idx));
+    } else {
+      // Fallback to responseUrls
+      pollResponseUrls.forEach((url, idx) => buildVariationCard(url, idx));
+    }
+
+    // Refresh credits
+    creditsUsed = Math.min(creditsUsed + 1, creditsLimit);
+    updateCreditsUI();
+    resultsFooter.textContent = 'Previews: ' + creditsUsed + '/' + creditsLimit;
+
+    showPhase('results');
+  }
+
+  function buildVariationCard(imgUrl, idx) {
+    const card = document.createElement('div');
+    card.className = 'variation-card';
+    card.innerHTML =
+      '<img src="' + imgUrl + '" alt="Opção ' + (idx+1) + '" loading="lazy" />' +
+      '<div class="variation-label">Opção ' + (idx+1) + '</div>' +
+      '<div class="variation-check">✓</div>';
+
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.variation-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedVariation = idx;
+      btnPersonalizar.disabled = false;
+    });
+
+    resultsGrid.appendChild(card);
+  }
+
+  function goToEditor() {
+    if (selectedVariation === null || !resultPayload) return;
+
+    const images = Array.isArray(resultPayload.images) ? resultPayload.images : [];
+    let imageUrl = '';
+    let hiresUrl = '';
+
+    if (images[selectedVariation]) {
+      imageUrl = images[selectedVariation].watermarkUrl || images[selectedVariation].url || '';
+      hiresUrl = images[selectedVariation].url || '';
+    } else if (pollResponseUrls[selectedVariation]) {
+      imageUrl = hiresUrl = pollResponseUrls[selectedVariation];
+    }
+
+    const qs = new URLSearchParams({
+      imageUrl,
+      hiresUrl,
+      imageId:  imageId          || '',
+      country:  selectedCountry  || '',
+      type:     currentTipo === 'casal' ? 'familia' : currentTipo,
+    });
+    window.location.href = '/editor.html?' + qs.toString();
+  }
+
+  /* ────────── PHASE D: ERROR ────────── */
+  function showError(msg) {
+    stopLoadingPhase();
+    errorBody.textContent = msg || 'Ocorreu um erro inesperado.';
+    showPhase('error');
+  }
+
+  /* ────────── SOCIAL PROOF TOASTS ────────── */
+  const T_NAMES  = ['Maria S.','Lucas F.','Ana P.','Rodrigo M.','Júlia B.','Carlos T.','Fernanda L.','Thiago R.','Camila O.','Rafael N.','Beatriz C.','Gabriel A.'];
+  const T_CITIES = ['São Paulo','Rio de Janeiro','Curitiba','Belo Horizonte','Brasília','Salvador','Fortaleza','Porto Alegre','Recife','Manaus','Goiânia','Belém'];
+  const T_ACTS   = [
+    'acabou de gerar sua figurinha!',
+    'escolheu Brasil 🇧🇷',
+    'escolheu Argentina 🇦🇷',
+    'escolheu Portugal 🇵🇹',
+    'acabou de criar sua figurinha!',
+    'está gerando agora...',
+    'amou o resultado!',
+  ];
+
+  function startToastLoop() {
+    scheduleToast();
+  }
+
+  function scheduleToast() {
+    const delay = 4000 + Math.random() * 3000;
+    toastTimerId = setTimeout(() => {
+      fireToast();
+      scheduleToast();
+    }, delay);
+  }
+
+  function fireToast() {
+    const wrap  = document.getElementById('toast-container');
+    const alive = wrap.querySelectorAll('.toast:not(.out)');
+    if (alive.length >= 2) dismissToast(alive[alive.length - 1]);
+
+    const name  = T_NAMES [Math.floor(Math.random() * T_NAMES.length)];
+    const city  = T_CITIES[Math.floor(Math.random() * T_CITIES.length)];
+    const act   = T_ACTS  [Math.floor(Math.random() * T_ACTS.length)];
+
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML =
+      '<strong>' + name + '</strong> ' + act +
+      '<br><span style="opacity:.55;font-size:11px">' + city + '</span>';
+    wrap.prepend(t);
+
+    setTimeout(() => dismissToast(t), 5000);
+  }
+
+  function dismissToast(el) {
+    if (!el || !el.parentNode) return;
+    el.classList.add('out');
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 340);
+  }
+
+  /* ────────── START ────────── */
+  init();
+})();
+</script>
 </body>
 </html>
