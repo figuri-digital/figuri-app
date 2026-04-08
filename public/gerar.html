@@ -1076,8 +1076,8 @@
       taskIds:      taskIds.join(','),
       imageId:      imageId             || '',
       userId:       userId              || '',
-      statusUrls:   pollStatusUrls.join(','),
-      responseUrls: pollResponseUrls.join(','),
+      statusUrls:   pollStatusUrls.join('|'),
+      responseUrls: pollResponseUrls.join('|'),
     });
 
     let data;
@@ -1115,12 +1115,11 @@
     btnPersonalizar.disabled = true;
     resultsGrid.innerHTML    = '';
 
-    const images = Array.isArray(data.images) ? data.images : [];
+    const variations = Array.isArray(data.variations) ? data.variations : [];
 
-    if (images.length > 0) {
-      images.forEach((img, idx) => buildVariationCard(img.watermarkUrl || img.url, idx));
+    if (variations.length > 0) {
+      variations.forEach((v, idx) => buildVariationCard(v.previewUrl, idx));
     } else {
-      // Fallback to responseUrls
       pollResponseUrls.forEach((url, idx) => buildVariationCard(url, idx));
     }
 
@@ -1153,13 +1152,13 @@
   function goToEditor() {
     if (selectedVariation === null || !resultPayload) return;
 
-    const images = Array.isArray(resultPayload.images) ? resultPayload.images : [];
+    const variations = Array.isArray(resultPayload.variations) ? resultPayload.variations : [];
     let imageUrl = '';
     let hiresUrl = '';
 
-    if (images[selectedVariation]) {
-      imageUrl = images[selectedVariation].watermarkUrl || images[selectedVariation].url || '';
-      hiresUrl = images[selectedVariation].url || '';
+    if (variations[selectedVariation]) {
+      imageUrl = variations[selectedVariation].previewUrl || '';
+      hiresUrl = variations[selectedVariation].hiresUrl  || '';
     } else if (pollResponseUrls[selectedVariation]) {
       imageUrl = hiresUrl = pollResponseUrls[selectedVariation];
     }

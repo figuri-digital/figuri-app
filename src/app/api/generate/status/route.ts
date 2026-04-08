@@ -110,19 +110,25 @@ export async function GET(req: NextRequest) {
           });
           const { data: hiresUrlData } = supabase.storage.from('images').getPublicUrl(hiresPath);
 
-          // Apply watermark + upload preview
-          const watermarkedBuffer = await applyWatermark(genBuffer);
-          const previewPath = `previews/${userId}/${imageId}-${index}.jpg`;
-          await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, {
-            contentType: 'image/jpeg',
-          });
-          const { data: previewUrlData } = supabase.storage.from('images').getPublicUrl(previewPath);
+          // Apply watermark + upload preview (fallback to hi-res if watermark fails)
+          let previewUrl = hiresUrlData.publicUrl;
+          try {
+            const watermarkedBuffer = await applyWatermark(genBuffer);
+            const previewPath = `previews/${userId}/${imageId}-${index}.jpg`;
+            await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, {
+              contentType: 'image/jpeg',
+            });
+            const { data: previewUrlData } = supabase.storage.from('images').getPublicUrl(previewPath);
+            previewUrl = previewUrlData.publicUrl;
+          } catch (wmErr) {
+            console.error('Watermark failed, using hi-res as preview:', wmErr);
+          }
 
           return {
             index,
             taskId,
             status: 'completed',
-            previewUrl: previewUrlData.publicUrl,
+            previewUrl,
             hiresUrl: hiresUrlData.publicUrl,
           };
         }
@@ -135,7 +141,7 @@ export async function GET(req: NextRequest) {
         return { index, taskId, status: 'processing' };
       } catch (err) {
         console.error(`Task ${index} error:`, err);
-        return { index, taskId, status: 'processing' };
+        return { index, taskId, status: 'failed' };
       }
     });
 
@@ -187,7 +193,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Partial results
+    // All tasks failed — surface as error instead of looping forever
+    if (allCompleted && completedResults.length === 0) {
+      await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
+      return NextResponse.json({
+        status: 'failed',
+        error: 'Todas as gerações falharam. Tente com outra foto.',
+      });
+    }
+
+    // Still processing
     return NextResponse.json({
       status: 'processing',
       variations: results.map(r => ({
@@ -199,6 +214,6 @@ export async function GET(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';
     console.error('Status check error:', err);
-    return NextResponse.json({ error: message, status: 'processing' });
+    return NextResponse.json({ error: message, status: 'failed' });
   }
 }
