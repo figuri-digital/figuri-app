@@ -254,21 +254,41 @@
     /* ────────────────────────────────────────
        COUNTRY GRID
     ──────────────────────────────────────── */
+    /* Group tabs */
+    .group-tabs-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 14px;
+    }
+    .group-tab-btn {
+      flex: 1; padding: 7px 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: 8px; cursor: pointer;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px; letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.5);
+      transition: all 0.2s; text-align: center;
+    }
+    .group-tab-btn:hover { border-color: rgba(148,221,45,0.4); color: rgba(255,255,255,0.8); }
+    .group-tab-btn.active {
+      background: rgba(148,221,45,0.10);
+      border-color: var(--btn-cta);
+      color: var(--btn-cta);
+    }
     .country-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
     }
     .country-card {
       background: rgba(255,255,255,0.05);
       border: 2px solid rgba(255,255,255,0.10);
       border-radius: 12px;
-      padding: 14px 6px;
+      padding: 14px 4px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 7px;
+      justify-content: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
       user-select: none;
@@ -279,8 +299,7 @@
       background: rgba(148,221,45,0.12);
       box-shadow: 0 0 14px rgba(148,221,45,0.22);
     }
-    .country-flag { font-size: 28px; line-height: 1; }
-    .country-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.84); }
+    .country-flag { font-size: 36px; line-height: 1; }
 
     /* ────────────────────────────────────────
        BUTTONS
@@ -369,12 +388,15 @@
       border-radius: 0 0 0 2px;
       z-index: 4;
     }
-    .scanner-silhouette {
+    .scanner-logo {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 90px;
-      opacity: 0.07;
       z-index: 1;
+    }
+    .scanner-logo img {
+      width: 60%;
+      opacity: 0.18;
+      filter: brightness(0) invert(1);
     }
     .scan-line {
       position: absolute;
@@ -544,10 +566,9 @@
 
     @media (max-width: 400px) {
       .card { padding: 24px 14px; }
-      .country-grid { gap: 7px; }
+      .country-grid { gap: 6px; }
       .country-card { padding: 10px 4px; }
-      .country-flag { font-size: 22px; }
-      .country-name { font-size: 10px; }
+      .country-flag { font-size: 26px; }
       .results-grid { gap: 10px; }
     }
   </style>
@@ -625,39 +646,26 @@
       <h2 class="phase-title">Selecione o país</h2>
       <p class="phase-sub">Qual vai ser a sua seleção?</p>
 
-      <div class="country-grid">
-        <div class="country-card" data-country="brasil">
-          <span class="country-flag">🇧🇷</span>
-          <span class="country-name">Brasil</span>
-        </div>
-        <div class="country-card" data-country="argentina">
-          <span class="country-flag">🇦🇷</span>
-          <span class="country-name">Argentina</span>
-        </div>
-        <div class="country-card" data-country="colombia">
-          <span class="country-flag">🇨🇴</span>
-          <span class="country-name">Colômbia</span>
-        </div>
-        <div class="country-card" data-country="uruguai">
-          <span class="country-flag">🇺🇾</span>
-          <span class="country-name">Uruguai</span>
-        </div>
-        <div class="country-card" data-country="franca">
-          <span class="country-flag">🇫🇷</span>
-          <span class="country-name">França</span>
-        </div>
-        <div class="country-card" data-country="alemanha">
-          <span class="country-flag">🇩🇪</span>
-          <span class="country-name">Alemanha</span>
-        </div>
-        <div class="country-card" data-country="espanha">
-          <span class="country-flag">🇪🇸</span>
-          <span class="country-name">Espanha</span>
-        </div>
-        <div class="country-card" data-country="portugal">
-          <span class="country-flag">🇵🇹</span>
-          <span class="country-name">Portugal</span>
-        </div>
+      <!-- Group tabs -->
+      <div class="group-tabs-row">
+        <button class="group-tab-btn active" data-group="0">Grupo 1</button>
+        <button class="group-tab-btn"        data-group="1">Grupo 2</button>
+      </div>
+
+      <!-- Group 0: América do Sul -->
+      <div class="country-grid" id="group-0">
+        <div class="country-card" data-country="brasil">   <span class="country-flag">🇧🇷</span></div>
+        <div class="country-card" data-country="argentina"><span class="country-flag">🇦🇷</span></div>
+        <div class="country-card" data-country="colombia"> <span class="country-flag">🇨🇴</span></div>
+        <div class="country-card" data-country="uruguai">  <span class="country-flag">🇺🇾</span></div>
+      </div>
+
+      <!-- Group 1: Europa -->
+      <div class="country-grid hidden" id="group-1">
+        <div class="country-card" data-country="franca">   <span class="country-flag">🇫🇷</span></div>
+        <div class="country-card" data-country="alemanha"> <span class="country-flag">🇩🇪</span></div>
+        <div class="country-card" data-country="espanha">  <span class="country-flag">🇪🇸</span></div>
+        <div class="country-card" data-country="portugal"> <span class="country-flag">🇵🇹</span></div>
       </div>
 
       <button class="btn-primary" id="btn-gerar" disabled>Gerar Figurinha →</button>
@@ -674,7 +682,7 @@
 
     <!-- Animated scanner card -->
     <div class="scanner-wrap">
-      <div class="scanner-silhouette">🧍</div>
+      <div class="scanner-logo"><img src="/logo.png" alt="Figuri" /></div>
       <div class="corner-tr"></div>
       <div class="corner-bl"></div>
       <div class="scan-line"></div>
@@ -932,6 +940,19 @@
 
   /* ────────── COUNTRY GRID ────────── */
   function bindCountryGrid() {
+    // Group tabs
+    document.querySelectorAll('.group-tab-btn').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const g = tab.dataset.group;
+        document.querySelectorAll('.group-tab-btn').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('group-0').classList.add('hidden');
+        document.getElementById('group-1').classList.add('hidden');
+        document.getElementById('group-' + g).classList.remove('hidden');
+      });
+    });
+
+    // Country cards
     document.querySelectorAll('.country-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
