@@ -855,11 +855,28 @@
     updateCreditsUI();
   }
 
-  /* ────────── URL PARAMS ────────── */
+  /* ────────── URL PARAMS / RESTORE ────────── */
   function readURLParams() {
     const p = new URLSearchParams(window.location.search);
     const t = p.get('tipo');
     if (t && ['sozinho','pet','casal'].includes(t)) currentTipo = t;
+
+    // Restore from sessionStorage if coming back from editor
+    try {
+      const saved = sessionStorage.getItem('figuri_result');
+      if (saved) {
+        const s = JSON.parse(saved);
+        resultPayload  = s.payload;
+        imageId        = s.imageId;
+        selectedCountry = s.country;
+        currentTipo    = s.tipo || currentTipo;
+        creditsUsed    = s.creditsUsed  || creditsUsed;
+        creditsLimit   = s.creditsLimit || creditsLimit;
+        updateCreditsUI();
+        showResults(resultPayload);
+        return; // skip wizard
+      }
+    } catch(_) {}
   }
 
   /* ────────── TYPE TABS ────────── */
@@ -975,7 +992,10 @@
     btnBackStep1.addEventListener('click', goStep1);
     btnGerar.addEventListener('click', startGeneration);
     btnRetry.addEventListener('click', () => { window.location.href = '/gerar.html'; });
-    btnRegenerate.addEventListener('click', () => { window.location.href = '/gerar.html'; });
+    btnRegenerate.addEventListener('click', () => {
+      sessionStorage.removeItem('figuri_result');
+      window.location.href = '/gerar.html';
+    });
     btnPersonalizar.addEventListener('click', goToEditor);
   }
 
@@ -1189,6 +1209,18 @@
     } else if (pollResponseUrls[selectedVariation]) {
       imageUrl = hiresUrl = pollResponseUrls[selectedVariation];
     }
+
+    // Persist result so user can come back without regenerating
+    try {
+      sessionStorage.setItem('figuri_result', JSON.stringify({
+        payload:       resultPayload,
+        imageId:       imageId,
+        country:       selectedCountry,
+        tipo:          currentTipo,
+        creditsUsed:   creditsUsed,
+        creditsLimit:  creditsLimit,
+      }));
+    } catch(_) {}
 
     const qs = new URLSearchParams({
       imageUrl,
