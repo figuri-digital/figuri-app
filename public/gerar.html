@@ -299,7 +299,13 @@
       background: rgba(148,221,45,0.12);
       box-shadow: 0 0 14px rgba(148,221,45,0.22);
     }
-    .country-flag { font-size: 36px; line-height: 1; }
+    .country-flag {
+      width: 52px; height: 34px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
 
     /* ────────────────────────────────────────
        BUTTONS
@@ -654,18 +660,18 @@
 
       <!-- Group 0: América do Sul -->
       <div class="country-grid" id="group-0">
-        <div class="country-card" data-country="brasil">   <span class="country-flag">🇧🇷</span></div>
-        <div class="country-card" data-country="argentina"><span class="country-flag">🇦🇷</span></div>
-        <div class="country-card" data-country="colombia"> <span class="country-flag">🇨🇴</span></div>
-        <div class="country-card" data-country="uruguai">  <span class="country-flag">🇺🇾</span></div>
+        <div class="country-card" data-country="brasil">   <img class="country-flag" src="https://flagcdn.com/w80/br.png" alt="Brasil" /></div>
+        <div class="country-card" data-country="argentina"><img class="country-flag" src="https://flagcdn.com/w80/ar.png" alt="Argentina" /></div>
+        <div class="country-card" data-country="colombia"> <img class="country-flag" src="https://flagcdn.com/w80/co.png" alt="Colômbia" /></div>
+        <div class="country-card" data-country="uruguai">  <img class="country-flag" src="https://flagcdn.com/w80/uy.png" alt="Uruguai" /></div>
       </div>
 
       <!-- Group 1: Europa -->
       <div class="country-grid hidden" id="group-1">
-        <div class="country-card" data-country="franca">   <span class="country-flag">🇫🇷</span></div>
-        <div class="country-card" data-country="alemanha"> <span class="country-flag">🇩🇪</span></div>
-        <div class="country-card" data-country="espanha">  <span class="country-flag">🇪🇸</span></div>
-        <div class="country-card" data-country="portugal"> <span class="country-flag">🇵🇹</span></div>
+        <div class="country-card" data-country="franca">   <img class="country-flag" src="https://flagcdn.com/w80/fr.png" alt="França" /></div>
+        <div class="country-card" data-country="alemanha"> <img class="country-flag" src="https://flagcdn.com/w80/de.png" alt="Alemanha" /></div>
+        <div class="country-card" data-country="espanha">  <img class="country-flag" src="https://flagcdn.com/w80/es.png" alt="Espanha" /></div>
+        <div class="country-card" data-country="portugal"> <img class="country-flag" src="https://flagcdn.com/w80/pt.png" alt="Portugal" /></div>
       </div>
 
       <button class="btn-primary" id="btn-gerar" disabled>Gerar Figurinha →</button>
