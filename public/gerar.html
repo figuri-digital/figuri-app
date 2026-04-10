@@ -44,13 +44,17 @@
       border-bottom: 1px solid rgba(148,221,45,0.14);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0 5%;
       height: 62px;
       flex-shrink: 0;
     }
     .navbar-logo { display: flex; align-items: center; text-decoration: none; }
-    .navbar-logo img { height: 36px; width: auto; display: block; }
+    .navbar-logo img { height: 44px; width: auto; display: block; }
+    .navbar-badge {
+      position: absolute;
+      right: 5%;
+    }
     .navbar-badge {
       background: rgba(148,221,45,0.10);
       border: 1px solid rgba(148,221,45,0.28);
@@ -454,7 +458,7 @@
     }
     .scanner-logo img {
       width: 60%;
-      opacity: 0.28;
+      opacity: 1;
       filter: invert(1);
     }
     .scan-line {
@@ -748,43 +752,6 @@
 
   <!-- ██████████  PHASE B: LOADING (FULLSCREEN)  ██████████ -->
   <div class="loading-overlay hidden" id="phase-loading">
-
-    <!-- Clouds -->
-    <svg class="cloud cloud-2" viewBox="0 0 380 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="190" cy="86" rx="168" ry="30" fill="rgba(200,232,175,0.65)"/>
-      <circle cx="105" cy="66" r="42" fill="rgba(200,232,175,0.65)"/>
-      <circle cx="165" cy="50" r="54" fill="rgba(200,232,175,0.65)"/>
-      <circle cx="245" cy="58" r="42" fill="rgba(200,232,175,0.65)"/>
-      <circle cx="295" cy="70" r="30" fill="rgba(200,232,175,0.65)"/>
-    </svg>
-    <svg class="cloud cloud-1" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="150" cy="78" rx="132" ry="26" fill="rgba(210,238,185,0.72)"/>
-      <circle cx="84"  cy="60" r="34" fill="rgba(210,238,185,0.72)"/>
-      <circle cx="133" cy="46" r="44" fill="rgba(210,238,185,0.72)"/>
-      <circle cx="200" cy="54" r="34" fill="rgba(210,238,185,0.72)"/>
-      <circle cx="240" cy="64" r="24" fill="rgba(210,238,185,0.72)"/>
-    </svg>
-    <svg class="cloud cloud-3" viewBox="0 0 270 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="135" cy="74" rx="118" ry="24" fill="rgba(205,235,180,0.70)"/>
-      <circle cx="76"  cy="57" r="31" fill="rgba(205,235,180,0.70)"/>
-      <circle cx="122" cy="44" r="40" fill="rgba(205,235,180,0.70)"/>
-      <circle cx="183" cy="51" r="31" fill="rgba(205,235,180,0.70)"/>
-      <circle cx="220" cy="61" r="22" fill="rgba(205,235,180,0.70)"/>
-    </svg>
-    <svg class="cloud cloud-4" viewBox="0 0 210 85" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="105" cy="66" rx="92" ry="22" fill="rgba(205,235,180,0.62)"/>
-      <circle cx="60"  cy="51" r="26" fill="rgba(205,235,180,0.62)"/>
-      <circle cx="100" cy="39" r="33" fill="rgba(205,235,180,0.62)"/>
-      <circle cx="151" cy="46" r="26" fill="rgba(205,235,180,0.62)"/>
-      <circle cx="182" cy="56" r="18" fill="rgba(205,235,180,0.62)"/>
-    </svg>
-    <svg class="cloud cloud-5" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <ellipse cx="100" cy="62" rx="88" ry="20" fill="rgba(205,235,180,0.50)"/>
-      <circle cx="57"  cy="48" r="24" fill="rgba(205,235,180,0.50)"/>
-      <circle cx="94"  cy="36" r="30" fill="rgba(205,235,180,0.50)"/>
-      <circle cx="142" cy="43" r="24" fill="rgba(205,235,180,0.50)"/>
-      <circle cx="170" cy="52" r="17" fill="rgba(205,235,180,0.50)"/>
-    </svg>
 
     <!-- Logo topo -->
     <div class="loading-top-logo">

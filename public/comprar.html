@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comprar Figurinha – Figuri</title>
+  <link rel="icon" type="image/svg+xml" href="/fav.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    :root {
+      --verde-escuro:    #1A2B01;
+      --verde-principal: #396100;
+      --verde-claro:     #EDFBD9;
+      --amarelo:         #FFC300;
+      --btn-cta:         #94DD2D;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: url('/assets/P1.png') center top / cover no-repeat fixed;
+      background-color: #1a3800;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(26,43,1,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(148,221,45,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5%;
+      height: 62px;
+      flex-shrink: 0;
+    }
+    .navbar-logo { display: flex; align-items: center; text-decoration: none; }
+    .navbar-logo img { height: 44px; width: auto; display: block; }
+    .navbar-back {
+      position: absolute;
+      left: 5%;
+      background: none;
+      border: none;
+      color: rgba(237,251,217,0.6);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .navbar-back:hover { color: #fff; }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 36px 16px 72px;
+    }
+
+    /* ── PREVIEW SECTION ── */
+    .preview-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .preview-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--btn-cta);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .preview-img-wrap {
+      width: 200px;
+      height: 265px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 3px solid rgba(148,221,45,0.3);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .preview-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-placeholder {
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+    }
+    .preview-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .preview-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+    }
+
+    /* ── PRODUCTS ── */
+    .products-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .products-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (min-width: 640px) {
+      .products-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .product-card {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      border-color: var(--btn-cta);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(148,221,45,0.18);
+    }
+    .product-card.popular {
+      border-color: var(--amarelo);
+    }
+    .product-badge {
+      background: var(--amarelo);
+      color: var(--verde-escuro);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      padding: 4px 0;
+      text-transform: uppercase;
+    }
+    .product-img-wrap {
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: rgba(0,0,0,0.2);
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .product-card:hover .product-img-wrap img { transform: scale(1.04); }
+    .product-info {
+      padding: 14px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .product-name {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .product-desc {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+    .product-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      color: var(--btn-cta);
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+    .product-price span {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+    }
+    .btn-comprar {
+      width: 100%;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-comprar:hover { background: #a8f030; transform: scale(1.02); }
+
+    /* ── GUARANTEE ── */
+    .guarantee {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .guarantee svg { opacity: 0.5; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <button class="navbar-back" onclick="history.back()">← Voltar</button>
+  <a href="/index.html" class="navbar-logo">
+    <img src="/logo.png" alt="Figuri" />
+  </a>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Preview da figurinha gerada -->
+  <div class="preview-section">
+    <span class="preview-label">Sua figurinha está pronta</span>
+    <div class="preview-img-wrap" id="previewWrap">
+      <p class="preview-placeholder">Carregando preview...</p>
+    </div>
+    <h2 class="preview-title">Escolha como quer receber</h2>
+    <p class="preview-sub">Selecione o produto abaixo para finalizar a compra</p>
+  </div>
+
+  <!-- Produtos -->
+  <p class="products-title">Nossos Produtos</p>
+  <p class="products-sub">Preview gratuito com marca d'água — Pague só se gostar</p>
+
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="/figurinha-digital.png" alt="Figuri Digital" />
+      </div>
+      <div class="product-info">
+        <p class="product-name">Figuri Digital</p>
+        <p class="product-desc">Arquivo digital em alta resolução, pronto para compartilhar ou imprimir onde quiser.</p>
+        <p class="product-price">R$19<span>,90</span></p>
+        <a class="btn-comprar" id="btnDigital" href="#" target="_blank">Comprar</a>
+      </div>
+    </div>
+
+    <div class="product-card popular">
+      <div class="product-badge">Mais popular</div>
+      <div class="product-img-wrap">
+        <img src="/figurinha-fisica.png" alt="Figuri Física" />
+      </div>
+      <div class="product-info">
+        <p class="product-name">Figuri Física</p>
+        <p class="product-desc">Figurinha impressa no tamanho oficial, entregue na sua casa com embalagem especial.</p>
+        <p class="product-price">R$24<span>,90</span></p>
+        <a class="btn-comprar" id="btnFisica" href="#" target="_blank">Comprar</a>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="/fiurinha-com-moldura.png" alt="Figuri com Moldura" />
+      </div>
+      <div class="product-info">
+        <p class="product-name">Figuri com Moldura</p>
+        <p class="product-desc">Figurinha impressa + moldura acrílica premium para exibir com estilo.</p>
+        <p class="product-price">R$49<span>,90</span></p>
+        <a class="btn-comprar" id="btnMoldura" href="#" target="_blank">Comprar</a>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="/pack-de-figurinhas.png" alt="Pack de Figuri" />
+      </div>
+      <div class="product-info">
+        <p class="product-name">Pack de Figuri</p>
+        <p class="product-desc">Pacote completo com digital + físico + moldura. Melhor custo-benefício.</p>
+        <p class="product-price">R$69<span>,90</span></p>
+        <a class="btn-comprar" id="btnPack" href="#" target="_blank">Comprar</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="guarantee">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7L12 2z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Pagamento seguro · Entrega garantida · Suporte via WhatsApp
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const SB_URL  = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+  const sb = window.supabase.createClient(SB_URL, SB_ANON);
+
+  // Links de pagamento — substituir quando disponível
+  const PAYMENT_LINKS = {
+    digital: '#',
+    fisica:  '#',
+    moldura: '#',
+    pack:    '#',
+  };
+
+  // Carregar preview da URL
+  const params = new URLSearchParams(window.location.search);
+  const previewUrl = params.get('imageUrl') || params.get('previewUrl') || '';
+  const imageId    = params.get('imageId') || '';
+
+  const wrap = document.getElementById('previewWrap');
+  if (previewUrl) {
+    const img = document.createElement('img');
+    img.src = previewUrl;
+    img.alt = 'Sua figurinha';
+    img.onerror = () => { wrap.innerHTML = '<p class="preview-placeholder">Preview indisponível</p>'; };
+    wrap.innerHTML = '';
+    wrap.appendChild(img);
+  }
+
+  // Adicionar imageId nos links de pagamento
+  function buildLink(base) {
+    if (!base || base === '#') return '#';
+    const url = new URL(base, window.location.href);
+    if (imageId) url.searchParams.set('imageId', imageId);
+    return url.toString();
+  }
+
+  document.getElementById('btnDigital').href = buildLink(PAYMENT_LINKS.digital);
+  document.getElementById('btnFisica').href  = buildLink(PAYMENT_LINKS.fisica);
+  document.getElementById('btnMoldura').href = buildLink(PAYMENT_LINKS.moldura);
+  document.getElementById('btnPack').href    = buildLink(PAYMENT_LINKS.pack);
+
+  // Verificar autenticação
+  (async function () {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '/index.html'; }
+  })();
+})();
+</script>
+</body>
+</html>
