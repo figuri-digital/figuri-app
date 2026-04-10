@@ -129,26 +129,18 @@
     ─────────────────────────────────────── */
     .hero {
       position: relative;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      overflow: visible;
-    }
-    .hero {
       background-color: #396100;
     }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background-image: url('/assets/Back.png');
-      background-size: cover;
-      background-position: center center;
-      filter: none;
-      z-index: 0;
+    .hero-bg-img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
+    .hero-bg { display: none; }
     .hero-overlay { display: none; }
     .hero-content {
-      position: relative;
+      position: absolute;
+      inset: 0;
       z-index: 2;
       width: 100%;
       max-width: 1200px;
@@ -158,6 +150,8 @@
       grid-template-columns: 1fr 1fr;
       gap: 3rem;
       align-items: center;
+      left: 50%;
+      transform: translateX(-50%);
     }
     .hero-left {}
     .hero-tag {
@@ -1191,8 +1185,7 @@
 
   <!-- ── HERO ── -->
   <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
+    <img class="hero-bg-img" src="/assets/Back.png" alt="" aria-hidden="true" />
     <div class="hero-content">
 
       <div class="hero-left">
