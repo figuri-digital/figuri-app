@@ -96,31 +96,37 @@
     }
     .btn-entrar {
       background: transparent;
-      border: 1.5px solid var(--verde-claro);
+      border: 1.5px solid rgba(237,251,217,0.6);
       color: var(--verde-claro);
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
       font-size: 0.85rem;
       letter-spacing: 0.06em;
-      padding: 0.45rem 1.1rem;
-      border-radius: 6px;
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .btn-entrar:hover { background: var(--verde-alpha); }
     .btn-cta {
-      background: var(--btn-cta);
-      color: var(--verde-escuro);
+      background: #94dd2d;
+      color: #345403;
       border: none;
       font-family: 'Montserrat', sans-serif;
       font-weight: 800;
       font-size: 0.85rem;
       letter-spacing: 0.06em;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
+      padding: 0.55rem 1.25rem;
+      border-radius: 999px;
       cursor: pointer;
       transition: background 0.2s, transform 0.15s;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .btn-cta:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
 
@@ -170,22 +176,21 @@
       margin-bottom: 1rem;
     }
     .hero-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3.5rem, 7vw, 6.5rem);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: clamp(3rem, 5.5vw, 5.5rem);
       line-height: 0.95;
-      color: var(--verde-claro);
+      color: #edfbd9;
       text-transform: uppercase;
       margin-bottom: 1.25rem;
-      letter-spacing: 0.02em;
     }
     .hero-title span {
-      color: var(--verde-escuro);
-      background-image: url('fundo-texto.png');
-      background-size: 100% 100%;
-      background-repeat: no-repeat;
-      background-position: center;
+      color: #396100;
+      background-color: #FFC300;
+      background-image: none;
       display: inline-block;
-      padding: 0 0.3em;
+      padding: 0.05em 0.25em;
+      border-radius: 4px;
     }
     .hero-subtitle {
       font-size: 1rem;
@@ -266,19 +271,19 @@
       padding: 1.75rem;
     }
     .hero-card-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem;
-      letter-spacing: 0.12em;
-      color: var(--verde-escuro);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: #396100;
       margin-bottom: 1.25rem;
       text-align: center;
       display: inline-block;
-      background-image: url('fundo-texto.png');
-      background-size: 100% 100%;
-      background-repeat: no-repeat;
-      background-position: center;
-      padding: 0.35rem 0.8rem;
+      background: #FFC300;
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
       width: auto;
+      text-transform: uppercase;
     }
     .hero-steps-mini {
       display: flex;
@@ -302,12 +307,11 @@
       align-self: center;
     }
     .card-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(237,251,217,0.5);
-      margin-bottom: 0.6rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #edfbd9;
+      margin-bottom: 0.25rem;
     }
     .type-selector {
       display: flex;
@@ -345,14 +349,16 @@
       transition: transform 0.2s;
     }
     .type-btn-label {
-      background: var(--verde-principal);
-      color: var(--verde-claro);
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.95rem;
-      letter-spacing: 0.1em;
+      background: #2f4d03;
+      color: #edfbd9;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
       text-align: center;
       padding: 0.35rem 0;
       transition: background 0.2s, color 0.2s;
+      text-transform: uppercase;
     }
     .type-btn.active {
       border-color: var(--amarelo);
@@ -377,8 +383,9 @@
     .preview-text { font-size: 0.78rem; line-height: 1.4; color: rgba(237,251,217,0.75); white-space: nowrap; }
     .preview-text strong { color: var(--btn-cta); }
     .preview-counter {
-      font-size: 0.72rem;
-      color: rgba(237,251,217,0.45);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94dd2d;
       text-align: center;
       margin-bottom: 1rem;
     }
@@ -1303,8 +1310,8 @@
       <img src="logo.png" alt="Figuri" />
     </a>
     <div class="navbar-actions" id="navActions">
-      <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">ENTRAR</button>
-      <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()">✦ CRIAR FIGURINHA</button>
+      <button class="btn-entrar" id="btnEntrar" onclick="openLogin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ENTRAR</button>
+      <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg> CRIAR FIGURINHA</button>
       <div class="user-menu" id="userMenu">
         <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
         <div class="user-dropdown" id="userDropdown">
@@ -1351,9 +1358,9 @@
         <div class="hero-card">
           <p class="hero-card-title">GERE NA HORA</p>
           <div class="hero-steps-mini">
-            <div class="hero-step-dot done">1</div>
+            <div class="hero-step-dot active">1</div>
             <div class="hero-step-line"></div>
-            <div class="hero-step-dot active">2</div>
+            <div class="hero-step-dot idle">2</div>
             <div class="hero-step-line"></div>
             <div class="hero-step-dot idle">3</div>
             <div class="hero-step-line"></div>
