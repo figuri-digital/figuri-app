@@ -432,27 +432,35 @@
        COMO CRIAR — 3 PASSOS
     ─────────────────────────────────────── */
     .steps-section {
-      background: var(--verde-escuro);
-      color: var(--verde-claro);
+      background: #1a2b01;
+      color: #edfbd9;
     }
     .steps-section .section-tag {
-      color: var(--btn-cta);
+      color: #edfbd9;
       text-align: center;
       display: block;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
     .steps-section .section-title {
-      color: var(--verde-claro);
+      color: #edfbd9;
       text-align: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
     }
     .steps-section .section-title .highlight {
-      color: var(--btn-cta);
+      color: #94dd2d;
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
+      font-weight: 700;
     }
     .steps-section .section-title strong {
-      color: var(--verde-claro);
+      color: #edfbd9;
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
+      font-weight: 700;
     }
     .steps-grid {
       display: grid;
@@ -461,61 +469,48 @@
       margin-top: 2.5rem;
     }
     .step-card {
-      background: var(--verde-claro);
-      border-radius: var(--radius);
+      background: #edfbd9;
+      border-radius: 16px;
       padding: 1.5rem 1.5rem 1.75rem;
       position: relative;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-      transition: transform 0.25s, box-shadow 0.25s;
+      transition: transform 0.25s;
     }
-    .step-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    }
+    .step-card:hover { transform: translateY(-4px); }
     .step-card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
     .step-icon {
-      width: 72px; height: 72px;
+      width: 90px; height: 80px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
     .step-icon img {
-      width: 72px; height: 72px;
+      width: 90px; height: 80px;
       object-fit: contain;
     }
     .step-num {
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
-      font-size: 3rem;
+      font-weight: 700;
+      font-size: 4rem;
       line-height: 1;
-      color: #A9D270;
+      color: rgba(99,168,3,0.49);
     }
     .step-title {
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
       color: #396100;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.5rem;
     }
     .step-desc {
-      font-size: 0.85rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
       line-height: 1.65;
       color: #396100;
-    }
-    .step-badge {
-      display: inline-block;
-      background: var(--btn-cta);
-      color: var(--verde-escuro);
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      margin-top: 0.75rem;
     }
 
     /* ───────────────────────────────────────
