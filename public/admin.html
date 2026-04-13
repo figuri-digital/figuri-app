@@ -595,11 +595,30 @@ function selectLayout(file, el) {
 
 // ── UPLOAD ──────────────────────────────────────────────────────────────────
 
+// Helper: safely parse JSON from fetch response
+async function safeJson(res) {
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return res.json();
+  const text = await res.text();
+  // Common Vercel/Next.js plain-text errors
+  if (res.status === 413) throw new Error('Arquivo muito grande (limite ~4 MB). Reduza o tamanho da imagem.');
+  throw new Error(text.slice(0, 120) || `Erro ${res.status}`);
+}
+
 async function onFileSelected(type, input) {
   const file = input.files[0];
   if (!file) return;
 
   const statusEl = document.getElementById(`upload-${type}-status`);
+
+  // Client-side size guard (4 MB)
+  if (file.size > 4 * 1024 * 1024) {
+    statusEl.textContent = '❌ Arquivo muito grande — máximo 4 MB. Comprima a imagem antes de enviar.';
+    statusEl.style.color = '#e74c3c';
+    input.value = '';
+    return;
+  }
+
   statusEl.textContent = '⏳ Enviando…';
   statusEl.style.color = 'var(--text-muted)';
 
@@ -613,13 +632,12 @@ async function onFileSelected(type, input) {
       method: 'POST',
       body: fd,
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
 
     statusEl.textContent = '✅ Upload concluído — imagem selecionada';
     statusEl.style.color = '#00E05A';
 
-    // Auto-select the uploaded file
     if (type === 'layout') {
       document.getElementById('modal-layout-file').value = data.url;
       renderLayoutOptions(editingConfig);
@@ -632,7 +650,6 @@ async function onFileSelected(type, input) {
     statusEl.style.color = '#e74c3c';
   }
 
-  // Reset input so the same file can be re-selected
   input.value = '';
 }
 
@@ -656,7 +673,7 @@ async function deleteAsset(url, type) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
 
     statusEl.textContent = '✅ Arquivo removido';
