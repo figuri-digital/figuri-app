@@ -6,12 +6,39 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
 const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
 
 const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
 const NUM_VARIATIONS = 2;
+
+// ── Config cache (5 min TTL) to avoid DB hit on every generation ─────────────
+type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string };
+const configCache = new Map<string, { data: ConfigRow; ts: number }>();
+const CACHE_TTL = 5 * 60 * 1000;
+
+async function getConfig(style: string, country: string): Promise<ConfigRow | null> {
+  const cacheKey = `${style}__${country}`;
+  const cached = configCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data;
+
+  try {
+    const supa = createClient(supabaseUrl, supabaseServiceKey);
+    const { data } = await supa
+      .from('figurinha_configs')
+      .select('layout_file, moldura_file, prompt')
+      .eq('style', style)
+      .eq('country', country)
+      .single();
+    if (data) {
+      configCache.set(cacheKey, { data, ts: Date.now() });
+      return data;
+    }
+  } catch { /* fallback to hardcoded */ }
+  return null;
+}
 
 // Test emails — unlimited credits, flagged as test in dashboard
 const TEST_EMAILS = ['guilhermevto@gmail.com', 'karina_dias125@hotmail.com'];
@@ -104,11 +131,16 @@ export async function POST(req: NextRequest) {
       .from('images')
       .getPublicUrl(originalPath);
 
-    // Get layout URL (new system: layout = player only, moldura applied in editor)
+    // Get layout URL — try DB config first, fallback to hardcoded
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
+
+    const dbConfig = await getConfig(style === 'familia' ? 'casal' : style, country);
+
     let layoutUrl: string;
-    if (style === 'pet') {
+    if (dbConfig?.layout_file) {
+      layoutUrl = `${protocol}://${host}/assets/layouts/${dbConfig.layout_file}`;
+    } else if (style === 'pet') {
       const petFile = PET_LAYOUTS[country] || PET_LAYOUTS.brasil;
       layoutUrl = `${protocol}://${host}/assets/layouts/Pet/${petFile}`;
     } else if (style === 'familia') {
@@ -119,8 +151,8 @@ export async function POST(req: NextRequest) {
       layoutUrl = `${protocol}://${host}/assets/layouts/${layoutFile}`;
     }
 
-    // Build prompt
-    const prompt = buildPrompt(style, { name, birth, height, country });
+    // Build prompt — DB config takes priority over hardcoded
+    const prompt = dbConfig?.prompt ?? buildPrompt(style, { name, birth, height, country });
 
     // Create image record
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();

@@ -114,6 +114,57 @@
 
     .loading { text-align: center; padding: 60px; color: #666; font-size: 1.2rem; }
     .error { color: #FF6B6B; text-align: center; padding: 20px; }
+
+    /* ── Tabs ── */
+    .tab-btn {
+      padding: 8px 18px; border-radius: 8px; border: 1px solid #333;
+      background: transparent; color: #888; cursor: pointer; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { border-color: #F5C518; color: #F5C518; }
+    .tab-btn.active { background: #F5C518; color: #000; font-weight: 700; border-color: #F5C518; }
+
+    /* ── Style filter ── */
+    .style-filter-btn {
+      padding: 6px 16px; border-radius: 999px; border: 1px solid #333;
+      background: transparent; color: #888; cursor: pointer; font-size: 0.82rem;
+      transition: all 0.15s;
+    }
+    .style-filter-btn:hover { border-color: #F5C518; color: #F5C518; }
+    .style-filter-btn.active { background: #F5C518; color: #000; font-weight: 700; border-color: #F5C518; }
+
+    /* ── Config table ── */
+    #configs-table th, #configs-table td { padding: 10px 12px; text-align: left; vertical-align: middle; }
+    #configs-table td.prompt-cell {
+      max-width: 280px; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; font-size: 0.78rem; color: #888;
+    }
+    .config-img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 2px solid #333; cursor: pointer; }
+    .config-img:hover { border-color: #F5C518; }
+    .no-img { width: 52px; height: 52px; border-radius: 6px; border: 2px dashed #333;
+      display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; }
+    .btn-edit {
+      padding: 6px 16px; border-radius: 6px; border: 1px solid #F5C518;
+      background: transparent; color: #F5C518; cursor: pointer; font-size: 0.82rem;
+      white-space: nowrap; transition: background 0.15s;
+    }
+    .btn-edit:hover { background: rgba(245,197,24,0.12); }
+    .badge-db { background: #00E05A22; color: #00E05A; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; }
+    .badge-default { background: #ffffff11; color: #666; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; }
+
+    /* ── Layout / Moldura option cards ── */
+    .opt-card {
+      cursor: pointer; border: 2px solid #333; border-radius: 8px; overflow: hidden;
+      transition: border-color 0.15s; position: relative; flex-shrink: 0;
+    }
+    .opt-card img { width: 80px; height: 80px; object-fit: cover; display: block; }
+    .opt-card span { display: block; font-size: 0.68rem; color: #aaa; text-align: center; padding: 3px 2px; background: #1a1a2e; }
+    .opt-card.selected { border-color: #F5C518; }
+    .opt-card.selected span { color: #F5C518; font-weight: 700; }
+    .opt-card-none { cursor: pointer; border: 2px dashed #333; border-radius: 8px; width: 80px;
+      height: 95px; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px; color: #555; font-size: 0.72rem; transition: border-color 0.15s; flex-shrink: 0; }
+    .opt-card-none:hover, .opt-card-none.selected { border-color: #F5C518; color: #F5C518; }
   </style>
 </head>
 <body>
@@ -130,12 +181,18 @@
 <div id="dashboard">
   <div class="header">
     <div>
-      <h1>FIGURI IA — Dashboard</h1>
+      <h1>FIGURI IA — Admin</h1>
       <div class="last-update" id="last-update"></div>
     </div>
-    <button class="refresh" onclick="loadStats()">Atualizar</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="tab-btn active" id="tab-stats" onclick="switchTab('stats')">📊 Dashboard</button>
+      <button class="tab-btn" id="tab-configs" onclick="switchTab('configs')">⚙️ Configurações</button>
+      <button class="refresh" onclick="refreshCurrent()">Atualizar</button>
+    </div>
   </div>
 
+  <!-- TAB: STATS -->
+  <div id="tab-content-stats">
   <div id="loading" class="loading">Carregando dados...</div>
   <div id="content" style="display:none;">
 
@@ -178,10 +235,98 @@
       </div>
     </div>
   </div>
+  </div><!-- /tab-content-stats -->
+
+  <!-- TAB: CONFIGS -->
+  <div id="tab-content-configs" style="display:none;">
+    <div id="configs-loading" class="loading">Carregando configurações...</div>
+    <div id="configs-content" style="display:none;">
+
+      <div style="margin-bottom:16px;color:#aaa;font-size:0.85rem;">
+        Clique em <strong style="color:#F5C518;">✏️ Editar</strong> em qualquer linha para alterar o layout, moldura ou prompt daquele país/estilo.
+        As mudanças entram em vigor imediatamente na geração.
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="style-filter-btn active" onclick="filterStyle('all')">Todos</button>
+        <button class="style-filter-btn" onclick="filterStyle('sozinho')">👤 Sozinho</button>
+        <button class="style-filter-btn" onclick="filterStyle('pet')">🐾 Pet</button>
+        <button class="style-filter-btn" onclick="filterStyle('casal')">👫 Casal</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="configs-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>País</th>
+              <th>Layout</th>
+              <th>Moldura</th>
+              <th>Prompt</th>
+              <th>Atualizado</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="configs-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /tab-content-configs -->
+
+</div>
+
+<!-- ── EDIT MODAL ── -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;overflow-y:auto;padding:24px;">
+  <div style="background:#12121e;border:1px solid #333;border-radius:16px;max-width:780px;margin:0 auto;padding:28px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 id="modal-title" style="color:#F5C518;font-size:1.2rem;"></h2>
+      <button onclick="closeModal()" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:6px;padding:6px 14px;cursor:pointer;">✕ Fechar</button>
+    </div>
+
+    <!-- Layout selector -->
+    <div style="margin-bottom:20px;">
+      <label style="color:#F5C518;font-size:0.85rem;font-weight:700;display:block;margin-bottom:8px;">LAYOUT (imagem de referência)</label>
+      <div id="layout-options" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      <input type="hidden" id="modal-layout-file">
+    </div>
+
+    <!-- Moldura selector -->
+    <div style="margin-bottom:20px;">
+      <label style="color:#F5C518;font-size:0.85rem;font-weight:700;display:block;margin-bottom:8px;">MOLDURA (opcional)</label>
+      <div id="moldura-options" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;"></div>
+      <input type="hidden" id="modal-moldura-file">
+    </div>
+
+    <!-- Prompt -->
+    <div style="margin-bottom:24px;">
+      <label style="color:#F5C518;font-size:0.85rem;font-weight:700;display:block;margin-bottom:8px;">PROMPT</label>
+      <textarea id="modal-prompt" rows="10"
+        style="width:100%;background:#1a1a2e;border:1px solid #333;color:#e0e0e0;border-radius:8px;padding:12px;font-size:0.82rem;line-height:1.5;resize:vertical;font-family:monospace;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:flex-end;">
+      <button onclick="closeModal()" style="padding:10px 24px;border-radius:8px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;">Cancelar</button>
+      <button id="modal-save-btn" onclick="saveConfig()"
+        style="padding:10px 28px;border-radius:8px;border:none;background:#F5C518;color:#000;font-weight:700;cursor:pointer;">
+        💾 Salvar
+      </button>
+    </div>
+    <div id="modal-status" style="margin-top:12px;font-size:0.85rem;text-align:right;"></div>
+  </div>
 </div>
 
 <script>
 let adminKey = '';
+let currentTab = 'stats';
+let allConfigs = [];
+let currentFilter = 'all';
+let editingConfig = null;
+
+const FLAGS = { brasil:'🇧🇷', argentina:'🇦🇷', colombia:'🇨🇴', uruguai:'🇺🇾', franca:'🇫🇷', alemanha:'🇩🇪', espanha:'🇪🇸', portugal:'🇵🇹' };
+const STYLE_LABELS = { sozinho:'👤 Sozinho', pet:'🐾 Pet', casal:'👫 Casal' };
+const COUNTRIES = ['brasil','argentina','colombia','uruguai','franca','alemanha','espanha','portugal'];
+const SOZINHO_LAYOUTS = { brasil:'brasil.jpg', argentina:'argentina.jpg', colombia:'colombia.jpg', uruguai:'uruguai.jpg', franca:'franca.png', alemanha:'alemanha.png', espanha:'espanha.png', portugal:'portugal.png' };
 
 function login() {
   adminKey = document.getElementById('admin-key').value.trim();
@@ -189,6 +334,206 @@ function login() {
   document.getElementById('auth-gate').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadStats();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-content-stats').style.display = tab === 'stats' ? 'block' : 'none';
+  document.getElementById('tab-content-configs').style.display = tab === 'configs' ? 'block' : 'none';
+  document.getElementById('tab-stats').className = 'tab-btn' + (tab === 'stats' ? ' active' : '');
+  document.getElementById('tab-configs').className = 'tab-btn' + (tab === 'configs' ? ' active' : '');
+  if (tab === 'configs' && allConfigs.length === 0) loadConfigs();
+}
+
+function refreshCurrent() {
+  if (currentTab === 'stats') loadStats();
+  else loadConfigs();
+}
+
+// ── CONFIGS ─────────────────────────────────────────────────────────────────
+
+async function loadConfigs() {
+  document.getElementById('configs-loading').style.display = 'block';
+  document.getElementById('configs-content').style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/configs?key=' + encodeURIComponent(adminKey));
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    const data = await res.json();
+    allConfigs = data.configs;
+    renderConfigs();
+    document.getElementById('configs-loading').style.display = 'none';
+    document.getElementById('configs-content').style.display = 'block';
+  } catch (err) {
+    document.getElementById('configs-loading').innerHTML = '<div class="error">Erro: ' + err.message + '</div>';
+  }
+}
+
+function filterStyle(style) {
+  currentFilter = style;
+  document.querySelectorAll('.style-filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderConfigs();
+}
+
+function renderConfigs() {
+  const filtered = currentFilter === 'all' ? allConfigs : allConfigs.filter(c => c.style === currentFilter);
+  const tbody = document.getElementById('configs-body');
+  tbody.innerHTML = filtered.map(c => {
+    const layoutPath = `/assets/layouts/${c.layout_file}`;
+    const molduraPath = c.moldura_file
+      ? `/assets/molduras/${c.country}/${c.moldura_file.startsWith('pet-casal') ? c.moldura_file : c.moldura_file}`
+      : null;
+    const promptShort = c.prompt.replace(/\n/g,' ').substring(0, 90) + '…';
+    const badge = c.from_db
+      ? '<span class="badge-db">Customizado</span>'
+      : '<span class="badge-default">Padrão</span>';
+    const updated = c.updated_at ? new Date(c.updated_at).toLocaleDateString('pt-BR') : '—';
+    return `<tr data-style="${c.style}" data-country="${c.country}">
+      <td>${STYLE_LABELS[c.style] || c.style}</td>
+      <td>${FLAGS[c.country] || ''} ${c.country}</td>
+      <td><img class="config-img" src="${layoutPath}" alt="layout" onerror="this.style.display='none'" /></td>
+      <td>${molduraPath
+        ? `<img class="config-img" src="${molduraPath}" alt="moldura" onerror="this.style.display='none'" />`
+        : '<div class="no-img">—</div>'}</td>
+      <td class="prompt-cell" title="${c.prompt.replace(/"/g,'&quot;')}">${promptShort}</td>
+      <td>${badge}<br><small style="color:#555">${updated}</small></td>
+      <td><button class="btn-edit" onclick='openEdit(${JSON.stringify(c)})'>✏️ Editar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+
+function openEdit(config) {
+  editingConfig = config;
+  document.getElementById('modal-title').textContent =
+    `Editar — ${STYLE_LABELS[config.style]} / ${FLAGS[config.country]} ${config.country}`;
+  document.getElementById('modal-prompt').value = config.prompt;
+  document.getElementById('modal-layout-file').value = config.layout_file;
+  document.getElementById('modal-moldura-file').value = config.moldura_file || '';
+  document.getElementById('modal-status').textContent = '';
+
+  renderLayoutOptions(config);
+  renderMolduraOptions(config);
+  document.getElementById('edit-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  editingConfig = null;
+}
+
+function renderLayoutOptions(config) {
+  const country = config.country;
+  const style = config.style;
+
+  // Build list of available layout files for this style/country
+  let files = [];
+  if (style === 'sozinho') {
+    files = [
+      { file: `${country}.jpg`, label: `${country}.jpg` },
+      { file: `${country}.png`, label: `${country}.png` },
+    ];
+  } else if (style === 'pet') {
+    files = [
+      { file: `Pet/${country}.png`, label: `Pet/${country}.png` },
+      { file: `Pet/${country}.jpg`, label: `Pet/${country}.jpg` },
+    ];
+  } else {
+    files = [
+      { file: `Casal/${country}.png`, label: `Casal/${country}.png` },
+      { file: `Casal/${country}.jpg`, label: `Casal/${country}.jpg` },
+    ];
+  }
+
+  const current = document.getElementById('modal-layout-file').value;
+  document.getElementById('layout-options').innerHTML = files.map(f => `
+    <div class="opt-card ${current === f.file ? 'selected' : ''}" onclick="selectLayout('${f.file}', this)">
+      <img src="/assets/layouts/${f.file}" alt="${f.label}" onerror="this.parentElement.style.display='none'">
+      <span>${f.label}</span>
+    </div>`).join('');
+}
+
+function selectLayout(file, el) {
+  document.getElementById('modal-layout-file').value = file;
+  document.querySelectorAll('#layout-options .opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function renderMolduraOptions(config) {
+  const country = config.country;
+  const style = config.style;
+  const current = document.getElementById('modal-moldura-file').value;
+
+  let files = [];
+  if (style === 'sozinho') {
+    files = ['01-sozinho.png','02-sozinho.png','03-sozinho.png','04-sozinho.png']
+      .map(f => ({ file: f, path: `/assets/molduras/${country}/${f}` }));
+  } else {
+    files = ['01-pet-casal.png','02-pet-casal.png','03-pet-casal.png','04-pet-casal.png']
+      .map(f => ({ file: `pet-casal/${f}`, path: `/assets/molduras/${country}/pet-casal/${f}` }));
+  }
+
+  const noneSelected = !current || current === '';
+  document.getElementById('moldura-options').innerHTML =
+    `<div class="opt-card-none ${noneSelected ? 'selected' : ''}" onclick="selectMoldura('', this)">✕<span>Nenhuma</span></div>` +
+    files.map(f => `
+      <div class="opt-card ${current === f.file ? 'selected' : ''}" onclick="selectMoldura('${f.file}', this)">
+        <img src="${f.path}" alt="${f.file}" onerror="this.parentElement.style.display='none'">
+        <span style="font-size:0.65rem">${f.file.split('/').pop()}</span>
+      </div>`).join('');
+}
+
+function selectMoldura(file, el) {
+  document.getElementById('modal-moldura-file').value = file;
+  document.querySelectorAll('#moldura-options .opt-card, #moldura-options .opt-card-none').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function saveConfig() {
+  if (!editingConfig) return;
+  const btn = document.getElementById('modal-save-btn');
+  const status = document.getElementById('modal-status');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+  status.textContent = '';
+
+  const payload = {
+    style: editingConfig.style,
+    country: editingConfig.country,
+    layout_file: document.getElementById('modal-layout-file').value,
+    moldura_file: document.getElementById('modal-moldura-file').value || null,
+    prompt: document.getElementById('modal-prompt').value.trim(),
+  };
+
+  try {
+    const res = await fetch('/api/admin/configs?key=' + encodeURIComponent(adminKey), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
+
+    status.style.color = '#00E05A';
+    status.textContent = '✅ Salvo com sucesso!';
+    btn.textContent = '✅ Salvo';
+
+    // Update local cache
+    const idx = allConfigs.findIndex(c => c.style === payload.style && c.country === payload.country);
+    if (idx >= 0) {
+      allConfigs[idx] = { ...allConfigs[idx], ...payload, from_db: true, updated_at: new Date().toISOString() };
+    }
+    renderConfigs();
+    setTimeout(closeModal, 1200);
+  } catch (err) {
+    status.style.color = '#FF6B6B';
+    status.textContent = '❌ Erro: ' + err.message;
+    btn.disabled = false;
+    btn.textContent = '💾 Salvar';
+  }
 }
 
 async function loadStats() {
