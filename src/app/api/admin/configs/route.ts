@@ -87,8 +87,10 @@ export async function GET(req: NextRequest) {
     .from('figurinha_configs')
     .select('*');
 
-  const DEFAULT_TEXT_COLORS = { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' };
-  type DBRow = { style: string; country: string; layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string,string>; updated_at: string | null };
+  const DEFAULT_FIELD_COLORS = { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' };
+  const DEFAULT_TEXT_COLORS = { '01': DEFAULT_FIELD_COLORS, '02': DEFAULT_FIELD_COLORS, '03': DEFAULT_FIELD_COLORS, '04': DEFAULT_FIELD_COLORS };
+  type FieldColors = { name: string; birth: string; height: string };
+  type DBRow = { style: string; country: string; layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string, FieldColors>; updated_at: string | null };
   const dbMap: Record<string, DBRow> = {};
   (rows || []).forEach(r => { dbMap[`${r.style}__${r.country}`] = r; });
 
@@ -138,7 +140,7 @@ export async function PUT(req: NextRequest) {
       layout_file,
       moldura_file: moldura_file || null,
       prompt,
-      text_colors: text_colors || { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' },
+      text_colors: text_colors || { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } },
       updated_at: new Date().toISOString(),
     }, { onConflict: 'style,country' });
 

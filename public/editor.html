@@ -326,10 +326,15 @@
     var paramTextColors = (function() {
       try { return JSON.parse(editorParams.get('textColors') || '{}'); } catch(_) { return {}; }
     })();
-    // Fallback: support legacy single textColor param
     var legacyColor = editorParams.get('textColor') || '#FFFFFF';
-    function getTextColorForMoldura(moldura) {
-      return paramTextColors[moldura] || legacyColor;
+
+    // Returns color for a specific moldura + field (name|birth|height)
+    // Supports new {name,birth,height} per-moldura structure and legacy string
+    function getFieldColor(moldura, field) {
+      var m = paramTextColors[moldura];
+      if (!m) return legacyColor;
+      if (typeof m === 'string') return m;
+      return m[field] || legacyColor;
     }
 
     var isPetOrCasal = (paramType === 'pet' || paramType === 'familia');
@@ -355,16 +360,15 @@
 
     // Text positions (based on 1543x2047 canvas)
     var TEXT_CONFIG = {
-      name:   { x: 240, y: 1750, font: '700 72px Sora', color: getTextColorForMoldura('01') },
-      height: { x: 320, y: 1870, font: '400 48px Sora', color: getTextColorForMoldura('01') },
-      birth:  { x: 570, y: 1870, font: '400 48px Sora', color: getTextColorForMoldura('01') },
+      name:   { x: 240, y: 1750, font: '700 72px Sora', color: getFieldColor('01', 'name') },
+      height: { x: 320, y: 1870, font: '400 48px Sora', color: getFieldColor('01', 'height') },
+      birth:  { x: 570, y: 1870, font: '400 48px Sora', color: getFieldColor('01', 'birth') },
     };
 
     function updateTextConfigColor(moldura) {
-      var c = getTextColorForMoldura(moldura);
-      TEXT_CONFIG.name.color   = c;
-      TEXT_CONFIG.height.color = c;
-      TEXT_CONFIG.birth.color  = c;
+      TEXT_CONFIG.name.color   = getFieldColor(moldura, 'name');
+      TEXT_CONFIG.height.color = getFieldColor(moldura, 'height');
+      TEXT_CONFIG.birth.color  = getFieldColor(moldura, 'birth');
     }
 
     // ── IMAGE CACHE ──

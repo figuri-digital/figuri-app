@@ -15,7 +15,8 @@ const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
 const NUM_VARIATIONS = 2;
 
 // ── Config cache (5 min TTL) to avoid DB hit on every generation ─────────────
-type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string, string> };
+type FieldColors = { name: string; birth: string; height: string };
+type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string, FieldColors> };
 const configCache = new Map<string, { data: ConfigRow; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -238,7 +239,7 @@ export async function POST(req: NextRequest) {
       statusUrls: tasks.map(t => t.statusUrl),
       responseUrls: tasks.map(t => t.responseUrl),
       status: 'processing',
-      textColors: dbConfig?.text_colors ?? { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' },
+      textColors: dbConfig?.text_colors ?? { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';

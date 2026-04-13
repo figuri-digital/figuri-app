@@ -517,38 +517,56 @@ function renderLayoutOptions(config) {
 }
 
 const COLOR_PRESETS = ['#FFFFFF','#000000','#FFC300','#94DD2D','#1A2B01','#FFD700'];
+const FIELD_LABELS = { name: 'Nome', birth: 'Data de nasc.', height: 'Altura' };
+const FIELDS = ['name', 'birth', 'height'];
+
+function getMolduraFieldColor(textColors, moldura, field) {
+  const m = textColors[moldura];
+  if (!m) return '#FFFFFF';
+  // Support both new {name,birth,height} and legacy string format
+  if (typeof m === 'string') return m;
+  return m[field] || '#FFFFFF';
+}
 
 function renderMolduraColorPickers(textColors) {
   const container = document.getElementById('moldura-color-pickers');
   container.innerHTML = ['01','02','03','04'].map(m => {
-    const color = textColors[m] || '#FFFFFF';
-    const presetBtns = COLOR_PRESETS.map(c =>
-      `<button onclick="setMolduraColor('${m}','${c}')"
-        style="width:24px;height:24px;border-radius:4px;background:${c};border:2px solid ${c.toLowerCase()===color.toLowerCase()?'var(--yellow)':'var(--border)'};cursor:pointer;padding:0;"
-        title="${c}"></button>`
-    ).join('');
+    const fieldPickers = FIELDS.map(field => {
+      const color = getMolduraFieldColor(textColors, m, field);
+      const id = `color-${m}-${field}`;
+      const presetBtns = COLOR_PRESETS.map(c =>
+        `<button onclick="setFieldColor('${m}','${field}','${c}')"
+          style="width:20px;height:20px;border-radius:3px;background:${c};border:2px solid ${c.toLowerCase()===color.toLowerCase()?'var(--yellow)':'var(--border)'};cursor:pointer;padding:0;"
+          title="${c}"></button>`
+      ).join('');
+      return `
+        <div style="margin-bottom:8px;">
+          <div style="color:var(--text-muted);font-size:0.7rem;margin-bottom:4px;">${FIELD_LABELS[field]}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <input type="color" id="${id}" value="${color}"
+              oninput="onFieldColorInput('${m}','${field}',this.value)"
+              style="width:30px;height:30px;border:2px solid var(--border);border-radius:5px;cursor:pointer;background:transparent;padding:2px;" />
+            <div style="display:flex;gap:3px;flex-wrap:wrap;">${presetBtns}</div>
+          </div>
+        </div>`;
+    }).join('');
     return `
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;">
-        <div style="color:var(--text-muted);font-size:0.75rem;font-weight:700;margin-bottom:8px;">MOLDURA ${m}</div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <input type="color" id="color-${m}" value="${color}"
-            oninput="onMolduraColorInput('${m}',this.value)"
-            style="width:36px;height:36px;border:2px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;padding:2px;" />
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">${presetBtns}</div>
-        </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;grid-column:span 1;">
+        <div style="color:var(--yellow);font-size:0.78rem;font-weight:700;margin-bottom:10px;">MOLDURA ${m}</div>
+        ${fieldPickers}
       </div>`;
   }).join('');
 }
 
-function setMolduraColor(moldura, hex) {
-  document.getElementById('color-' + moldura).value = hex;
-  onMolduraColorInput(moldura, hex);
+function setFieldColor(moldura, field, hex) {
+  const el = document.getElementById(`color-${moldura}-${field}`);
+  if (el) { el.value = hex; onFieldColorInput(moldura, field, hex); }
 }
 
-function onMolduraColorInput(moldura, hex) {
-  // Re-highlight presets for this moldura
-  const container = document.getElementById('moldura-color-pickers');
-  const row = document.getElementById('color-' + moldura).closest('div[style*="background:var(--bg3)"]');
+function onFieldColorInput(moldura, field, hex) {
+  const el = document.getElementById(`color-${moldura}-${field}`);
+  if (!el) return;
+  const row = el.closest('div[style*="margin-bottom:8px"]');
   if (row) {
     row.querySelectorAll('button').forEach(b => {
       b.style.borderColor = b.style.background.toLowerCase() === hex.toLowerCase()
@@ -560,8 +578,11 @@ function onMolduraColorInput(moldura, hex) {
 function getTextColorsFromModal() {
   const result = {};
   ['01','02','03','04'].forEach(m => {
-    const el = document.getElementById('color-' + m);
-    result[m] = el ? el.value : '#FFFFFF';
+    result[m] = {};
+    FIELDS.forEach(field => {
+      const el = document.getElementById(`color-${m}-${field}`);
+      result[m][field] = el ? el.value : '#FFFFFF';
+    });
   });
   return result;
 }
