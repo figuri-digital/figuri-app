@@ -233,6 +233,21 @@
       white-space: nowrap;
       z-index: 3;
     }
+    .upload-clear-btn {
+      position: absolute; top: 8px; right: 8px;
+      width: 26px; height: 26px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 4;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .upload-clear-btn:hover { background: #c0392b; }
 
     /* ────────────────────────────────────────
        INFO BARS
@@ -1004,13 +1019,22 @@
     });
   }
 
+  function clearBox(box, onFile) {
+    box.querySelectorAll('.upload-preview, .upload-change-btn, .upload-clear-btn').forEach(el => el.remove());
+    box.querySelectorAll('.upload-icon, .upload-label, .upload-sublabel').forEach(el => {
+      el.style.display = '';
+    });
+    const input = box.querySelector('input[type="file"]');
+    if (input) input.value = '';
+    onFile(null);
+    validateStep1();
+  }
+
   function applyPreview(box, file, onFile) {
     onFile(file);
     const reader = new FileReader();
     reader.onload = ev => {
-      // Remove previous preview
-      box.querySelectorAll('.upload-preview, .upload-change-btn').forEach(el => el.remove());
-      // Hide text inside box
+      box.querySelectorAll('.upload-preview, .upload-change-btn, .upload-clear-btn').forEach(el => el.remove());
       box.querySelectorAll('.upload-icon, .upload-label, .upload-sublabel').forEach(el => {
         el.style.display = 'none';
       });
@@ -1030,8 +1054,19 @@
         box.querySelector('input[type="file"]').click();
       });
 
+      const clearBtn = Object.assign(document.createElement('button'), {
+        className: 'upload-clear-btn',
+        textContent: '✕',
+        title: 'Remover foto',
+      });
+      clearBtn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        clearBox(box, onFile);
+      });
+
       box.appendChild(img);
       box.appendChild(btn);
+      box.appendChild(clearBtn);
     };
     reader.readAsDataURL(file);
   }
