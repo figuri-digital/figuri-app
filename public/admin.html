@@ -388,14 +388,19 @@ async function loadConfigs() {
   document.getElementById('configs-content').style.display = 'none';
   try {
     const res = await fetch('/api/admin/configs?key=' + encodeURIComponent(adminKey));
-    if (!res.ok) throw new Error('Erro ' + res.status);
     const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
     allConfigs = data.configs;
     renderConfigs();
     document.getElementById('configs-loading').style.display = 'none';
     document.getElementById('configs-content').style.display = 'block';
+    // Show warning if DB returned 0 rows (likely migration not run)
+    if ((data.db_rows ?? 0) === 0 && allConfigs.length > 0) {
+      console.warn('Nenhuma config no banco — verifique se a tabela figurinha_configs existe e o SQL de migração foi executado.');
+    }
   } catch (err) {
-    document.getElementById('configs-loading').innerHTML = '<div class="error">Erro: ' + err.message + '</div>';
+    document.getElementById('configs-loading').innerHTML =
+      '<div class="error">❌ Erro ao carregar configs: ' + err.message + '<br><small>Verifique se a tabela figurinha_configs existe e se o SQL de migração foi executado.</small></div>';
   }
 }
 

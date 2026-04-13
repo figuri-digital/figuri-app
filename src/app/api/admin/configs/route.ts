@@ -83,9 +83,14 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const { data: rows } = await supabase
+  const { data: rows, error: selectError } = await supabase
     .from('figurinha_configs')
     .select('*');
+
+  if (selectError) {
+    console.error('GET figurinha_configs error:', selectError);
+    return NextResponse.json({ error: selectError.message, configs: [] }, { status: 500 });
+  }
 
   const DEFAULT_FIELD_COLORS = { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' };
   const DEFAULT_TEXT_COLORS = { '01': DEFAULT_FIELD_COLORS, '02': DEFAULT_FIELD_COLORS, '03': DEFAULT_FIELD_COLORS, '04': DEFAULT_FIELD_COLORS };
@@ -94,7 +99,6 @@ export async function GET(req: NextRequest) {
   const dbMap: Record<string, DBRow> = {};
   (rows || []).forEach(r => { dbMap[`${r.style}__${r.country}`] = r; });
 
-  // Build full matrix with defaults for missing rows
   const configs = STYLES.flatMap(style =>
     COUNTRIES.map(country => {
       const key = `${style}__${country}`;
@@ -112,7 +116,7 @@ export async function GET(req: NextRequest) {
     })
   );
 
-  return NextResponse.json({ configs });
+  return NextResponse.json({ configs, db_rows: rows?.length ?? 0 });
 }
 
 // ── PUT — save (upsert) a single config ──────────────────────────────────────
@@ -132,17 +136,29 @@ export async function PUT(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const { error } = await supabase
+  const basePayload = {
+    style,
+    country,
+    layout_file,
+    moldura_file: moldura_file || null,
+    prompt,
+    updated_at: new Date().toISOString(),
+  };
+
+  const defaultTextColors = { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } };
+
+  // Try with text_colors first; if column doesn't exist yet, save without it
+  let { error } = await supabase
     .from('figurinha_configs')
-    .upsert({
-      style,
-      country,
-      layout_file,
-      moldura_file: moldura_file || null,
-      prompt,
-      text_colors: text_colors || { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } },
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'style,country' });
+    .upsert({ ...basePayload, text_colors: text_colors || defaultTextColors }, { onConflict: 'style,country' });
+
+  if (error && (error.message.includes('text_colors') || error.code === 'PGRST204')) {
+    console.warn('text_colors column missing, saving without it. Run add_text_colors.sql migration.');
+    const fallback = await supabase
+      .from('figurinha_configs')
+      .upsert(basePayload, { onConflict: 'style,country' });
+    error = fallback.error;
+  }
 
   if (error) {
     console.error('Config upsert error:', error);
