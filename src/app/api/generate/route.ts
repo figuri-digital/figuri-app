@@ -28,7 +28,7 @@ async function getConfig(style: string, country: string): Promise<ConfigRow | nu
     const supa = createClient(supabaseUrl, supabaseServiceKey);
     const { data } = await supa
       .from('figurinha_configs')
-      .select('layout_file, moldura_file, prompt')
+      .select('layout_file, moldura_file, prompt, text_color')
       .eq('style', style)
       .eq('country', country)
       .single();
