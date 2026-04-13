@@ -15,7 +15,7 @@ const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
 const NUM_VARIATIONS = 2;
 
 // ── Config cache (5 min TTL) to avoid DB hit on every generation ─────────────
-type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string };
+type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_color: string };
 const configCache = new Map<string, { data: ConfigRow; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -235,6 +235,7 @@ export async function POST(req: NextRequest) {
       statusUrls: tasks.map(t => t.statusUrl),
       responseUrls: tasks.map(t => t.responseUrl),
       status: 'processing',
+      textColor: dbConfig?.text_color ?? '#FFFFFF',
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';

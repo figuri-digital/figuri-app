@@ -1306,9 +1306,10 @@
     const qs = new URLSearchParams({
       imageUrl,
       hiresUrl,
-      imageId:  imageId          || '',
-      country:  selectedCountry  || '',
-      type:     currentTipo === 'casal' ? 'familia' : currentTipo,
+      imageId:   imageId          || '',
+      country:   selectedCountry  || '',
+      type:      currentTipo === 'casal' ? 'familia' : currentTipo,
+      textColor: resultPayload?.textColor || '#FFFFFF',
     });
     window.location.href = '/editor.html?' + qs.toString();
   }
