@@ -15,7 +15,7 @@ const FAL_FLUX_URL = 'https://queue.fal.run/fal-ai/flux-2-pro/edit';
 const NUM_VARIATIONS = 2;
 
 // ── Config cache (5 min TTL) to avoid DB hit on every generation ─────────────
-type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_color: string };
+type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string, string> };
 const configCache = new Map<string, { data: ConfigRow; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -28,7 +28,7 @@ async function getConfig(style: string, country: string): Promise<ConfigRow | nu
     const supa = createClient(supabaseUrl, supabaseServiceKey);
     const { data } = await supa
       .from('figurinha_configs')
-      .select('layout_file, moldura_file, prompt, text_color')
+      .select('layout_file, moldura_file, prompt, text_colors')
       .eq('style', style)
       .eq('country', country)
       .single();
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
       statusUrls: tasks.map(t => t.statusUrl),
       responseUrls: tasks.map(t => t.responseUrl),
       status: 'processing',
-      textColor: dbConfig?.text_color ?? '#FFFFFF',
+      textColors: dbConfig?.text_colors ?? { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno';

@@ -87,7 +87,8 @@ export async function GET(req: NextRequest) {
     .from('figurinha_configs')
     .select('*');
 
-  type DBRow = { style: string; country: string; layout_file: string; moldura_file: string | null; prompt: string; text_color: string; updated_at: string | null };
+  const DEFAULT_TEXT_COLORS = { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' };
+  type DBRow = { style: string; country: string; layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string,string>; updated_at: string | null };
   const dbMap: Record<string, DBRow> = {};
   (rows || []).forEach(r => { dbMap[`${r.style}__${r.country}`] = r; });
 
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest) {
         layout_file: db?.layout_file ?? getDefaultLayout(style, country),
         moldura_file: db?.moldura_file ?? null,
         prompt: db?.prompt ?? getDefaultPrompt(style, country),
-        text_color: db?.text_color ?? '#FFFFFF',
+        text_colors: db?.text_colors ?? DEFAULT_TEXT_COLORS,
         updated_at: db?.updated_at ?? null,
         from_db: !!db,
       };
@@ -121,7 +122,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { style, country, layout_file, moldura_file, prompt, text_color } = body;
+  const { style, country, layout_file, moldura_file, prompt, text_colors } = body;
 
   if (!style || !country || !layout_file || !prompt) {
     return NextResponse.json({ error: 'Campos obrigatórios: style, country, layout_file, prompt' }, { status: 400 });
@@ -137,7 +138,7 @@ export async function PUT(req: NextRequest) {
       layout_file,
       moldura_file: moldura_file || null,
       prompt,
-      text_color: text_color || '#FFFFFF',
+      text_colors: text_colors || { '01': '#FFFFFF', '02': '#FFFFFF', '03': '#FFFFFF', '04': '#FFFFFF' },
       updated_at: new Date().toISOString(),
     }, { onConflict: 'style,country' });
 

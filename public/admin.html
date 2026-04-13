@@ -317,22 +317,11 @@
       <input type="hidden" id="modal-moldura-file">
     </div>
 
-    <!-- Text color -->
+    <!-- Text colors per moldura -->
     <div style="margin-bottom:20px;">
-      <label style="color:var(--yellow);font-size:0.85rem;font-weight:700;display:block;margin-bottom:8px;">COR DO TEXTO</label>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <input type="color" id="modal-text-color" value="#FFFFFF"
-          oninput="updateColorPreview(this.value)"
-          style="width:48px;height:48px;border:2px solid var(--border);border-radius:8px;cursor:pointer;background:transparent;padding:2px;" />
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="color-presets">
-          <button onclick="setTextColor('#FFFFFF')" style="width:32px;height:32px;border-radius:6px;background:#FFFFFF;border:2px solid var(--border);cursor:pointer;" title="Branco"></button>
-          <button onclick="setTextColor('#000000')" style="width:32px;height:32px;border-radius:6px;background:#000000;border:2px solid var(--border);cursor:pointer;" title="Preto"></button>
-          <button onclick="setTextColor('#FFC300')" style="width:32px;height:32px;border-radius:6px;background:#FFC300;border:2px solid var(--border);cursor:pointer;" title="Amarelo"></button>
-          <button onclick="setTextColor('#94DD2D')" style="width:32px;height:32px;border-radius:6px;background:#94DD2D;border:2px solid var(--border);cursor:pointer;" title="Verde"></button>
-          <button onclick="setTextColor('#1A2B01')" style="width:32px;height:32px;border-radius:6px;background:#1A2B01;border:2px solid var(--border);cursor:pointer;" title="Verde escuro"></button>
-          <button onclick="setTextColor('#FFD700')" style="width:32px;height:32px;border-radius:6px;background:#FFD700;border:2px solid var(--border);cursor:pointer;" title="Ouro"></button>
-        </div>
-        <div id="color-preview-text" style="font-family:monospace;font-size:0.85rem;color:var(--text-muted);"></div>
+      <label style="color:var(--yellow);font-size:0.85rem;font-weight:700;display:block;margin-bottom:12px;">COR DO TEXTO POR MOLDURA</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="moldura-color-pickers">
+        <!-- dynamically generated -->
       </div>
     </div>
 
@@ -455,10 +444,7 @@ function openEdit(config) {
   document.getElementById('modal-layout-file').value = config.layout_file;
   document.getElementById('modal-moldura-file').value = config.moldura_file || '';
   document.getElementById('modal-status').textContent = '';
-  const tc = config.text_color || '#FFFFFF';
-  document.getElementById('modal-text-color').value = tc;
-  updateColorPreview(tc);
-
+  renderMolduraColorPickers(config.text_colors || {});
   renderLayoutOptions(config);
   renderMolduraOptions(config);
   document.getElementById('edit-modal').style.display = 'block';
@@ -502,19 +488,54 @@ function renderLayoutOptions(config) {
     </div>`).join('');
 }
 
-function setTextColor(hex) {
-  document.getElementById('modal-text-color').value = hex;
-  updateColorPreview(hex);
+const COLOR_PRESETS = ['#FFFFFF','#000000','#FFC300','#94DD2D','#1A2B01','#FFD700'];
+
+function renderMolduraColorPickers(textColors) {
+  const container = document.getElementById('moldura-color-pickers');
+  container.innerHTML = ['01','02','03','04'].map(m => {
+    const color = textColors[m] || '#FFFFFF';
+    const presetBtns = COLOR_PRESETS.map(c =>
+      `<button onclick="setMolduraColor('${m}','${c}')"
+        style="width:24px;height:24px;border-radius:4px;background:${c};border:2px solid ${c.toLowerCase()===color.toLowerCase()?'var(--yellow)':'var(--border)'};cursor:pointer;padding:0;"
+        title="${c}"></button>`
+    ).join('');
+    return `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;">
+        <div style="color:var(--text-muted);font-size:0.75rem;font-weight:700;margin-bottom:8px;">MOLDURA ${m}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <input type="color" id="color-${m}" value="${color}"
+            oninput="onMolduraColorInput('${m}',this.value)"
+            style="width:36px;height:36px;border:2px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;padding:2px;" />
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">${presetBtns}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function updateColorPreview(hex) {
-  document.getElementById('color-preview-text').textContent = hex.toUpperCase();
-  document.getElementById('color-preview-text').style.color = hex;
-  // highlight matching preset
-  document.querySelectorAll('#color-presets button').forEach(b => {
-    b.style.borderColor = b.style.background.toLowerCase() === hex.toLowerCase()
-      ? 'var(--yellow)' : 'var(--border)';
+function setMolduraColor(moldura, hex) {
+  document.getElementById('color-' + moldura).value = hex;
+  onMolduraColorInput(moldura, hex);
+}
+
+function onMolduraColorInput(moldura, hex) {
+  // Re-highlight presets for this moldura
+  const container = document.getElementById('moldura-color-pickers');
+  const row = document.getElementById('color-' + moldura).closest('div[style*="background:var(--bg3)"]');
+  if (row) {
+    row.querySelectorAll('button').forEach(b => {
+      b.style.borderColor = b.style.background.toLowerCase() === hex.toLowerCase()
+        ? 'var(--yellow)' : 'var(--border)';
+    });
+  }
+}
+
+function getTextColorsFromModal() {
+  const result = {};
+  ['01','02','03','04'].forEach(m => {
+    const el = document.getElementById('color-' + m);
+    result[m] = el ? el.value : '#FFFFFF';
   });
+  return result;
 }
 
 function selectLayout(file, el) {
@@ -567,7 +588,7 @@ async function saveConfig() {
     layout_file: document.getElementById('modal-layout-file').value,
     moldura_file: document.getElementById('modal-moldura-file').value || null,
     prompt: document.getElementById('modal-prompt').value.trim(),
-    text_color: document.getElementById('modal-text-color').value || '#FFFFFF',
+    text_colors: getTextColorsFromModal(),
   };
 
   try {

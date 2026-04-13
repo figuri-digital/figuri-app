@@ -1303,13 +1303,14 @@
       }));
     } catch(_) {}
 
+    const defaultColors = {'01':'#FFFFFF','02':'#FFFFFF','03':'#FFFFFF','04':'#FFFFFF'};
     const qs = new URLSearchParams({
       imageUrl,
       hiresUrl,
-      imageId:   imageId          || '',
-      country:   selectedCountry  || '',
-      type:      currentTipo === 'casal' ? 'familia' : currentTipo,
-      textColor: resultPayload?.textColor || '#FFFFFF',
+      imageId:    imageId          || '',
+      country:    selectedCountry  || '',
+      type:       currentTipo === 'casal' ? 'familia' : currentTipo,
+      textColors: JSON.stringify(resultPayload?.textColors || defaultColors),
     });
     window.location.href = '/editor.html?' + qs.toString();
   }

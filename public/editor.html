@@ -323,7 +323,14 @@
     var paramImageId = editorParams.get('imageId') || '';
     var paramCountry = editorParams.get('country') || 'brasil';
     var paramType = editorParams.get('type') || 'jogador'; // jogador | pet | familia
-    var paramTextColor = editorParams.get('textColor') || '#FFFFFF';
+    var paramTextColors = (function() {
+      try { return JSON.parse(editorParams.get('textColors') || '{}'); } catch(_) { return {}; }
+    })();
+    // Fallback: support legacy single textColor param
+    var legacyColor = editorParams.get('textColor') || '#FFFFFF';
+    function getTextColorForMoldura(moldura) {
+      return paramTextColors[moldura] || legacyColor;
+    }
 
     var isPetOrCasal = (paramType === 'pet' || paramType === 'familia');
 
@@ -348,10 +355,17 @@
 
     // Text positions (based on 1543x2047 canvas)
     var TEXT_CONFIG = {
-      name:   { x: 240, y: 1750, font: '700 72px Sora', color: paramTextColor },
-      height: { x: 320, y: 1870, font: '400 48px Sora', color: paramTextColor },
-      birth:  { x: 570, y: 1870, font: '400 48px Sora', color: paramTextColor },
+      name:   { x: 240, y: 1750, font: '700 72px Sora', color: getTextColorForMoldura('01') },
+      height: { x: 320, y: 1870, font: '400 48px Sora', color: getTextColorForMoldura('01') },
+      birth:  { x: 570, y: 1870, font: '400 48px Sora', color: getTextColorForMoldura('01') },
     };
+
+    function updateTextConfigColor(moldura) {
+      var c = getTextColorForMoldura(moldura);
+      TEXT_CONFIG.name.color   = c;
+      TEXT_CONFIG.height.color = c;
+      TEXT_CONFIG.birth.color  = c;
+    }
 
     // ── IMAGE CACHE ──
     var layoutImg = new Image();
@@ -485,18 +499,21 @@
 
     function setMoldura(name) {
       currentMolduraIndex = MOLDURAS.indexOf(name);
+      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
       updateMolduraUI();
       renderCard();
     }
 
     function nextMoldura() {
       currentMolduraIndex = (currentMolduraIndex + 1) % MOLDURAS.length;
+      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
       updateMolduraUI();
       renderCard();
     }
 
     function prevMoldura() {
       currentMolduraIndex = (currentMolduraIndex - 1 + MOLDURAS.length) % MOLDURAS.length;
+      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
       updateMolduraUI();
       renderCard();
     }
