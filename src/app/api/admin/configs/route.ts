@@ -87,7 +87,8 @@ export async function GET(req: NextRequest) {
     .from('figurinha_configs')
     .select('*');
 
-  const dbMap: Record<string, typeof rows[0]> = {};
+  type DBRow = { style: string; country: string; layout_file: string; moldura_file: string | null; prompt: string; updated_at: string | null };
+  const dbMap: Record<string, DBRow> = {};
   (rows || []).forEach(r => { dbMap[`${r.style}__${r.country}`] = r; });
 
   // Build full matrix with defaults for missing rows
