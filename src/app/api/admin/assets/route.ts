@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
 
   if (!file) return NextResponse.json({ error: 'Arquivo obrigatório' }, { status: 400 });
 
-  const ext = file.name.split('.').pop() || 'png';
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const storagePath = `${ADMIN_PREFIX}/${folder}/${Date.now()}-${safeName}`;
 
