@@ -139,7 +139,10 @@ export async function POST(req: NextRequest) {
 
     let layoutUrl: string;
     if (dbConfig?.layout_file) {
-      layoutUrl = `${protocol}://${host}/assets/layouts/${dbConfig.layout_file}`;
+      // Full URL (Supabase Storage upload) or relative path
+      layoutUrl = dbConfig.layout_file.startsWith('http')
+        ? dbConfig.layout_file
+        : `${protocol}://${host}/assets/layouts/${dbConfig.layout_file}`;
     } else if (style === 'pet') {
       const petFile = PET_LAYOUTS[country] || PET_LAYOUTS.brasil;
       layoutUrl = `${protocol}://${host}/assets/layouts/Pet/${petFile}`;
