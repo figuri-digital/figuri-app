@@ -232,9 +232,27 @@
       .editor-container {
         flex-direction: column;
         align-items: center;
+        gap: 20px;
+        padding: 16px;
       }
-      .card-wrapper { width: 300px; }
+      .card-wrapper { width: min(300px, 90vw); }
       .controls { width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      .card-wrapper { width: min(280px, 88vw); }
+      .editor-container { gap: 16px; padding: 12px; }
+      .control-group { padding: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .card-wrapper { width: min(260px, 92vw); }
+      .editor-container { gap: 12px; padding: 10px 8px; }
+      .control-group { padding: 12px; }
+      .field { margin-bottom: 10px; }
+      .arrow-btn { width: 48px; height: 48px; }
+      .moldura-options { gap: 6px; flex-wrap: wrap; }
+      .btn-comprar { padding: 18px; font-size: 1rem; }
     }
   </style>
 </head>

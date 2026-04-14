@@ -655,6 +655,25 @@
     .hidden { display: none !important; }
     .center { text-align: center; }
 
+    @media (max-width: 600px) {
+      .card { padding: 28px 20px; }
+      .results-grid { grid-template-columns: 1fr; }
+      .variation-card { max-width: 100%; }
+      .loading-inner-card { max-width: 95vw; }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 22px 14px; max-width: 100%; }
+      .scanner-wrap { width: 120px !important; height: 120px !important; }
+      .toast { max-width: 85vw; }
+      .toast-container { left: 50%; transform: translateX(-50%); bottom: 16px; }
+      .phase-title { font-size: 1.4rem; }
+      .phase-sub { font-size: 0.85rem; }
+      .upload-box { min-height: 130px; }
+      .error-icon { font-size: 38px; }
+      .cloud-1, .cloud-2, .cloud-3, .cloud-4, .cloud-5 { display: none; }
+    }
+
     @media (max-width: 400px) {
       .card { padding: 24px 14px; }
       .country-grid { gap: 6px; }

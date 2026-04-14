@@ -1124,10 +1124,21 @@
       .footer-links { justify-content: center; }
       .footer-right { justify-content: center; }
     }
+    @media (max-width: 768px) {
+      .hero-section { min-height: auto; padding: 24px 16px 32px; }
+      .hero-content h1 { font-size: clamp(1.8rem, 6vw, 2.6rem); }
+      .hero-content p { font-size: 0.9rem; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .section-title { font-size: clamp(1.4rem, 5vw, 2rem); }
+    }
     @media (max-width: 520px) {
       .products-grid { grid-template-columns: 1fr; }
       .hero-stats { gap: 0.5rem; }
+      .navbar { padding: 0 16px; height: 52px; }
       .navbar-logo img { height: 28px; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .btn-cta, .btn-secondary { text-align: center; }
+      .footer-cols { flex-direction: column; gap: 20px; }
     }
 
     /* ───────────────────────────────────────
