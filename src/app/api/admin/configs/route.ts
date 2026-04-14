@@ -116,10 +116,13 @@ export async function GET(req: NextRequest) {
     })
   );
 
-  return NextResponse.json({ configs, db_rows: rows?.length ?? 0 });
+  return NextResponse.json(
+    { configs, db_rows: rows?.length ?? 0 },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
 }
 
-// ── PUT — save (upsert) a single config ──────────────────────────────────────
+// ── PUT — save a single config (UPDATE se existe, INSERT se não existe) ───────
 
 export async function PUT(req: NextRequest) {
   const key = req.nextUrl.searchParams.get('key');
@@ -136,36 +139,42 @@ export async function PUT(req: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const basePayload = {
-    style,
-    country,
+  const defaultTextColors = { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } };
+
+  const fields = {
     layout_file,
     moldura_file: moldura_file || null,
     prompt,
+    text_colors: text_colors || defaultTextColors,
     updated_at: new Date().toISOString(),
   };
 
-  const defaultTextColors = { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } };
-
-  // Try with text_colors first; if column doesn't exist yet, save without it
-  let { error } = await supabase
+  // 1. Tenta UPDATE (linha já existe)
+  const { data: updated, error: updateError } = await supabase
     .from('figurinha_configs')
-    .upsert({ ...basePayload, text_colors: text_colors || defaultTextColors }, { onConflict: 'style,country' });
+    .update(fields)
+    .eq('style', style)
+    .eq('country', country)
+    .select('id');
 
-  if (error && (error.message.includes('text_colors') || error.code === 'PGRST204')) {
-    console.warn('text_colors column missing, saving without it.');
-    const fallback = await supabase
+  if (updateError) {
+    console.error('UPDATE error:', updateError);
+    return NextResponse.json({ error: `UPDATE falhou: ${updateError.message} (${updateError.code})` }, { status: 500 });
+  }
+
+  // 2. Se UPDATE não encontrou linha, faz INSERT
+  if (!updated || updated.length === 0) {
+    const { error: insertError } = await supabase
       .from('figurinha_configs')
-      .upsert(basePayload, { onConflict: 'style,country' });
-    error = fallback.error;
+      .insert({ style, country, ...fields });
+
+    if (insertError) {
+      console.error('INSERT error:', insertError);
+      return NextResponse.json({ error: `INSERT falhou: ${insertError.message} (${insertError.code})` }, { status: 500 });
+    }
   }
 
-  if (error) {
-    console.error('Config upsert error:', error);
-    return NextResponse.json({ error: `Upsert falhou: ${error.message} (code: ${error.code})` }, { status: 500 });
-  }
-
-  // Verify the row was actually saved
+  // 3. Verifica que a linha existe de fato
   const { data: verify, error: verifyError } = await supabase
     .from('figurinha_configs')
     .select('id, style, country, updated_at')
@@ -174,9 +183,8 @@ export async function PUT(req: NextRequest) {
     .single();
 
   if (verifyError || !verify) {
-    console.error('Verify after upsert failed:', verifyError);
     return NextResponse.json({
-      error: `Upsert reportou sucesso mas linha não encontrada. Verifique RLS e service role key. Detalhe: ${verifyError?.message}`,
+      error: `Gravado sem erro mas linha não encontrada. Verifique RLS/service key. Detalhe: ${verifyError?.message}`,
     }, { status: 500 });
   }
 
