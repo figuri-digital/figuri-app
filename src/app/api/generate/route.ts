@@ -18,7 +18,7 @@ const NUM_VARIATIONS = 2;
 type FieldColors = { name: string; birth: string; height: string };
 type ConfigRow = { layout_file: string; moldura_file: string | null; prompt: string; text_colors: Record<string, FieldColors> };
 const configCache = new Map<string, { data: ConfigRow; ts: number }>();
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 0; // sem cache — sempre lê do banco para refletir mudanças do admin imediatamente
 
 async function getConfig(style: string, country: string): Promise<ConfigRow | null> {
   const cacheKey = `${style}__${country}`;
