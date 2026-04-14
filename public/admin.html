@@ -261,6 +261,8 @@
     <div id="configs-loading" class="loading">Carregando configurações...</div>
     <div id="configs-content" style="display:none;">
 
+      <div id="db-diag" style="margin-bottom:10px;font-size:0.78rem;font-family:monospace;"></div>
+
       <div style="margin-bottom:16px;color:var(--text-muted);font-size:0.85rem;">
         Clique em <strong style="color:#F5C518;">✏️ Editar</strong> em qualquer linha para alterar o layout, moldura ou prompt daquele país/estilo.
         As mudanças entram em vigor imediatamente na geração.
@@ -394,9 +396,14 @@ async function loadConfigs() {
     renderConfigs();
     document.getElementById('configs-loading').style.display = 'none';
     document.getElementById('configs-content').style.display = 'block';
-    // Show warning if DB returned 0 rows (likely migration not run)
-    if ((data.db_rows ?? 0) === 0 && allConfigs.length > 0) {
-      console.warn('Nenhuma config no banco — verifique se a tabela figurinha_configs existe e o SQL de migração foi executado.');
+
+    // Diagnóstico visível: mostra quantas linhas vieram do banco
+    const dbRows = data.db_rows ?? 0;
+    const savedCount = allConfigs.filter(c => c.from_db).length;
+    const diagEl = document.getElementById('db-diag');
+    if (diagEl) {
+      diagEl.textContent = `🗄️ Linhas no banco: ${dbRows} | Configs customizadas: ${savedCount}`;
+      diagEl.style.color = dbRows === 0 ? '#e74c3c' : '#94DD2D';
     }
   } catch (err) {
     document.getElementById('configs-loading').innerHTML =
