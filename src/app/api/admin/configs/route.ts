@@ -153,7 +153,7 @@ export async function PUT(req: NextRequest) {
     .upsert({ ...basePayload, text_colors: text_colors || defaultTextColors }, { onConflict: 'style,country' });
 
   if (error && (error.message.includes('text_colors') || error.code === 'PGRST204')) {
-    console.warn('text_colors column missing, saving without it. Run add_text_colors.sql migration.');
+    console.warn('text_colors column missing, saving without it.');
     const fallback = await supabase
       .from('figurinha_configs')
       .upsert(basePayload, { onConflict: 'style,country' });
@@ -162,8 +162,23 @@ export async function PUT(req: NextRequest) {
 
   if (error) {
     console.error('Config upsert error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: `Upsert falhou: ${error.message} (code: ${error.code})` }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  // Verify the row was actually saved
+  const { data: verify, error: verifyError } = await supabase
+    .from('figurinha_configs')
+    .select('id, style, country, updated_at')
+    .eq('style', style)
+    .eq('country', country)
+    .single();
+
+  if (verifyError || !verify) {
+    console.error('Verify after upsert failed:', verifyError);
+    return NextResponse.json({
+      error: `Upsert reportou sucesso mas linha não encontrada. Verifique RLS e service role key. Detalhe: ${verifyError?.message}`,
+    }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, saved: { id: verify.id, style: verify.style, country: verify.country, updated_at: verify.updated_at } });
 }
