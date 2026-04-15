@@ -402,8 +402,13 @@ async function loadConfigs() {
     const savedCount = allConfigs.filter(c => c.from_db).length;
     const diagEl = document.getElementById('db-diag');
     if (diagEl) {
-      diagEl.textContent = `🗄️ Linhas no banco: ${dbRows} | Configs customizadas: ${savedCount}`;
+      const usingServiceKey = data.using_service_key;
+      const keyLabel = usingServiceKey ? '🔑 service_role ✅' : '⚠️ anon key (sem service_role)';
+      diagEl.innerHTML = `🗄️ Linhas no banco: <b>${dbRows}</b> | Configs customizadas: <b>${savedCount}</b> | ${keyLabel}`;
       diagEl.style.color = dbRows === 0 ? '#e74c3c' : '#94DD2D';
+      if (!usingServiceKey) {
+        diagEl.innerHTML += ' &nbsp;<span style="color:#e74c3c;font-weight:bold">— VERIFIQUE: adicione SUPABASE_SERVICE_ROLE_KEY no Vercel (maiúsculo)</span>';
+      }
     }
   } catch (err) {
     document.getElementById('configs-loading').innerHTML =

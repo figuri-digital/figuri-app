@@ -4,7 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Aceita tanto SUPABASE_SERVICE_ROLE_KEY (maiúsculo padrão) quanto supabase_service_role_key (minúsculo)
+const supabaseServiceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.supabase_service_role_key ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const isUsingServiceKey =
+  !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.supabase_service_role_key);
 const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || 'figuri-admin-2026';
 
 // ── Hardcoded defaults (fallback when DB has no row yet) ─────────────────────
@@ -117,7 +123,7 @@ export async function GET(req: NextRequest) {
   );
 
   return NextResponse.json(
-    { configs, db_rows: rows?.length ?? 0 },
+    { configs, db_rows: rows?.length ?? 0, using_service_key: isUsingServiceKey },
     { headers: { 'Cache-Control': 'no-store' } }
   );
 }

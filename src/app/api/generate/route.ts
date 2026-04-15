@@ -6,7 +6,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+// Aceita tanto SUPABASE_SERVICE_ROLE_KEY (maiúsculo padrão) quanto supabase_service_role_key (minúsculo)
+const supabaseServiceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.supabase_service_role_key ||
+  supabaseAnonKey;
 const FAL_KEY = process.env.FAL_KEY!;
 
 export const maxDuration = 60;
