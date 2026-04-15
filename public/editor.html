@@ -254,9 +254,139 @@
       .moldura-options { gap: 6px; flex-wrap: wrap; }
       .btn-comprar { padding: 18px; font-size: 1rem; }
     }
+    /* ────────────────────────────────────────
+       MODAL PIX
+    ──────────────────────────────────────── */
+    .pix-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .pix-overlay.open { display: flex; }
+
+    .pix-modal {
+      background: #111;
+      border: 1px solid #2a5a00;
+      border-radius: 18px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 94vw;
+      text-align: center;
+      position: relative;
+      animation: fadeUp .3s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+
+    .pix-modal .close-btn {
+      position: absolute; top: 14px; right: 16px;
+      background: none; border: none; color: #888; font-size: 22px; cursor: pointer;
+    }
+    .pix-modal .close-btn:hover { color: #fff; }
+
+    .pix-modal h2 { font-size: 1.3rem; color: #94DD2D; margin-bottom: 4px; }
+    .pix-modal .pix-amount { font-size: 2rem; font-weight: 800; color: #FFC300; margin: 8px 0 18px; }
+    .pix-modal .pix-label { font-size: 0.78rem; color: #888; margin-bottom: 6px; }
+
+    .pix-qr-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      width: 180px; height: 180px;
+      margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pix-qr-wrap img { width: 160px; height: 160px; display: block; }
+
+    .pix-code-wrap {
+      background: #1a2b01;
+      border: 1px solid #2e4a05;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pix-code-wrap code {
+      font-size: 0.65rem;
+      color: #94DD2D;
+      word-break: break-all;
+      flex: 1;
+      text-align: left;
+      font-family: monospace;
+      line-height: 1.4;
+    }
+    .pix-copy-btn {
+      flex-shrink: 0;
+      background: #94DD2D;
+      color: #1a2b01;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pix-copy-btn.copied { background: #FFC300; }
+    .pix-copy-btn:hover { background: #a8f033; }
+
+    .pix-status {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 0.85rem; color: #aaa; margin-bottom: 10px;
+    }
+    .pix-status .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #FFC300;
+      animation: pulse 1.2s infinite;
+    }
+    .pix-status.approved .dot { background: #94DD2D; animation: none; }
+    .pix-status.approved { color: #94DD2D; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+    .pix-timer { font-size: 0.75rem; color: #666; margin-top: 6px; }
+    .pix-success-msg {
+      display: none; padding: 16px;
+      background: rgba(148,221,45,0.12);
+      border: 1px solid #94DD2D;
+      border-radius: 12px;
+      color: #94DD2D;
+      font-size: 0.95rem;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ██████████  MODAL PIX  ██████████ -->
+  <div class="pix-overlay" id="pixOverlay">
+    <div class="pix-modal">
+      <button class="close-btn" onclick="closePixModal()" title="Fechar">✕</button>
+
+      <h2>Pague com PIX 🟢</h2>
+      <div class="pix-amount" id="pixAmount">R$ 19,90</div>
+      <p class="pix-label">Escaneie o QR Code ou copie o código abaixo:</p>
+
+      <div class="pix-qr-wrap">
+        <img id="pixQrImg" src="" alt="QR Code PIX" />
+      </div>
+
+      <div class="pix-code-wrap">
+        <code id="pixCodeText"></code>
+        <button class="pix-copy-btn" id="pixCopyBtn" onclick="copyPixCode()">Copiar</button>
+      </div>
+
+      <div class="pix-status" id="pixStatus">
+        <span class="dot"></span>
+        <span id="pixStatusText">Aguardando pagamento...</span>
+      </div>
+      <div class="pix-timer" id="pixTimer"></div>
+
+      <div class="pix-success-msg" id="pixSuccessMsg">
+        ✅ Pagamento confirmado! Preparando sua figurinha...
+      </div>
+    </div>
+  </div>
   <button onclick="goBackToChoose()" style="align-self:flex-start; background:none; border:1px solid #555; color:#ccc; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:'Sora',sans-serif; font-size:13px; margin-bottom:12px;">← Voltar e trocar opção</button>
   <h1>EDITOR DE FIGURINHA</h1>
   <p class="subtitle">Escolha a moldura e personalize os textos</p>
@@ -554,9 +684,168 @@
       });
     }
 
-    // ── ACTIONS ──
-    function handleBuy() {
-      alert('Integrado com Stripe — redireciona pro checkout R$19,90');
+    // ── PIX PAYMENT ──────────────────────────────────────────────────────────
+
+    var pixPaymentId   = null;
+    var pixPollTimer   = null;
+    var pixExpireTimer = null;
+
+    async function handleBuy() {
+      // Pega token de sessão do Supabase (localStorage)
+      var token = getSupabaseToken();
+      if (!token) {
+        alert('Você precisa estar logado para comprar. Por favor, entre na sua conta.');
+        window.location.href = '/login';
+        return;
+      }
+
+      var buyBtn = document.querySelector('.btn-comprar');
+      if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'Gerando PIX...'; }
+
+      try {
+        var res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            imageId:        paramImageId,
+            variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
+            productType:    'digital',
+          }),
+        });
+
+        var data = await res.json();
+
+        if (!res.ok || !data.qr_code) {
+          throw new Error(data.error || 'Erro ao gerar PIX');
+        }
+
+        openPixModal(data);
+      } catch (err) {
+        alert('Erro: ' + err.message);
+      } finally {
+        if (buyBtn) { buyBtn.disabled = false; buyBtn.textContent = 'Comprar por R$19,90'; }
+      }
+    }
+
+    function getSupabaseToken() {
+      // Tenta chaves comuns do Supabase no localStorage
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key && key.includes('supabase') && key.includes('auth')) {
+            var val = JSON.parse(localStorage.getItem(key) || '{}');
+            if (val.access_token) return val.access_token;
+            if (val.session && val.session.access_token) return val.session.access_token;
+          }
+        }
+      } catch(_) {}
+      return null;
+    }
+
+    function openPixModal(data) {
+      pixPaymentId = data.payment_id;
+
+      // Valor formatado
+      var reais = (data.amount / 100).toFixed(2).replace('.', ',');
+      document.getElementById('pixAmount').textContent = 'R$ ' + reais;
+
+      // QR Code
+      var qrImg = document.getElementById('pixQrImg');
+      if (data.qr_code_base64) {
+        qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
+      } else {
+        qrImg.src = '';
+        qrImg.alt = 'Copie o código abaixo';
+      }
+
+      // Código copia-e-cola
+      document.getElementById('pixCodeText').textContent = data.qr_code;
+
+      // Timer de expiração
+      if (data.expires_at) {
+        var expMs = new Date(data.expires_at).getTime();
+        pixExpireTimer = setInterval(function() {
+          var remaining = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
+          var min = Math.floor(remaining / 60);
+          var sec = remaining % 60;
+          document.getElementById('pixTimer').textContent =
+            remaining > 0
+              ? '⏱ Expira em ' + min + ':' + String(sec).padStart(2, '0')
+              : 'PIX expirado. Feche e tente novamente.';
+          if (remaining === 0) { clearInterval(pixExpireTimer); stopPixPolling(); }
+        }, 1000);
+      }
+
+      // Mostrar modal
+      document.getElementById('pixOverlay').classList.add('open');
+
+      // Iniciar polling
+      startPixPolling();
+    }
+
+    function closePixModal() {
+      document.getElementById('pixOverlay').classList.remove('open');
+      stopPixPolling();
+      if (pixExpireTimer) { clearInterval(pixExpireTimer); pixExpireTimer = null; }
+      pixPaymentId = null;
+    }
+
+    function startPixPolling() {
+      if (pixPollTimer) return;
+      pixPollTimer = setInterval(checkPixStatus, 3000);
+    }
+
+    function stopPixPolling() {
+      if (pixPollTimer) { clearInterval(pixPollTimer); pixPollTimer = null; }
+    }
+
+    async function checkPixStatus() {
+      if (!pixPaymentId) return;
+      try {
+        var res = await fetch('/api/checkout/status?payment_id=' + encodeURIComponent(pixPaymentId));
+        var data = await res.json();
+
+        if (data.status === 'approved') {
+          stopPixPolling();
+          onPixApproved(data);
+        } else if (data.status === 'rejected' || data.status === 'cancelled') {
+          stopPixPolling();
+          document.getElementById('pixStatusText').textContent = 'Pagamento ' + data.status + '. Tente novamente.';
+        }
+      } catch(_) {/* ignora erro de rede, tenta de novo no próximo tick */}
+    }
+
+    function onPixApproved(data) {
+      var statusEl = document.getElementById('pixStatus');
+      statusEl.classList.add('approved');
+      document.getElementById('pixStatusText').textContent = 'Pagamento aprovado!';
+      document.getElementById('pixSuccessMsg').style.display = 'block';
+      document.querySelector('.pix-code-wrap').style.display = 'none';
+
+      // Aguarda 2s e libera o download da imagem em alta resolução
+      setTimeout(function() {
+        closePixModal();
+        downloadFinal();
+      }, 2000);
+    }
+
+    function copyPixCode() {
+      var code = document.getElementById('pixCodeText').textContent;
+      navigator.clipboard.writeText(code).then(function() {
+        var btn = document.getElementById('pixCopyBtn');
+        btn.textContent = 'Copiado!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    function downloadFinal() {
+      // Baixa o canvas sem marca d'água (versão final paga)
+      var canvas = document.getElementById('cardCanvas');
+      var link = document.createElement('a');
+      link.download = 'figurinha-figuri.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
 
     function downloadPreview() {
