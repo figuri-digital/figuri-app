@@ -7,182 +7,136 @@
   <link rel="icon" type="image/svg+xml" href="/fav.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Mercado Pago JS SDK -->
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Sora', sans-serif;
-      background: #0d1a00;
-      color: #edfbd9;
-      min-height: 100vh;
-      padding-bottom: 120px;
-    }
+    body { font-family: 'Sora', sans-serif; background: #0d1a00; color: #edfbd9; min-height: 100vh; padding-bottom: 120px; }
 
     /* Navbar */
-    .navbar {
-      background: rgba(26,43,1,0.97);
-      border-bottom: 1px solid rgba(148,221,45,0.15);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 5%; height: 62px; position: sticky; top: 0; z-index: 100;
-    }
+    .navbar { background: rgba(26,43,1,0.97); border-bottom: 1px solid rgba(148,221,45,0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 5%; height: 62px; position: sticky; top: 0; z-index: 100; }
     .navbar-logo img { height: 40px; }
-    .nav-back {
-      background: none; border: 1px solid rgba(255,255,255,0.2);
-      color: #ccc; padding: 8px 16px; border-radius: 8px;
-      cursor: pointer; font-family: 'Sora', sans-serif; font-size: 13px;
-      transition: all .18s;
-    }
+    .nav-back { background: none; border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: 'Sora', sans-serif; font-size: 13px; transition: all .18s; }
     .nav-back:hover { border-color: #94DD2D; color: #94DD2D; }
 
     /* Layout */
     .container { max-width: 760px; margin: 0 auto; padding: 32px 20px; }
-
     h1 { font-size: 1.6rem; font-weight: 800; color: #94DD2D; margin-bottom: 6px; }
     .cart-subtitle { font-size: 0.85rem; color: #7a9f3e; margin-bottom: 28px; }
 
-    /* Empty state */
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      color: #5a7a2e;
-    }
+    /* Empty */
+    .empty-state { text-align: center; padding: 60px 20px; color: #5a7a2e; }
     .empty-state .icon { font-size: 3.5rem; margin-bottom: 16px; }
     .empty-state p { font-size: 1rem; margin-bottom: 24px; }
-    .btn-outline {
-      background: transparent; border: 1.5px solid #94DD2D;
-      color: #94DD2D; padding: 12px 28px; border-radius: 10px;
-      cursor: pointer; font-family: 'Sora', sans-serif;
-      font-size: 0.9rem; font-weight: 700; transition: all .18s;
-    }
+    .btn-outline { background: transparent; border: 1.5px solid #94DD2D; color: #94DD2D; padding: 12px 28px; border-radius: 10px; cursor: pointer; font-family: 'Sora', sans-serif; font-size: 0.9rem; font-weight: 700; transition: all .18s; }
     .btn-outline:hover { background: rgba(148,221,45,0.1); }
 
     /* Cart item */
     .cart-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
-    .cart-item {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(148,221,45,0.12);
-      border-radius: 14px;
-      padding: 16px;
-      display: flex; gap: 14px; align-items: center;
-    }
-    .item-thumb {
-      width: 72px; height: 96px;
-      border-radius: 8px;
-      object-fit: cover;
-      flex-shrink: 0;
-      background: #1a2b01;
-    }
+    .cart-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(148,221,45,0.12); border-radius: 14px; padding: 16px; display: flex; gap: 14px; align-items: center; }
+    .item-thumb { width: 72px; height: 96px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #1a2b01; }
     .item-info { flex: 1; min-width: 0; }
     .item-product { font-size: 0.78rem; color: #94DD2D; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
     .item-name { font-size: 1rem; font-weight: 700; margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-details { font-size: 0.75rem; color: #7a9f3e; }
     .item-price { font-size: 1.1rem; font-weight: 800; color: #FFC300; flex-shrink: 0; }
-    .item-remove {
-      background: none; border: none; color: #666; font-size: 18px;
-      cursor: pointer; padding: 4px 8px; border-radius: 6px;
-      transition: all .15s; flex-shrink: 0;
-    }
+    .item-remove { background: none; border: none; color: #666; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all .15s; flex-shrink: 0; }
     .item-remove:hover { color: #ff6b6b; background: rgba(255,107,107,0.1); }
 
     /* Summary */
-    .cart-summary {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(148,221,45,0.15);
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .summary-row {
-      display: flex; justify-content: space-between;
-      font-size: 0.88rem; color: #aaa; padding: 5px 0;
-    }
-    .summary-row.total {
-      border-top: 1px solid rgba(255,255,255,0.1);
-      margin-top: 10px; padding-top: 14px;
-      font-size: 1.2rem; font-weight: 800; color: #edfbd9;
-    }
+    .cart-summary { background: rgba(255,255,255,0.04); border: 1px solid rgba(148,221,45,0.15); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 0.88rem; color: #aaa; padding: 5px 0; }
+    .summary-row.total { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 14px; font-size: 1.2rem; font-weight: 800; color: #edfbd9; }
     .summary-row.total span:last-child { color: #FFC300; }
 
-    .btn-add-more {
-      width: 100%; padding: 13px;
-      background: transparent; border: 1.5px dashed rgba(148,221,45,0.35);
-      color: #94DD2D; border-radius: 10px;
-      cursor: pointer; font-family: 'Sora', sans-serif;
-      font-size: 0.88rem; font-weight: 600;
-      transition: all .18s; margin-bottom: 12px;
-    }
+    .btn-add-more { width: 100%; padding: 13px; background: transparent; border: 1.5px dashed rgba(148,221,45,0.35); color: #94DD2D; border-radius: 10px; cursor: pointer; font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 600; transition: all .18s; margin-bottom: 20px; }
     .btn-add-more:hover { background: rgba(148,221,45,0.07); border-color: #94DD2D; }
 
-    .btn-checkout {
-      width: 100%; padding: 18px;
-      background: linear-gradient(135deg, #94DD2D, #6ab520);
-      border: none; border-radius: 12px;
-      color: #1a2b01; font-family: 'Sora', sans-serif;
-      font-size: 1.05rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 1px;
-      cursor: pointer; transition: all .2s;
+    /* ── PAYMENT METHOD TABS ── */
+    .payment-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(148,221,45,0.12); border-radius: 16px; overflow: hidden; }
+    .payment-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+    .pay-tab {
+      padding: 16px; text-align: center; cursor: pointer;
+      font-size: 0.95rem; font-weight: 700;
+      border: none; background: rgba(255,255,255,0.03);
+      color: #7a9f3e; transition: all .2s;
+      border-bottom: 2px solid transparent;
+      font-family: 'Sora', sans-serif;
     }
-    .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(148,221,45,0.35); }
-    .btn-checkout:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
+    .pay-tab:hover { color: #edfbd9; background: rgba(255,255,255,0.05); }
+    .pay-tab.active { color: #94DD2D; border-bottom-color: #94DD2D; background: rgba(148,221,45,0.07); }
+    .pay-tab .tab-icon { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+
+    .payment-panel { padding: 24px; display: none; }
+    .payment-panel.active { display: block; }
+
+    /* PIX panel */
+    .pix-info { text-align: center; padding: 10px 0 20px; }
+    .pix-info p { color: #aaa; font-size: 0.88rem; line-height: 1.6; }
+    .pix-info .pix-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(148,221,45,0.1); border: 1px solid rgba(148,221,45,0.3); border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; color: #94DD2D; font-weight: 700; margin-bottom: 14px; }
+    .btn-pay { width: 100%; padding: 18px; border: none; border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .2s; }
+    .btn-pay:disabled { opacity: 0.6; cursor: default; transform: none !important; box-shadow: none !important; }
+    .btn-pay-pix { background: linear-gradient(135deg, #94DD2D, #6ab520); color: #1a2b01; }
+    .btn-pay-pix:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(148,221,45,0.35); }
+    .btn-pay-card { background: linear-gradient(135deg, #4A9EFF, #1a6ed4); color: #fff; margin-top: 8px; }
+    .btn-pay-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(74,158,255,0.35); }
+
+    /* Cartão panel */
+    .card-form-wrap { display: flex; flex-direction: column; gap: 14px; }
+    .card-form-wrap .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: .5px; }
+    .form-field input, .form-field select {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; color: #fff; padding: 12px 14px;
+      font-family: 'Sora', sans-serif; font-size: 0.95rem; outline: none;
+      transition: border-color .2s; width: 100%;
+    }
+    .form-field input:focus, .form-field select:focus { border-color: #4A9EFF; }
+    .form-field input::placeholder { color: rgba(255,255,255,0.3); }
+    .form-field select option { background: #111; color: #fff; }
+
+    /* iframe do número do cartão (MP.js) */
+    #form-checkout__cardNumber,
+    #form-checkout__expirationDate,
+    #form-checkout__securityCode {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 12px 14px; height: 46px;
+      transition: border-color .2s;
+    }
+
+    .card-brand { font-size: 0.75rem; color: #7a9f3e; margin-top: -8px; min-height: 16px; }
+    .installments-label { font-size: 0.75rem; color: #999; margin-bottom: 2px; }
 
     /* ── MODAL PIX ── */
-    .pix-overlay {
-      display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-      align-items: center; justify-content: center;
-    }
+    .pix-overlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
     .pix-overlay.open { display: flex; }
-    .pix-modal {
-      background: #111;
-      border: 1px solid #2a5a00;
-      border-radius: 18px; padding: 32px 26px;
-      max-width: 420px; width: 94vw;
-      text-align: center; position: relative;
-      animation: fadeUp .3s ease;
-    }
+    .pix-modal { background: #111; border: 1px solid #2a5a00; border-radius: 18px; padding: 32px 26px; max-width: 420px; width: 94vw; text-align: center; position: relative; animation: fadeUp .3s ease; }
     @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
-    .pix-modal .close-btn {
-      position: absolute; top: 14px; right: 16px;
-      background: none; border: none; color: #888; font-size: 22px; cursor: pointer;
-    }
+    .pix-modal .close-btn { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #888; font-size: 22px; cursor: pointer; }
     .pix-modal .close-btn:hover { color: #fff; }
     .pix-modal h2 { font-size: 1.3rem; color: #94DD2D; margin-bottom: 4px; }
     .pix-amount { font-size: 2rem; font-weight: 800; color: #FFC300; margin: 8px 0 18px; }
     .pix-label { font-size: 0.78rem; color: #888; margin-bottom: 8px; }
-    .pix-qr-wrap {
-      background: #fff; border-radius: 12px; padding: 10px;
-      width: 180px; height: 180px; margin: 0 auto 16px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .pix-qr-wrap { background: #fff; border-radius: 12px; padding: 10px; width: 180px; height: 180px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
     .pix-qr-wrap img { width: 160px; height: 160px; display: block; }
-    .pix-code-wrap {
-      background: #1a2b01; border: 1px solid #2e4a05;
-      border-radius: 10px; padding: 12px 14px;
-      margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-    }
-    .pix-code-wrap code {
-      font-size: 0.62rem; color: #94DD2D; word-break: break-all;
-      flex: 1; text-align: left; font-family: monospace; line-height: 1.4;
-    }
-    .pix-copy-btn {
-      flex-shrink: 0; background: #94DD2D; color: #1a2b01;
-      border: none; border-radius: 8px; padding: 8px 14px;
-      font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap;
-    }
+    .pix-code-wrap { background: #1a2b01; border: 1px solid #2e4a05; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .pix-code-wrap code { font-size: 0.62rem; color: #94DD2D; word-break: break-all; flex: 1; text-align: left; font-family: monospace; line-height: 1.4; }
+    .pix-copy-btn { flex-shrink: 0; background: #94DD2D; color: #1a2b01; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
     .pix-copy-btn.copied { background: #FFC300; }
-    .pix-copy-btn:hover { background: #a8f033; }
-    .pix-status {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-size: 0.85rem; color: #aaa; margin-bottom: 8px;
-    }
+    .pix-status { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
     .pix-status .dot { width: 10px; height: 10px; border-radius: 50%; background: #FFC300; animation: pulse 1.2s infinite; }
     .pix-status.approved .dot { background: #94DD2D; animation: none; }
     .pix-status.approved { color: #94DD2D; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
     .pix-timer { font-size: 0.75rem; color: #666; margin-top: 4px; }
-    .pix-success-msg {
-      display: none; padding: 14px; margin-top: 12px;
-      background: rgba(148,221,45,0.12); border: 1px solid #94DD2D;
-      border-radius: 12px; color: #94DD2D; font-size: 0.95rem;
-    }
+    .pix-success-msg { display: none; padding: 14px; margin-top: 12px; background: rgba(148,221,45,0.12); border: 1px solid #94DD2D; border-radius: 12px; color: #94DD2D; font-size: 0.95rem; }
+
+    /* Sucesso cartão */
+    .card-success { display: none; text-align: center; padding: 24px; background: rgba(148,221,45,0.08); border: 1px solid #94DD2D; border-radius: 12px; margin-top: 12px; }
+    .card-success .check { font-size: 2.5rem; margin-bottom: 8px; }
+    .card-success p { color: #94DD2D; font-weight: 700; }
+    .card-error { display: none; padding: 12px 16px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.4); border-radius: 10px; color: #ff9999; font-size: 0.88rem; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -206,15 +160,91 @@
     <!-- Cart content -->
     <div id="cartContent" style="display:none">
       <div class="cart-list" id="cartList"></div>
-
       <div class="cart-summary" id="cartSummary"></div>
 
       <button class="btn-add-more" onclick="window.location.href='/gerar.html'">
         ➕ Gerar e adicionar outra figurinha
       </button>
-      <button class="btn-checkout" id="btnCheckout" onclick="startCheckout()">
-        Pagar com PIX 🟢
-      </button>
+
+      <!-- ── PAYMENT SECTION ── -->
+      <div class="payment-section">
+        <div class="payment-tabs">
+          <button class="pay-tab active" id="tabPix" onclick="switchTab('pix')">
+            <span class="tab-icon">🟢</span> PIX
+          </button>
+          <button class="pay-tab" id="tabCard" onclick="switchTab('card')">
+            <span class="tab-icon">💳</span> Cartão de Crédito
+          </button>
+        </div>
+
+        <!-- PIX Panel -->
+        <div class="payment-panel active" id="panelPix">
+          <div class="pix-info">
+            <div class="pix-badge">⚡ Aprovação instantânea</div>
+            <p>Pague com PIX e sua figurinha é liberada em segundos.<br>Sem juros, sem taxas extras.</p>
+          </div>
+          <button class="btn-pay btn-pay-pix" id="btnPayPix" onclick="startPixCheckout()">
+            Pagar com PIX 🟢
+          </button>
+        </div>
+
+        <!-- Cartão Panel -->
+        <div class="payment-panel" id="panelCard">
+          <form id="form-checkout" onsubmit="submitCard(event)">
+            <div class="card-form-wrap">
+
+              <div class="form-field">
+                <label>Número do Cartão</label>
+                <div id="form-checkout__cardNumber"></div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Validade</label>
+                  <div id="form-checkout__expirationDate"></div>
+                </div>
+                <div class="form-field">
+                  <label>CVV</label>
+                  <div id="form-checkout__securityCode"></div>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label>Nome no Cartão</label>
+                <input type="text" id="form-checkout__cardholderName" placeholder="Como está no cartão" autocomplete="cc-name" />
+              </div>
+
+              <div class="form-field">
+                <label>CPF do titular</label>
+                <input type="text" id="form-checkout__identificationNumber" placeholder="000.000.000-00" maxlength="14" oninput="formatCPF(this)" />
+                <select id="form-checkout__identificationType" style="display:none"></select>
+              </div>
+
+              <div class="form-field">
+                <label>E-mail</label>
+                <input type="email" id="form-checkout__cardholderEmail" placeholder="seu@email.com" autocomplete="email" />
+              </div>
+
+              <div class="form-field">
+                <label>Parcelas</label>
+                <select id="form-checkout__installments"></select>
+              </div>
+
+              <select id="form-checkout__issuer" style="display:none"></select>
+
+              <div class="card-error" id="cardError"></div>
+
+              <button type="submit" class="btn-pay btn-pay-card" id="btnPayCard">
+                💳 Pagar com Cartão
+              </button>
+            </div>
+          </form>
+          <div class="card-success" id="cardSuccess">
+            <div class="check">✅</div>
+            <p>Pagamento aprovado!<br>Baixando suas figurinhas...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -235,9 +265,7 @@
         <span id="pixStatusText">Aguardando pagamento...</span>
       </div>
       <div class="pix-timer" id="pixTimer"></div>
-      <div class="pix-success-msg" id="pixSuccessMsg">
-        ✅ Pagamento confirmado! Baixando suas figurinhas...
-      </div>
+      <div class="pix-success-msg" id="pixSuccessMsg">✅ Pagamento confirmado! Baixando suas figurinhas...</div>
     </div>
   </div>
 
@@ -249,12 +277,27 @@
     }
     function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
     function clearCart() { localStorage.removeItem(CART_KEY); }
+    function formatPrice(cents) { return 'R$' + (cents / 100).toFixed(2).replace('.', ','); }
 
-    function formatPrice(cents) {
-      return 'R$' + (cents / 100).toFixed(2).replace('.', ',');
+    function formatCPF(input) {
+      var v = input.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length >= 10) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length >= 7) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length >= 4) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      input.value = v;
     }
 
-    // ── RENDER ───────────────────────────────────────────────────────────────
+    // ── TABS ──────────────────────────────────────────────────────────────────
+    var currentTab = 'pix';
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabPix').classList.toggle('active', tab === 'pix');
+      document.getElementById('tabCard').classList.toggle('active', tab === 'card');
+      document.getElementById('panelPix').classList.toggle('active', tab === 'pix');
+      document.getElementById('panelCard').classList.toggle('active', tab === 'card');
+    }
+
+    // ── RENDER ─────────────────────────────────────────────────────────────────
     function renderCart() {
       var cart  = getCart();
       var items = cart.items || [];
@@ -263,59 +306,55 @@
       var cont  = document.getElementById('cartContent');
 
       if (items.length === 0) {
-        sub.textContent  = '0 itens';
+        sub.textContent = '0 itens';
         empty.style.display = 'block';
         cont.style.display  = 'none';
         return;
       }
-
-      sub.textContent  = items.length + (items.length === 1 ? ' item' : ' itens');
+      sub.textContent = items.length + (items.length === 1 ? ' item' : ' itens');
       empty.style.display = 'none';
       cont.style.display  = 'block';
 
-      // List
+      // Lista
       var list = document.getElementById('cartList');
       list.innerHTML = '';
       items.forEach(function(item) {
         var div = document.createElement('div');
         div.className = 'cart-item';
         var nameLabel = item.playerName ? item.playerName.toUpperCase() : 'Sem nome';
-        var detailParts = [];
-        if (item.country) detailParts.push(item.country.charAt(0).toUpperCase() + item.country.slice(1));
-        if (item.playerBirth) detailParts.push(item.playerBirth);
-        if (item.playerHeight) detailParts.push(item.playerHeight + 'm');
-
+        var details = [];
+        if (item.country) details.push(item.country.charAt(0).toUpperCase() + item.country.slice(1));
+        if (item.playerBirth) details.push(item.playerBirth);
+        if (item.playerHeight) details.push(item.playerHeight + 'm');
         div.innerHTML =
           '<img class="item-thumb" src="' + (item.thumbnail || '') + '" alt="figurinha" />' +
           '<div class="item-info">' +
             '<div class="item-product">' + (item.productLabel || item.productType) + '</div>' +
             '<div class="item-name">' + nameLabel + '</div>' +
-            '<div class="item-details">' + detailParts.join(' · ') + '</div>' +
+            '<div class="item-details">' + details.join(' · ') + '</div>' +
           '</div>' +
           '<div class="item-price">' + formatPrice(item.price) + '</div>' +
           '<button class="item-remove" onclick="removeItem(\'' + item.id + '\')" title="Remover">✕</button>';
         list.appendChild(div);
       });
 
-      // Summary
+      // Resumo
       var total = items.reduce(function(s, i) { return s + i.price; }, 0);
       var sumEl = document.getElementById('cartSummary');
       var rows  = items.map(function(i) {
         return '<div class="summary-row"><span>' + (i.playerName || 'Figurinha') + ' · ' + (i.productLabel || i.productType) + '</span><span>' + formatPrice(i.price) + '</span></div>';
       }).join('');
-      sumEl.innerHTML = rows +
-        '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
+      sumEl.innerHTML = rows + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
     }
 
     function removeItem(id) {
-      var cart  = getCart();
+      var cart = getCart();
       cart.items = cart.items.filter(function(i) { return i.id !== id; });
       saveCart(cart);
       renderCart();
     }
 
-    // ── CHECKOUT ─────────────────────────────────────────────────────────────
-
+    // ── AUTH ───────────────────────────────────────────────────────────────────
     function getSupabaseToken() {
       try {
         for (var i = 0; i < localStorage.length; i++) {
@@ -330,71 +369,51 @@
       return null;
     }
 
-    async function startCheckout() {
-      var cart  = getCart();
+    // ── PIX CHECKOUT ──────────────────────────────────────────────────────────
+    async function startPixCheckout() {
+      var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
-
       var token = getSupabaseToken();
-      if (!token) {
-        alert('Você precisa estar logado para comprar.');
-        window.location.href = '/login';
-        return;
-      }
+      if (!token) { alert('Você precisa estar logado para comprar.'); window.location.href = '/login'; return; }
 
-      var btn = document.getElementById('btnCheckout');
-      btn.disabled = true;
-      btn.textContent = 'Gerando PIX...';
-
+      var btn = document.getElementById('btnPayPix');
+      btn.disabled = true; btn.textContent = 'Gerando PIX...';
       try {
-        var res = await fetch('/api/orders', {
+        var res  = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ items: cart.items }),
         });
-
         var data = await res.json();
         if (!res.ok || !data.qr_code) throw new Error(data.error || 'Erro ao gerar PIX');
-
         openPixModal(data);
       } catch (err) {
         alert('Erro: ' + err.message);
       } finally {
-        btn.disabled = false;
-        btn.textContent = 'Pagar com PIX 🟢';
+        btn.disabled = false; btn.textContent = 'Pagar com PIX 🟢';
       }
     }
 
-    // ── PIX MODAL ────────────────────────────────────────────────────────────
-
-    var currentOrderId  = null;
-    var pixPollTimer    = null;
-    var pixExpireTimer  = null;
+    // ── PIX MODAL ─────────────────────────────────────────────────────────────
+    var currentOrderId = null, pixPollTimer = null, pixExpireTimer = null;
 
     function openPixModal(data) {
       currentOrderId = data.order_id;
-
       var total = getCart().items.reduce(function(s,i){return s+i.price;},0);
       document.getElementById('pixAmount').textContent = formatPrice(total);
-
       var qrImg = document.getElementById('pixQrImg');
-      if (data.qr_code_base64) {
-        qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
-      } else {
-        qrImg.src = ''; qrImg.alt = 'Copie o código abaixo';
-      }
+      if (data.qr_code_base64) { qrImg.src = 'data:image/png;base64,' + data.qr_code_base64; }
+      else { qrImg.src = ''; qrImg.alt = 'Copie o código abaixo'; }
       document.getElementById('pixCodeText').textContent = data.qr_code;
-
       if (data.expires_at) {
         var expMs = new Date(data.expires_at).getTime();
         pixExpireTimer = setInterval(function() {
           var rem = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
           var m = Math.floor(rem / 60), s = rem % 60;
-          document.getElementById('pixTimer').textContent =
-            rem > 0 ? '⏱ Expira em ' + m + ':' + String(s).padStart(2,'0') : 'PIX expirado.';
+          document.getElementById('pixTimer').textContent = rem > 0 ? '⏱ Expira em ' + m + ':' + String(s).padStart(2,'0') : 'PIX expirado.';
           if (rem === 0) { clearInterval(pixExpireTimer); stopPolling(); }
         }, 1000);
       }
-
       document.getElementById('pixOverlay').classList.add('open');
       startPolling();
     }
@@ -406,36 +425,32 @@
       currentOrderId = null;
     }
 
-    function startPolling() {
-      if (pixPollTimer) return;
-      pixPollTimer = setInterval(checkOrderStatus, 3000);
-    }
-    function stopPolling() {
-      if (pixPollTimer) { clearInterval(pixPollTimer); pixPollTimer = null; }
-    }
+    function startPolling() { if (pixPollTimer) return; pixPollTimer = setInterval(checkOrderStatus, 3000); }
+    function stopPolling()  { if (pixPollTimer) { clearInterval(pixPollTimer); pixPollTimer = null; } }
 
     async function checkOrderStatus() {
       if (!currentOrderId) return;
       try {
         var res  = await fetch('/api/orders/status?order_id=' + encodeURIComponent(currentOrderId));
         var data = await res.json();
-        if (data.status === 'paid' || data.status === 'approved') {
+        if (data.status === 'paid' || data.status === 'approved') { stopPolling(); onPaymentApproved(); }
+        else if (data.status === 'cancelled' || data.status === 'expired') {
           stopPolling();
-          onOrderApproved();
-        } else if (data.status === 'cancelled' || data.status === 'expired') {
-          stopPolling();
-          document.getElementById('pixStatusText').textContent = 'Pedido ' + data.status + '. Tente novamente.';
+          document.getElementById('pixStatusText').textContent = 'Pedido expirado. Tente novamente.';
         }
       } catch(_) {}
     }
 
-    function onOrderApproved() {
+    function onPaymentApproved() {
+      // PIX
       var statusEl = document.getElementById('pixStatus');
-      statusEl.classList.add('approved');
-      document.getElementById('pixStatusText').textContent = 'Pagamento aprovado!';
-      document.getElementById('pixSuccessMsg').style.display = 'block';
-      document.querySelector('.pix-code-wrap').style.display = 'none';
-
+      if (statusEl) { statusEl.classList.add('approved'); }
+      var stText = document.getElementById('pixStatusText');
+      if (stText) stText.textContent = 'Pagamento aprovado!';
+      var succMsg = document.getElementById('pixSuccessMsg');
+      if (succMsg) succMsg.style.display = 'block';
+      var codeWrap = document.querySelector('.pix-code-wrap');
+      if (codeWrap) codeWrap.style.display = 'none';
       setTimeout(function() {
         closePixModal();
         downloadAllItems();
@@ -446,13 +461,12 @@
 
     function downloadAllItems() {
       var items = getCart().items;
-      // Para imagens digitais, abre os URLs de hires em novas abas para download
       items.forEach(function(item, idx) {
         if (item.hiresUrl) {
           setTimeout(function() {
             var a = document.createElement('a');
             a.href = item.hiresUrl;
-            a.download = 'figurinha-' + (item.playerName || idx+1) + '.png';
+            a.download = 'figurinha-' + (item.playerName || (idx + 1)) + '.png';
             a.target = '_blank';
             a.click();
           }, idx * 600);
@@ -465,9 +479,142 @@
       navigator.clipboard.writeText(code).then(function() {
         var btn = document.getElementById('pixCopyBtn');
         btn.textContent = 'Copiado!'; btn.classList.add('copied');
-        setTimeout(function(){ btn.textContent='Copiar'; btn.classList.remove('copied'); }, 2000);
+        setTimeout(function(){ btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
       });
     }
+
+    // ── CARTÃO (MP.js CardForm) ────────────────────────────────────────────────
+    var mpInstance = null;
+    var cardFormInstance = null;
+
+    function initCardForm() {
+      var pubKey = document.querySelector('meta[name="mp-public-key"]');
+      var key = pubKey ? pubKey.content : '';
+      if (!key || key === 'undefined') {
+        console.warn('MP Public Key não encontrada');
+        return;
+      }
+
+      mpInstance = new MercadoPago(key, { locale: 'pt-BR' });
+
+      var cart  = getCart();
+      var total = cart.items.reduce(function(s,i){return s+i.price;},0);
+      var totalReais = (total / 100).toFixed(2);
+
+      cardFormInstance = mpInstance.cardForm({
+        amount: totalReais,
+        iframe: true,
+        form: {
+          id: 'form-checkout',
+          cardNumber:           { id: 'form-checkout__cardNumber',           placeholder: '0000 0000 0000 0000' },
+          expirationDate:       { id: 'form-checkout__expirationDate',       placeholder: 'MM/AA' },
+          securityCode:         { id: 'form-checkout__securityCode',         placeholder: 'CVV' },
+          cardholderName:       { id: 'form-checkout__cardholderName' },
+          issuer:               { id: 'form-checkout__issuer' },
+          installments:         { id: 'form-checkout__installments' },
+          identificationType:   { id: 'form-checkout__identificationType' },
+          identificationNumber: { id: 'form-checkout__identificationNumber' },
+          cardholderEmail:      { id: 'form-checkout__cardholderEmail' },
+        },
+        callbacks: {
+          onFormMounted: function(err) { if (err) console.warn('CardForm mount error:', err); },
+          onSubmit: function(event) {
+            event.preventDefault();
+            processCardPayment();
+          },
+          onFetchingResource: function() {},
+        },
+      });
+    }
+
+    async function submitCard(event) {
+      event.preventDefault();
+      // O onSubmit do cardForm cuida disso
+    }
+
+    async function processCardPayment() {
+      var cart = getCart();
+      if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
+      var token = getSupabaseToken();
+      if (!token) { alert('Você precisa estar logado.'); window.location.href = '/login'; return; }
+
+      var btn = document.getElementById('btnPayCard');
+      var errEl = document.getElementById('cardError');
+      btn.disabled = true; btn.textContent = 'Processando...';
+      errEl.style.display = 'none';
+
+      try {
+        var formData = cardFormInstance.getCardFormData();
+
+        var res = await fetch('/api/checkout/card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            token:               formData.token,
+            issuer_id:           formData.issuerId,
+            payment_method_id:   formData.paymentMethodId,
+            transaction_amount:  parseFloat((cart.items.reduce(function(s,i){return s+i.price;},0) / 100).toFixed(2)),
+            installments:        parseInt(formData.installments, 10) || 1,
+            payer: {
+              email:              formData.cardholderEmail,
+              identification: {
+                type:   formData.identificationType,
+                number: formData.identificationNumber,
+              },
+            },
+            items: cart.items,
+          }),
+        });
+
+        var data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Erro no pagamento');
+
+        if (data.status === 'approved') {
+          document.getElementById('cardSuccess').style.display = 'block';
+          btn.style.display = 'none';
+          setTimeout(function() { downloadAllItems(); clearCart(); renderCart(); }, 2000);
+        } else if (data.status === 'in_process' || data.status === 'pending') {
+          errEl.textContent = 'Pagamento em análise. Você receberá uma confirmação por e-mail.';
+          errEl.style.display = 'block'; errEl.style.color = '#FFC300';
+        } else {
+          throw new Error('Pagamento ' + data.status + ': ' + (data.status_detail || ''));
+        }
+      } catch(err) {
+        errEl.textContent = '❌ ' + err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = '💳 Pagar com Cartão';
+      }
+    }
+
+    // Injeta a public key via meta tag (lida do servidor via window)
+    (function injectMPKey() {
+      // A chave pública fica exposta no frontend (é seguro — é a PUBLIC key)
+      var key = 'NEXT_PUBLIC_MP_PUBLIC_KEY_PLACEHOLDER';
+      var meta = document.createElement('meta');
+      meta.name = 'mp-public-key';
+      // A chave real vem de uma variável global injetada pelo Next.js
+      // Como este é um arquivo HTML estático, usamos um endpoint de config
+      fetch('/api/config/public').then(function(r){ return r.json(); }).then(function(d){
+        if (d.mpPublicKey) {
+          meta.content = d.mpPublicKey;
+          document.head.appendChild(meta);
+          // Inicializa o CardForm quando a aba de cartão for aberta pela primeira vez
+        }
+      }).catch(function(){});
+    })();
+
+    // Inicializa CardForm quando usuário clica na aba Cartão
+    var cardFormInitialized = false;
+    var origSwitchTab = switchTab;
+    switchTab = function(tab) {
+      origSwitchTab(tab);
+      if (tab === 'card' && !cardFormInitialized) {
+        cardFormInitialized = true;
+        setTimeout(initCardForm, 100);
+      }
+    };
 
     // Init
     renderCart();
