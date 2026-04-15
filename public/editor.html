@@ -85,7 +85,7 @@
 
     /* Moldura color indicator */
     .moldura-indicator {
-      display: flex;
+      display: none;
       gap: 8px;
       justify-content: center;
       margin-top: 12px;
@@ -164,31 +164,9 @@
       color: rgba(255,255,255,0.3);
     }
 
-    /* Moldura selector */
-    .moldura-options {
-      display: flex;
-      gap: 10px;
-    }
-    .moldura-option {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: 2px solid rgba(255,255,255,0.1);
-      cursor: pointer;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-    .moldura-option.active {
-      border-color: #F5C518;
-      background: rgba(245,197,24,0.1);
-    }
-    .moldura-option:hover {
-      border-color: rgba(255,255,255,0.3);
-    }
-    /* Moldura option colors set dynamically via JS */
+    /* Moldura selector — hidden (navegação só pelas setas) */
+    .moldura-options { display: none; }
+    .moldura-option  { display: none; }
 
     /* Seletor de produto */
     .product-selector { margin-bottom: 12px; }
@@ -724,40 +702,7 @@
       ctx.shadowOffsetY = 0;
     }
 
-    // ── MOLDURA CONTROLS ──
-    // ── BUILD MOLDURA UI DYNAMICALLY ──
-    var dotsContainer = document.getElementById('molduraDots');
-    var btnsContainer = document.getElementById('molduraButtons');
-    // Colors per country — index matches moldura 01, 02, 03, 04
-    var COUNTRY_COLORS = {
-      brasil:    ['#ffffff', '#1B8C3D', '#1E3A8A', '#F5C518'],
-      argentina: ['#ffffff', '#74ACDF', '#1A3A6E', '#F6C517'],
-      colombia:  ['#ffffff', '#FCD116', '#003087', '#CE1126'],
-      uruguai:   ['#ffffff', '#5B9FFF', '#003DA5', '#FFFFFF'],
-      franca:    ['#ffffff', '#002395', '#ED2939', '#FFFFFF'],
-      alemanha:  ['#ffffff'],
-      portugal:  ['#ffffff'],
-      espanha:   ['#ffffff'],
-    };
-    var molduraColors = COUNTRY_COLORS[paramCountry] || ['#ffffff', '#888', '#555', '#333'];
-
-    MOLDURAS.forEach(function(m, idx) {
-      // Dot
-      var dot = document.createElement('div');
-      dot.className = 'moldura-dot' + (idx === 0 ? ' active' : '');
-      dot.style.background = molduraColors[idx] || '#888';
-      dot.dataset.color = m;
-      dot.onclick = function() { setMoldura(m); };
-      dotsContainer.appendChild(dot);
-
-      // Button
-      var btn = document.createElement('div');
-      btn.className = 'moldura-option' + (idx === 0 ? ' active' : '');
-      btn.dataset.m = m;
-      btn.textContent = 'Moldura ' + (idx + 1);
-      btn.onclick = function() { setMoldura(m); };
-      btnsContainer.appendChild(btn);
-    });
+    // ── MOLDURA CONTROLS — navegação só pelas setas ← → ──
 
     function setMoldura(name) {
       currentMolduraIndex = MOLDURAS.indexOf(name);
@@ -780,19 +725,7 @@
       renderCard();
     }
 
-    function updateMolduraUI() {
-      var current = MOLDURAS[currentMolduraIndex];
-
-      // Update dots
-      document.querySelectorAll('.moldura-dot').forEach(function(dot) {
-        dot.classList.toggle('active', dot.dataset.color === current);
-      });
-
-      // Update options
-      document.querySelectorAll('.moldura-option').forEach(function(opt) {
-        opt.classList.toggle('active', opt.dataset.m === current);
-      });
-    }
+    function updateMolduraUI() { /* setas controlam, sem UI de dots/botões */ }
 
     // ── CARRINHO ─────────────────────────────────────────────────────────────
 
