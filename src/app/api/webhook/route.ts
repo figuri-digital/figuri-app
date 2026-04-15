@@ -40,6 +40,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Mercado Pago envia { action, api_version, data: { id }, type }
+    // Aceita: payment (API de Payments) ou order (API de Orders)
+    if (body.type === 'order') {
+      return handleOrderWebhook(body);
+    }
     if (body.type !== 'payment') {
       return NextResponse.json({ ok: true }); // ignora outros eventos
     }
@@ -92,7 +96,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, payment_id: paymentId });
   } catch (error: unknown) {
     console.error('Webhook MP error:', error);
-    // Retorna 200 para evitar que o MP fique reenviando
+    return NextResponse.json({ ok: true, error: 'internal' });
+  }
+}
+
+// ── Handler para API de Orders ────────────────────────────────────────────────
+async function handleOrderWebhook(body: { data?: { id?: string } }) {
+  const orderId = String(body.data?.id ?? '');
+  if (!orderId) return NextResponse.json({ ok: true });
+
+  try {
+    const res = await fetch(`https://api.mercadopago.com/v1/orders/${encodeURIComponent(orderId)}`, {
+      headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+    });
+    const order = await res.json();
+
+    console.log(`Webhook Order ${orderId} status=${order.status}`);
+
+    if (order.status !== 'processed') {
+      return NextResponse.json({ ok: true, status: order.status });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    await supabase
+      .from('orders')
+      .update({ status: 'paid', paid_at: new Date().toISOString() })
+      .eq('payment_id', orderId)
+      .eq('status', 'pending');
+
+    return NextResponse.json({ ok: true, order_id: orderId });
+  } catch (err) {
+    console.error('Order webhook error:', err);
     return NextResponse.json({ ok: true, error: 'internal' });
   }
 }

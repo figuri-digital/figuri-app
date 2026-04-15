@@ -190,25 +190,66 @@
     }
     /* Moldura option colors set dynamically via JS */
 
+    /* Seletor de produto */
+    .product-selector { margin-bottom: 12px; }
+    .product-selector label { font-size: 0.78rem; color: #999; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .product-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .product-opt {
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+      background: rgba(255,255,255,0.03);
+    }
+    .product-opt:hover { border-color: #94DD2D; background: rgba(148,221,45,0.07); }
+    .product-opt.selected { border-color: #94DD2D; background: rgba(148,221,45,0.13); }
+    .product-opt .opt-name { font-size: 0.78rem; font-weight: 600; color: #eee; }
+    .product-opt .opt-price { font-size: 0.9rem; font-weight: 800; color: #94DD2D; margin-top: 2px; }
+
     .btn-comprar {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, #1B8C3D, #15692E);
+      background: linear-gradient(135deg, #94DD2D, #6ab520);
       border: none;
       border-radius: 10px;
-      color: #fff;
+      color: #1a2b01;
       font-family: 'Sora', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-comprar:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(27,140,61,0.4);
+    .btn-comprar:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(148,221,45,0.4); }
+    .btn-comprar:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+    /* Botão flutuante carrinho */
+    .cart-fab {
+      position: fixed; bottom: 24px; right: 24px; z-index: 500;
+      background: #94DD2D;
+      color: #1a2b01;
+      border: none; border-radius: 50px;
+      padding: 14px 22px;
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
     }
+    .cart-fab:hover { background: #a8f033; transform: translateY(-2px); }
+    .cart-fab .cart-count {
+      background: #1a2b01;
+      color: #94DD2D;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800;
+    }
+    .cart-fab.hidden { display: none; }
 
     .btn-download {
       width: 100%;
@@ -425,11 +466,39 @@
         </div>
       </div>
 
+      <!-- Seletor de produto -->
+      <div class="product-selector">
+        <label>Escolha o produto</label>
+        <div class="product-options" id="productOptions">
+          <div class="product-opt selected" data-type="digital" data-price="1990" onclick="selectProduct(this)">
+            <div class="opt-name">📱 Digital</div>
+            <div class="opt-price">R$19,90</div>
+          </div>
+          <div class="product-opt" data-type="fisica" data-price="2490" onclick="selectProduct(this)">
+            <div class="opt-name">📦 Física</div>
+            <div class="opt-price">R$24,90</div>
+          </div>
+          <div class="product-opt" data-type="moldura" data-price="4990" onclick="selectProduct(this)">
+            <div class="opt-name">🖼 Com Moldura</div>
+            <div class="opt-price">R$49,90</div>
+          </div>
+          <div class="product-opt" data-type="pack" data-price="6990" onclick="selectProduct(this)">
+            <div class="opt-name">🎴 Pack</div>
+            <div class="opt-price">R$69,90</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Actions -->
-      <button class="btn-comprar" onclick="handleBuy()">Comprar por R$19,90</button>
+      <button class="btn-comprar" id="btnAddCart" onclick="addToCart()">🛒 Adicionar ao Carrinho</button>
       <button class="btn-download" onclick="downloadPreview()">Baixar Preview (com marca d'agua)</button>
     </div>
   </div>
+
+  <!-- Botão flutuante carrinho -->
+  <button class="cart-fab hidden" id="cartFab" onclick="goToCart()">
+    🛒 Ver Carrinho <span class="cart-count" id="cartFabCount">0</span>
+  </button>
 
   <script>
     // ── BACK TO CHOOSE ──
@@ -684,169 +753,90 @@
       });
     }
 
-    // ── PIX PAYMENT ──────────────────────────────────────────────────────────
+    // ── CARRINHO ─────────────────────────────────────────────────────────────
 
-    var pixPaymentId   = null;
-    var pixPollTimer   = null;
-    var pixExpireTimer = null;
+    var CART_KEY = 'figuri_cart';
 
-    async function handleBuy() {
-      // Pega token de sessão do Supabase (localStorage)
-      var token = getSupabaseToken();
-      if (!token) {
-        alert('Você precisa estar logado para comprar. Por favor, entre na sua conta.');
-        window.location.href = '/login';
-        return;
-      }
+    var PRODUCTS_MAP = {
+      digital: { label: 'Figurinha Digital',             price: 1990 },
+      fisica:  { label: 'Figurinha Física',              price: 2490 },
+      moldura: { label: 'Figurinha com Moldura Premium', price: 4990 },
+      pack:    { label: 'Pack de Figurinhas',             price: 6990 },
+    };
 
-      var buyBtn = document.querySelector('.btn-comprar');
-      if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'Gerando PIX...'; }
+    var selectedProductType = 'digital';
 
-      try {
-        var res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({
-            imageId:        paramImageId,
-            variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
-            productType:    'digital',
-          }),
-        });
-
-        var data = await res.json();
-
-        if (!res.ok || !data.qr_code) {
-          throw new Error(data.error || 'Erro ao gerar PIX');
-        }
-
-        openPixModal(data);
-      } catch (err) {
-        alert('Erro: ' + err.message);
-      } finally {
-        if (buyBtn) { buyBtn.disabled = false; buyBtn.textContent = 'Comprar por R$19,90'; }
-      }
+    function selectProduct(el) {
+      document.querySelectorAll('.product-opt').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      selectedProductType = el.dataset.type;
     }
 
-    function getSupabaseToken() {
-      // Tenta chaves comuns do Supabase no localStorage
-      try {
-        for (var i = 0; i < localStorage.length; i++) {
-          var key = localStorage.key(i);
-          if (key && key.includes('supabase') && key.includes('auth')) {
-            var val = JSON.parse(localStorage.getItem(key) || '{}');
-            if (val.access_token) return val.access_token;
-            if (val.session && val.session.access_token) return val.session.access_token;
-          }
-        }
-      } catch(_) {}
-      return null;
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem(CART_KEY) || '{"items":[]}'); } catch(_) { return { items: [] }; }
     }
 
-    function openPixModal(data) {
-      pixPaymentId = data.payment_id;
+    function saveCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      updateCartFab();
+    }
 
-      // Valor formatado
-      var reais = (data.amount / 100).toFixed(2).replace('.', ',');
-      document.getElementById('pixAmount').textContent = 'R$ ' + reais;
-
-      // QR Code
-      var qrImg = document.getElementById('pixQrImg');
-      if (data.qr_code_base64) {
-        qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
+    function updateCartFab() {
+      var cart = getCart();
+      var fab = document.getElementById('cartFab');
+      var countEl = document.getElementById('cartFabCount');
+      var n = cart.items.length;
+      if (n > 0) {
+        fab.classList.remove('hidden');
+        countEl.textContent = n;
       } else {
-        qrImg.src = '';
-        qrImg.alt = 'Copie o código abaixo';
+        fab.classList.add('hidden');
       }
-
-      // Código copia-e-cola
-      document.getElementById('pixCodeText').textContent = data.qr_code;
-
-      // Timer de expiração
-      if (data.expires_at) {
-        var expMs = new Date(data.expires_at).getTime();
-        pixExpireTimer = setInterval(function() {
-          var remaining = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
-          var min = Math.floor(remaining / 60);
-          var sec = remaining % 60;
-          document.getElementById('pixTimer').textContent =
-            remaining > 0
-              ? '⏱ Expira em ' + min + ':' + String(sec).padStart(2, '0')
-              : 'PIX expirado. Feche e tente novamente.';
-          if (remaining === 0) { clearInterval(pixExpireTimer); stopPixPolling(); }
-        }, 1000);
-      }
-
-      // Mostrar modal
-      document.getElementById('pixOverlay').classList.add('open');
-
-      // Iniciar polling
-      startPixPolling();
     }
 
-    function closePixModal() {
-      document.getElementById('pixOverlay').classList.remove('open');
-      stopPixPolling();
-      if (pixExpireTimer) { clearInterval(pixExpireTimer); pixExpireTimer = null; }
-      pixPaymentId = null;
-    }
+    function addToCart() {
+      var product = PRODUCTS_MAP[selectedProductType];
+      var canvas  = document.getElementById('cardCanvas');
 
-    function startPixPolling() {
-      if (pixPollTimer) return;
-      pixPollTimer = setInterval(checkPixStatus, 3000);
-    }
+      // Captura o canvas atual como thumbnail
+      var thumbnail = canvas.toDataURL('image/jpeg', 0.6);
 
-    function stopPixPolling() {
-      if (pixPollTimer) { clearInterval(pixPollTimer); pixPollTimer = null; }
-    }
-
-    async function checkPixStatus() {
-      if (!pixPaymentId) return;
-      try {
-        var res = await fetch('/api/checkout/status?payment_id=' + encodeURIComponent(pixPaymentId));
-        var data = await res.json();
-
-        if (data.status === 'approved') {
-          stopPixPolling();
-          onPixApproved(data);
-        } else if (data.status === 'rejected' || data.status === 'cancelled') {
-          stopPixPolling();
-          document.getElementById('pixStatusText').textContent = 'Pagamento ' + data.status + '. Tente novamente.';
-        }
-      } catch(_) {/* ignora erro de rede, tenta de novo no próximo tick */}
-    }
-
-    function onPixApproved(data) {
-      var statusEl = document.getElementById('pixStatus');
-      statusEl.classList.add('approved');
-      document.getElementById('pixStatusText').textContent = 'Pagamento aprovado!';
-      document.getElementById('pixSuccessMsg').style.display = 'block';
-      document.querySelector('.pix-code-wrap').style.display = 'none';
-
-      // Aguarda 2s e libera o download da imagem em alta resolução
-      setTimeout(function() {
-        closePixModal();
-        downloadFinal();
-      }, 2000);
-    }
-
-    function copyPixCode() {
-      var code = document.getElementById('pixCodeText').textContent;
-      navigator.clipboard.writeText(code).then(function() {
-        var btn = document.getElementById('pixCopyBtn');
-        btn.textContent = 'Copiado!';
-        btn.classList.add('copied');
-        setTimeout(function() { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+      var cart = getCart();
+      cart.items.push({
+        id:             Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+        imageId:        paramImageId,
+        variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
+        imageUrl:       paramImageUrl,
+        hiresUrl:       paramHiresUrl,
+        thumbnail:      thumbnail,
+        productType:    selectedProductType,
+        productLabel:   product.label,
+        price:          product.price,
+        country:        paramCountry,
+        type:           paramType,
+        playerName:     document.getElementById('playerName').value,
+        playerBirth:    document.getElementById('playerBirth').value,
+        playerHeight:   document.getElementById('playerHeight').value,
+        moldura:        MOLDURAS[currentMolduraIndex],
       });
+      saveCart(cart);
+
+      // Feedback visual
+      var btn = document.getElementById('btnAddCart');
+      btn.textContent = '✅ Adicionado!';
+      btn.style.background = 'linear-gradient(135deg,#FFC300,#e6b000)';
+      setTimeout(function() {
+        btn.textContent = '🛒 Adicionar ao Carrinho';
+        btn.style.background = '';
+      }, 1800);
     }
 
-    function downloadFinal() {
-      // Baixa o canvas sem marca d'água (versão final paga)
-      var canvas = document.getElementById('cardCanvas');
-      var link = document.createElement('a');
-      link.download = 'figurinha-figuri.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+    function goToCart() {
+      window.location.href = '/carrinho.html';
     }
+
+    // Inicializa FAB ao carregar
+    updateCartFab();
 
     function downloadPreview() {
       var canvas = document.getElementById('cardCanvas');
