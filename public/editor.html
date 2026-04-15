@@ -798,8 +798,9 @@
       var product = PRODUCTS_MAP[selectedProductType];
       var canvas  = document.getElementById('cardCanvas');
 
-      // Captura o canvas atual como thumbnail
-      var thumbnail = canvas.toDataURL('image/jpeg', 0.6);
+      // Captura o canvas como thumbnail (pode falhar se canvas tiver imagens cross-origin)
+      var thumbnail = '';
+      try { thumbnail = canvas.toDataURL('image/jpeg', 0.6); } catch(_) { thumbnail = paramImageUrl || ''; }
 
       var cart = getCart();
       cart.items.push({
