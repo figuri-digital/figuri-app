@@ -226,28 +226,61 @@
     .btn-comprar:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(148,221,45,0.4); }
     .btn-comprar:disabled { opacity: 0.6; cursor: default; transform: none; }
 
+    /* Navbar */
+    .editor-navbar {
+      position: sticky; top: 0; z-index: 300;
+      background: rgba(15,26,3,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(148,221,45,0.14);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; height: 58px;
+      width: 100%;
+    }
+    .editor-navbar .nav-back {
+      background: none; border: 1px solid rgba(255,255,255,0.18);
+      color: #ccc; padding: 7px 14px; border-radius: 8px;
+      cursor: pointer; font-family: 'Sora', sans-serif; font-size: 13px;
+      transition: all .18s; white-space: nowrap;
+    }
+    .editor-navbar .nav-back:hover { border-color: #94DD2D; color: #94DD2D; }
+    .editor-navbar .nav-title {
+      font-size: 1rem; font-weight: 800; color: #94DD2D;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .cart-nav-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(148,221,45,0.1);
+      border: 1.5px solid rgba(148,221,45,0.35);
+      color: #edfbd9; border-radius: 10px;
+      padding: 7px 14px; cursor: pointer;
+      font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700;
+      transition: all .18s; text-decoration: none;
+    }
+    .cart-nav-btn:hover { background: rgba(148,221,45,0.2); border-color: #94DD2D; }
+    .cart-nav-btn.hidden { display: none; }
+    .cart-nav-badge {
+      background: #94DD2D; color: #1a2b01;
+      border-radius: 50%; width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; flex-shrink: 0;
+    }
+    .cart-nav-total { color: #FFC300; font-weight: 800; }
+
     /* Botão flutuante carrinho */
     .cart-fab {
       position: fixed; bottom: 24px; right: 24px; z-index: 500;
-      background: #94DD2D;
-      color: #1a2b01;
+      background: #94DD2D; color: #1a2b01;
       border: none; border-radius: 50px;
-      padding: 14px 22px;
-      font-family: 'Sora', sans-serif;
-      font-size: 15px; font-weight: 800;
-      cursor: pointer;
+      padding: 14px 22px; font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 800; cursor: pointer;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      display: flex; align-items: center; gap: 8px;
-      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
     }
     .cart-fab:hover { background: #a8f033; transform: translateY(-2px); }
     .cart-fab .cart-count {
-      background: #1a2b01;
-      color: #94DD2D;
-      border-radius: 50%;
-      width: 22px; height: 22px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 800;
+      background: #1a2b01; color: #94DD2D; border-radius: 50%;
+      width: 22px; height: 22px; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 800;
     }
     .cart-fab.hidden { display: none; }
 
@@ -428,9 +461,16 @@
       </div>
     </div>
   </div>
-  <button onclick="goBackToChoose()" style="align-self:flex-start; background:none; border:1px solid #555; color:#ccc; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:'Sora',sans-serif; font-size:13px; margin-bottom:12px;">← Voltar e trocar opção</button>
-  <h1>EDITOR DE FIGURINHA</h1>
-  <p class="subtitle">Escolha a moldura e personalize os textos</p>
+  <!-- NAVBAR -->
+  <nav class="editor-navbar">
+    <button class="nav-back" onclick="goBackToChoose()">← Voltar</button>
+    <span class="nav-title">Editor de Figurinha</span>
+    <a class="cart-nav-btn hidden" id="cartNavBtn" href="/carrinho.html">
+      🛒 <span class="cart-nav-badge" id="cartNavCount">0</span>
+      <span class="cart-nav-total" id="cartNavTotal">R$0</span>
+      <span style="color:#aaa;font-weight:400">· Finalizar</span>
+    </a>
+  </nav>
 
   <div class="editor-container">
     <!-- Left: Card Preview with Arrows -->
@@ -781,63 +821,81 @@
       updateCartFab();
     }
 
-    function updateCartFab() {
-      var cart = getCart();
+    function updateCartUI() {
+      var cart  = getCart();
+      var items = cart.items || [];
+      var n     = items.length;
+      var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
+      var fmt   = 'R$' + (total / 100).toFixed(2).replace('.', ',');
+
+      // FAB
       var fab = document.getElementById('cartFab');
-      var countEl = document.getElementById('cartFabCount');
-      var n = cart.items.length;
+      var fabCount = document.getElementById('cartFabCount');
+      if (n > 0) { fab.classList.remove('hidden'); fabCount.textContent = n; }
+      else { fab.classList.add('hidden'); }
+
+      // Navbar
+      var navBtn   = document.getElementById('cartNavBtn');
+      var navCount = document.getElementById('cartNavCount');
+      var navTotal = document.getElementById('cartNavTotal');
       if (n > 0) {
-        fab.classList.remove('hidden');
-        countEl.textContent = n;
+        navBtn.classList.remove('hidden');
+        navCount.textContent = n;
+        navTotal.textContent = fmt;
       } else {
-        fab.classList.add('hidden');
+        navBtn.classList.add('hidden');
       }
     }
 
     function addToCart() {
-      var product = PRODUCTS_MAP[selectedProductType];
-      var canvas  = document.getElementById('cardCanvas');
+      try {
+        var product = PRODUCTS_MAP[selectedProductType];
+        if (!product) { alert('Selecione um produto antes de adicionar.'); return; }
 
-      // Captura o canvas como thumbnail (pode falhar se canvas tiver imagens cross-origin)
-      var thumbnail = '';
-      try { thumbnail = canvas.toDataURL('image/jpeg', 0.6); } catch(_) { thumbnail = paramImageUrl || ''; }
+        var canvas = document.getElementById('cardCanvas');
+        var thumbnail = '';
+        try { thumbnail = canvas.toDataURL('image/jpeg', 0.6); } catch(_) { thumbnail = paramImageUrl || ''; }
 
-      var cart = getCart();
-      cart.items.push({
-        id:             Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-        imageId:        paramImageId,
-        variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
-        imageUrl:       paramImageUrl,
-        hiresUrl:       paramHiresUrl,
-        thumbnail:      thumbnail,
-        productType:    selectedProductType,
-        productLabel:   product.label,
-        price:          product.price,
-        country:        paramCountry,
-        type:           paramType,
-        playerName:     document.getElementById('playerName').value,
-        playerBirth:    document.getElementById('playerBirth').value,
-        playerHeight:   document.getElementById('playerHeight').value,
-        moldura:        MOLDURAS[currentMolduraIndex],
-      });
-      saveCart(cart);
+        var cart = getCart();
+        cart.items.push({
+          id:             Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+          imageId:        paramImageId,
+          variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
+          imageUrl:       paramImageUrl,
+          hiresUrl:       paramHiresUrl,
+          thumbnail:      thumbnail,
+          productType:    selectedProductType,
+          productLabel:   product.label,
+          price:          product.price,
+          country:        paramCountry,
+          type:           paramType,
+          playerName:     document.getElementById('playerName').value,
+          playerBirth:    document.getElementById('playerBirth').value,
+          playerHeight:   document.getElementById('playerHeight').value,
+          moldura:        MOLDURAS[currentMolduraIndex],
+        });
+        saveCart(cart);
+        updateCartUI();
 
-      // Feedback visual
-      var btn = document.getElementById('btnAddCart');
-      btn.textContent = '✅ Adicionado!';
-      btn.style.background = 'linear-gradient(135deg,#FFC300,#e6b000)';
-      setTimeout(function() {
-        btn.textContent = '🛒 Adicionar ao Carrinho';
-        btn.style.background = '';
-      }, 1800);
+        // Feedback visual no botão
+        var btn = document.getElementById('btnAddCart');
+        btn.textContent = '✅ Adicionado!';
+        btn.style.background = 'linear-gradient(135deg,#FFC300,#e6b000)';
+        setTimeout(function() {
+          btn.textContent = '🛒 Adicionar ao Carrinho';
+          btn.style.background = '';
+        }, 1800);
+
+      } catch(err) {
+        console.error('addToCart error:', err);
+        alert('Erro ao adicionar: ' + err.message);
+      }
     }
 
-    function goToCart() {
-      window.location.href = '/carrinho.html';
-    }
+    function goToCart() { window.location.href = '/carrinho.html'; }
 
-    // Inicializa FAB ao carregar
-    updateCartFab();
+    // Inicializa UI do carrinho ao carregar
+    updateCartUI();
 
     function downloadPreview() {
       var canvas = document.getElementById('cardCanvas');

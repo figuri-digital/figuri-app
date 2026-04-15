@@ -690,7 +690,13 @@
   <a href="/index.html" class="navbar-logo">
     <img src="/logo.png" alt="Figuri" />
   </a>
-  <div class="navbar-badge" id="navbar-badge">Carregando...</div>
+  <div style="display:flex;align-items:center;gap:10px;position:absolute;right:5%;">
+    <a id="gerar-cart-btn" href="/carrinho.html" style="display:none;align-items:center;gap:7px;background:rgba(148,221,45,0.1);border:1.5px solid rgba(148,221,45,0.35);color:#edfbd9;border-radius:10px;padding:6px 13px;text-decoration:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;transition:all .18s;">
+      🛒 <span id="gerar-cart-count" style="background:#94DD2D;color:#1a2b01;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">0</span>
+      <span id="gerar-cart-total" style="color:#FFC300;font-weight:800;">R$0</span>
+    </a>
+    <div class="navbar-badge" id="navbar-badge">Carregando...</div>
+  </div>
 </nav>
 
 <!-- ── TOASTS ── -->
@@ -1428,6 +1434,23 @@
 
   /* ────────── START ────────── */
   init();
+
+  // ── Carrinho na navbar ──────────────────────────────────────────────────
+  (function updateGerarCartNav() {
+    try {
+      var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
+      var items = cart.items || [];
+      var n     = items.length;
+      if (n === 0) return;
+      var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
+      var btn   = document.getElementById('gerar-cart-btn');
+      var cnt   = document.getElementById('gerar-cart-count');
+      var ttl   = document.getElementById('gerar-cart-total');
+      if (btn) { btn.style.display = 'flex'; }
+      if (cnt) cnt.textContent = n;
+      if (ttl) ttl.textContent = 'R$' + (total / 100).toFixed(2).replace('.', ',');
+    } catch(_) {}
+  })();
 })();
 </script>
 </body>
