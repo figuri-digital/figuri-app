@@ -7,15 +7,23 @@
   <link rel="icon" type="image/svg+xml" href="/fav.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <style>
+    /* ─── TOKENS ─────────────────────────────── */
     :root {
       --verde-escuro:    #1A2B01;
       --verde-principal: #396100;
       --verde-claro:     #EDFBD9;
       --amarelo:         #FFC300;
       --btn-cta:         #94DD2D;
+      --btn-cta-hover:   #a8f030;
+      --surface:         rgba(255,255,255,0.04);
+      --border:          rgba(148,221,45,0.18);
+      --border-faint:    rgba(255,255,255,0.07);
+      --text-dim:        rgba(255,255,255,0.45);
+      --text-bright:     #ffffff;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,9 +31,8 @@
 
     body {
       font-family: 'Montserrat', sans-serif;
-      background: url('/assets/P1.png') center top / cover no-repeat fixed;
-      background-color: #1a3800;
-      color: #fff;
+      background: #111f02;
+      color: var(--text-bright);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -38,91 +45,216 @@
     .navbar {
       position: sticky;
       top: 0;
-      z-index: 200;
-      background: rgba(26,43,1,0.97);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(148,221,45,0.14);
+      z-index: 300;
+      background: rgba(17,31,2,0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-faint);
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 0 5%;
-      height: 62px;
+      padding: 0 20px;
+      height: 58px;
+      gap: 12px;
+    }
+
+    .navbar-logo { display: flex; align-items: center; text-decoration: none; margin-right: auto; }
+    .navbar-logo img { height: 40px; width: auto; display: block; }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       flex-shrink: 0;
     }
-    .navbar-logo { display: flex; align-items: center; text-decoration: none; }
-    .navbar-logo img { height: 44px; width: auto; display: block; }
-    .navbar-badge {
-      position: absolute;
-      right: 5%;
-    }
-    .navbar-badge {
+
+    .nav-badge {
       background: rgba(148,221,45,0.10);
-      border: 1px solid rgba(148,221,45,0.28);
+      border: 1px solid rgba(148,221,45,0.25);
       border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 12px;
+      padding: 5px 13px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--btn-cta);
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
       white-space: nowrap;
     }
 
+    .nav-cart-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(148,221,45,0.08);
+      border: 1.5px solid rgba(148,221,45,0.30);
+      color: #edfbd9;
+      border-radius: 10px;
+      padding: 6px 12px;
+      text-decoration: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+    .nav-cart-btn:hover { background: rgba(148,221,45,0.16); border-color: var(--btn-cta); }
+
+    .nav-cart-count {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border-radius: 50%;
+      width: 19px; height: 19px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .nav-cart-total { color: var(--amarelo); font-weight: 800; }
+
     /* ────────────────────────────────────────
-       MAIN
+       PAGE HEADER BANNER
+    ──────────────────────────────────────── */
+    .page-header {
+      background: linear-gradient(135deg, #1a3800 0%, #0f2200 60%, #1a2b01 100%);
+      border-bottom: 1px solid rgba(148,221,45,0.12);
+      padding: 28px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(148,221,45,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .page-header-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(148,221,45,0.10);
+      border: 1px solid rgba(148,221,45,0.22);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--btn-cta);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .page-header-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(30px, 7vw, 46px);
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .page-header-title span { color: var(--btn-cta); }
+
+    .page-header-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 0;
+    }
+
+    /* ────────────────────────────────────────
+       MAIN LAYOUT
     ──────────────────────────────────────── */
     .main {
       flex: 1;
       display: flex;
-      align-items: flex-start;
       justify-content: center;
-      padding: 36px 16px 72px;
+      padding: 28px 16px 72px;
     }
 
-    /* ────────────────────────────────────────
-       CARD
-    ──────────────────────────────────────── */
-    .card {
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(148,221,45,0.16);
-      border-radius: 22px;
+    .wizard-wrap {
       width: 100%;
-      max-width: 480px;
-      padding: 34px 30px;
+      max-width: 500px;
     }
 
     /* ────────────────────────────────────────
-       STEP INDICATOR
+       STEP PROGRESS
     ──────────────────────────────────────── */
-    .step-indicator {
+    .step-progress {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 26px;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 20px;
     }
-    .step-dot {
-      width: 9px; height: 9px;
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+    }
+
+    .step-circle {
+      width: 32px; height: 32px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-dim);
       transition: all 0.3s;
+      position: relative;
+      z-index: 1;
     }
-    .step-dot.active { background: var(--btn-cta); box-shadow: 0 0 7px var(--btn-cta); }
-    .step-dot.done   { background: var(--verde-principal); }
+    .step-circle.active {
+      border-color: var(--btn-cta);
+      background: rgba(148,221,45,0.15);
+      color: var(--btn-cta);
+      box-shadow: 0 0 14px rgba(148,221,45,0.25);
+    }
+    .step-circle.done {
+      border-color: var(--verde-principal);
+      background: var(--verde-principal);
+      color: #fff;
+    }
+    .step-circle.done::after { content: '✓'; font-size: 13px; }
+
+    .step-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .step-label.active { color: var(--btn-cta); }
+
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin: 0 6px;
+      align-self: flex-start;
+      margin-top: 15px;
+      min-width: 32px;
+      max-width: 64px;
+      transition: background 0.3s;
+    }
+    .step-line.done { background: var(--verde-principal); }
 
     /* ────────────────────────────────────────
-       TYPOGRAPHY
+       CARD (wizard container)
     ──────────────────────────────────────── */
-    .phase-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-      letter-spacing: 1.2px;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .phase-sub {
-      font-size: 13px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 26px;
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 26px;
+      backdrop-filter: blur(6px);
     }
 
     /* ────────────────────────────────────────
@@ -131,29 +263,48 @@
     .type-tabs {
       display: flex;
       gap: 6px;
-      background: rgba(0,0,0,0.28);
-      border-radius: 13px;
+      background: rgba(0,0,0,0.30);
+      border-radius: 14px;
       padding: 5px;
       margin-bottom: 22px;
     }
     .type-tab {
       flex: 1;
       text-align: center;
-      padding: 9px 4px;
-      border-radius: 9px;
-      font-size: 12px;
+      padding: 10px 4px;
+      border-radius: 10px;
+      font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 0.8px;
       cursor: pointer;
-      color: rgba(255,255,255,0.45);
+      color: var(--text-dim);
       transition: all 0.2s;
       user-select: none;
     }
     .type-tab.active {
       background: var(--btn-cta);
       color: var(--verde-escuro);
+      box-shadow: 0 2px 12px rgba(148,221,45,0.28);
     }
-    .type-tab:not(.active):hover { color: rgba(255,255,255,0.75); }
+    .type-tab:not(.active):hover { color: rgba(255,255,255,0.8); }
+
+    /* ────────────────────────────────────────
+       SECTION HEADER
+    ──────────────────────────────────────── */
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1.2px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .section-sub {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
 
     /* ────────────────────────────────────────
        UPLOAD AREAS
@@ -161,52 +312,71 @@
     .upload-row {
       display: flex;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
+
     .upload-box {
       flex: 1;
-      border: 2px dashed rgba(148,221,45,0.32);
-      border-radius: 14px;
-      min-height: 164px;
+      border: 2px dashed rgba(148,221,45,0.28);
+      border-radius: 16px;
+      min-height: 160px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      background: rgba(0,0,0,0.14);
-      transition: border-color 0.2s, background 0.2s;
+      background: rgba(0,0,0,0.18);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
     }
-    .upload-box:hover    { border-color: var(--btn-cta); background: rgba(148,221,45,0.05); }
-    .upload-box.dragover { border-color: var(--amarelo); background: rgba(255,195,0,0.07); }
+    .upload-box:hover {
+      border-color: var(--btn-cta);
+      background: rgba(148,221,45,0.05);
+      transform: translateY(-1px);
+    }
+    .upload-box.dragover {
+      border-color: var(--amarelo);
+      background: rgba(255,195,0,0.07);
+    }
     .upload-box input[type="file"] {
       position: absolute; inset: 0;
       opacity: 0; cursor: pointer; width: 100%; height: 100%;
     }
-    .upload-icon  { font-size: 34px; pointer-events: none; }
-    .upload-label {
-      font-size: 11px;
-      color: rgba(255,255,255,0.48);
-      text-align: center;
-      padding: 0 10px;
-      line-height: 1.55;
+
+    .upload-icon-wrap {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(148,221,45,0.10);
+      border: 1.5px solid rgba(148,221,45,0.22);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
       pointer-events: none;
     }
+    .upload-label {
+      font-size: 11.5px;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 0 14px;
+      line-height: 1.55;
+      pointer-events: none;
+      font-weight: 500;
+    }
     .upload-sublabel {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      color: rgba(255,255,255,0.28);
+      color: rgba(255,255,255,0.22);
+      letter-spacing: 0.06em;
       pointer-events: none;
     }
     .upload-person-tag {
       position: absolute;
       top: 8px; left: 8px;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.60);
       border-radius: 6px;
       padding: 2px 8px;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
       color: rgba(255,255,255,0.7);
       pointer-events: none;
@@ -216,17 +386,17 @@
       position: absolute; inset: 0;
       object-fit: cover;
       width: 100%; height: 100%;
-      border-radius: 12px;
+      border-radius: 14px;
     }
     .upload-change-btn {
       position: absolute; bottom: 8px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.72);
+      background: rgba(0,0,0,0.76);
       color: #fff;
       border: none;
       border-radius: 20px;
       padding: 5px 14px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
       cursor: pointer;
@@ -235,12 +405,12 @@
     }
     .upload-clear-btn {
       position: absolute; top: 8px; right: 8px;
-      width: 26px; height: 26px;
+      width: 24px; height: 24px;
       background: rgba(0,0,0,0.65);
       color: #fff;
       border: none;
       border-radius: 50%;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1;
       cursor: pointer;
       z-index: 4;
@@ -250,82 +420,111 @@
     .upload-clear-btn:hover { background: #c0392b; }
 
     /* ────────────────────────────────────────
-       INFO BARS
+       INFO STRIPS
     ──────────────────────────────────────── */
     .watermark-notice {
-      background: rgba(255,195,0,0.09);
-      border: 1px solid rgba(255,195,0,0.22);
+      background: rgba(255,195,0,0.08);
+      border: 1px solid rgba(255,195,0,0.20);
       border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 12px;
+      padding: 9px 14px;
+      font-size: 11.5px;
       font-weight: 600;
       color: var(--amarelo);
       text-align: center;
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
     }
+
     .credits-line {
       text-align: center;
-      font-size: 12px;
-      color: rgba(255,255,255,0.42);
-      margin-bottom: 22px;
+      font-size: 11.5px;
+      color: rgba(255,255,255,0.38);
+      margin-bottom: 20px;
+      font-weight: 500;
     }
     .credits-line span { color: var(--btn-cta); font-weight: 700; }
 
     /* ────────────────────────────────────────
        COUNTRY GRID
     ──────────────────────────────────────── */
-    /* Group tabs */
     .group-tabs-row {
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      gap: 6px;
       margin-bottom: 14px;
     }
     .group-tab-btn {
-      flex: 1; padding: 7px 4px;
+      flex: 1;
+      padding: 8px 4px;
       background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.10);
-      border-radius: 8px; cursor: pointer;
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: 9px;
+      cursor: pointer;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 14px; letter-spacing: 0.8px;
-      color: rgba(255,255,255,0.5);
-      transition: all 0.2s; text-align: center;
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.45);
+      transition: all 0.2s;
+      text-align: center;
     }
-    .group-tab-btn:hover { border-color: rgba(148,221,45,0.4); color: rgba(255,255,255,0.8); }
+    .group-tab-btn:hover { border-color: rgba(148,221,45,0.35); color: rgba(255,255,255,0.8); }
     .group-tab-btn.active {
       background: rgba(148,221,45,0.10);
       border-color: var(--btn-cta);
       color: var(--btn-cta);
     }
+
     .country-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       margin-bottom: 20px;
     }
+
     .country-card {
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.08);
       border-radius: 12px;
-      padding: 14px 4px;
+      padding: 12px 4px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
       user-select: none;
     }
-    .country-card:hover   { border-color: rgba(148,221,45,0.5); background: rgba(148,221,45,0.07); }
+    .country-card:hover {
+      border-color: rgba(148,221,45,0.45);
+      background: rgba(148,221,45,0.07);
+      transform: translateY(-2px);
+    }
     .country-card.selected {
       border-color: var(--btn-cta);
       background: rgba(148,221,45,0.12);
-      box-shadow: 0 0 14px rgba(148,221,45,0.22);
+      box-shadow: 0 0 16px rgba(148,221,45,0.20);
+      transform: translateY(-2px);
     }
+
     .country-flag {
-      width: 52px; height: 34px;
+      width: 48px; height: 32px;
       object-fit: cover;
       border-radius: 4px;
       display: block;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
+    .country-name {
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.42);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+    .country-card.selected .country-name { color: var(--btn-cta); }
 
     /* ────────────────────────────────────────
        BUTTONS
@@ -337,7 +536,7 @@
       color: var(--verde-escuro);
       font-family: 'Bebas Neue', sans-serif;
       font-size: 19px;
-      letter-spacing: 1.2px;
+      letter-spacing: 1.5px;
       border: none;
       border-radius: 13px;
       cursor: pointer;
@@ -348,21 +547,21 @@
       transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     }
     .btn-primary:hover:not(:disabled) {
-      background: #a8f030;
+      background: var(--btn-cta-hover);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(148,221,45,0.32);
+      box-shadow: 0 10px 28px rgba(148,221,45,0.30);
     }
     .btn-primary:active:not(:disabled) { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.33; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: 0.30; cursor: not-allowed; }
 
     .btn-link {
       display: block;
       text-align: center;
       background: none;
       border: none;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.38);
       font-family: 'Montserrat', sans-serif;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       padding: 12px 10px 4px;
@@ -373,78 +572,86 @@
     .btn-link:hover { color: #fff; }
 
     /* ────────────────────────────────────────
-       PHASE B – FULLSCREEN LOADING OVERLAY
+       LOADING OVERLAY (PHASE B)
     ──────────────────────────────────────── */
     .loading-overlay {
       position: fixed;
       inset: 0;
       z-index: 250;
+      background: #0b1a02;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding: 44px 16px 32px;
+      padding: 36px 16px 32px;
       overflow: hidden;
     }
     .loading-overlay.hidden { display: none !important; }
 
-    /* Logo topo */
-    .loading-top-logo {
-      margin-bottom: 22px;
-      position: relative;
-      z-index: 2;
-    }
+    .loading-top-logo { margin-bottom: 24px; position: relative; z-index: 2; }
     .loading-top-logo img {
-      height: 56px;
+      height: 52px;
       width: auto;
-      filter: brightness(10) saturate(0) drop-shadow(0 2px 10px rgba(0,0,0,0.6));
+      filter: brightness(10) saturate(0) drop-shadow(0 2px 10px rgba(0,0,0,0.5));
     }
 
-    /* Card interno */
+    /* Particles / lines bg */
+    .loading-overlay::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(148,221,45,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 80% 30% at 50% 100%, rgba(57,97,0,0.18) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
     .loading-inner-card {
-      background: rgba(10, 24, 3, 0.75);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 18px;
-      padding: 26px 26px 22px;
+      background: rgba(10, 24, 3, 0.80);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(148,221,45,0.14);
+      border-radius: 20px;
+      padding: 28px 26px 24px;
       width: 100%;
       max-width: 340px;
       text-align: center;
       position: relative;
       z-index: 2;
     }
+
     .loading-card-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 26px;
-      letter-spacing: 1px;
+      font-size: 28px;
+      letter-spacing: 1.2px;
       color: #fff;
       margin-bottom: 3px;
     }
     .loading-card-sub {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 500;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255,255,255,0.50);
       margin-bottom: 20px;
       min-height: 20px;
     }
 
-    /* Scanner box */
+    /* Scanner */
     .scanner-wrap {
-      width: 160px; height: 160px;
+      width: 156px; height: 156px;
       margin: 0 auto 14px;
       position: relative;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
       background: rgba(0,0,0,0.45);
-      border: 1.5px solid rgba(255,255,255,0.18);
+      border: 1.5px solid rgba(255,255,255,0.14);
     }
-    /* corner brackets */
     .scanner-wrap::before,
     .scanner-wrap::after {
       content: '';
       position: absolute;
       width: 20px; height: 20px;
-      border-color: rgba(255,255,255,0.85);
+      border-color: rgba(255,255,255,0.80);
       border-style: solid;
       z-index: 4;
     }
@@ -453,16 +660,16 @@
     .corner-tr {
       position: absolute; top: 7px; right: 7px;
       width: 20px; height: 20px;
-      border-top: 2.5px solid rgba(255,255,255,0.85);
-      border-right: 2.5px solid rgba(255,255,255,0.85);
+      border-top: 2.5px solid rgba(255,255,255,0.80);
+      border-right: 2.5px solid rgba(255,255,255,0.80);
       border-radius: 0 2px 0 0;
       z-index: 4;
     }
     .corner-bl {
       position: absolute; bottom: 7px; left: 7px;
       width: 20px; height: 20px;
-      border-bottom: 2.5px solid rgba(255,255,255,0.85);
-      border-left: 2.5px solid rgba(255,255,255,0.85);
+      border-bottom: 2.5px solid rgba(255,255,255,0.80);
+      border-left: 2.5px solid rgba(255,255,255,0.80);
       border-radius: 0 0 0 2px;
       z-index: 4;
     }
@@ -471,17 +678,13 @@
       display: flex; align-items: center; justify-content: center;
       z-index: 1;
     }
-    .scanner-logo img {
-      width: 60%;
-      opacity: 1;
-      filter: invert(1);
-    }
+    .scanner-logo img { width: 60%; opacity: 1; filter: invert(1); }
     .scan-line {
       position: absolute;
       left: 0; right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%);
-      box-shadow: 0 0 10px rgba(255,255,255,0.6);
+      background: linear-gradient(90deg, transparent 0%, rgba(148,221,45,0.9) 50%, transparent 100%);
+      box-shadow: 0 0 12px rgba(148,221,45,0.6);
       animation: scanMove 2s ease-in-out infinite;
       z-index: 3;
     }
@@ -491,51 +694,40 @@
       100% { top: 0; }
     }
 
-    /* "50% gerada" */
     .loading-pct-row {
       font-size: 13px;
       font-weight: 600;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.60);
       text-align: center;
       margin: 12px 0 8px;
     }
-    .loading-pct-row span { color: #fff; font-weight: 700; }
+    .loading-pct-row span { color: #fff; font-weight: 800; }
 
-    /* Progress bar */
     .progress-track {
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.10);
       border-radius: 20px;
       height: 5px;
       overflow: hidden;
-      margin-bottom: 0;
     }
     .progress-fill {
       height: 100%;
-      background: rgba(255,255,255,0.7);
+      background: linear-gradient(90deg, var(--verde-principal), var(--btn-cta));
       border-radius: 20px;
       transition: width 0.5s ease;
       width: 0%;
     }
 
-    /* Live counter */
     .live-counter {
       text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.55);
       font-weight: 500;
       margin-top: 16px;
     }
-    .live-hl {
-      color: var(--btn-cta);
-      font-weight: 700;
-    }
+    .live-hl { color: var(--btn-cta); font-weight: 700; }
 
-    /* ─── CLOUDS ─── */
-    .cloud {
-      position: absolute;
-      z-index: 1;
-      pointer-events: none;
-    }
+    /* Clouds */
+    .cloud { position: absolute; z-index: 1; pointer-events: none; }
     .cloud-1 { width: 300px; left: -80px;  bottom: 36%; opacity: 0.85; }
     .cloud-2 { width: 380px; left: -120px; bottom: 42%; opacity: 0.7;  }
     .cloud-3 { width: 270px; right: -60px; bottom: 38%; opacity: 0.82; }
@@ -545,24 +737,45 @@
     /* ────────────────────────────────────────
        PHASE C – RESULTS
     ──────────────────────────────────────── */
+    .results-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .results-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 27px;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .results-sub {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
     .results-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .variation-card {
-      border: 2px solid rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.10);
       border-radius: 14px;
       overflow: hidden;
       cursor: pointer;
       position: relative;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
     }
-    .variation-card:hover { border-color: rgba(148,221,45,0.5); }
+    .variation-card:hover {
+      border-color: rgba(148,221,45,0.45);
+      transform: translateY(-2px);
+    }
     .variation-card.selected {
       border-color: var(--amarelo);
-      box-shadow: 0 0 20px rgba(255,195,0,0.28);
+      box-shadow: 0 0 22px rgba(255,195,0,0.26);
+      transform: translateY(-2px);
     }
     .variation-card img { width: 100%; display: block; }
     .variation-label {
@@ -590,19 +803,19 @@
 
     .results-footer {
       text-align: center;
-      font-size: 12px;
-      color: rgba(255,255,255,0.38);
+      font-size: 11.5px;
+      color: rgba(255,255,255,0.32);
       margin-bottom: 18px;
     }
 
     /* ────────────────────────────────────────
        PHASE D – ERROR
     ──────────────────────────────────────── */
-    .error-icon { font-size: 54px; text-align: center; margin-bottom: 14px; }
+    .error-icon { font-size: 52px; text-align: center; margin-bottom: 14px; }
     .error-body {
       text-align: center;
       font-size: 14px;
-      color: rgba(255,255,255,0.58);
+      color: rgba(255,255,255,0.55);
       line-height: 1.65;
       margin-bottom: 26px;
     }
@@ -634,224 +847,260 @@
       pointer-events: none;
     }
     .toast {
-      background: rgba(22,38,2,0.97);
-      border: 1px solid rgba(148,221,45,0.28);
+      background: rgba(18,34,3,0.97);
+      border: 1px solid rgba(148,221,45,0.25);
       border-radius: 12px;
       padding: 10px 14px;
       font-size: 12px;
       color: #fff;
-      max-width: 250px;
+      max-width: 240px;
       line-height: 1.5;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
       animation: toastIn 0.32s ease;
     }
     .toast.out { animation: toastOut 0.32s ease forwards; }
-    @keyframes toastIn  { from { opacity:0; transform:translateX(-18px); } to { opacity:1; transform:translateX(0); } }
-    @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-18px); } }
+    @keyframes toastIn  { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-16px); } }
 
     /* ────────────────────────────────────────
        UTILS
     ──────────────────────────────────────── */
     .hidden { display: none !important; }
-    .center { text-align: center; }
+    .mt-4   { margin-top: 16px; }
 
+    /* ────────────────────────────────────────
+       RESPONSIVE
+    ──────────────────────────────────────── */
     @media (max-width: 600px) {
-      .card { padding: 28px 20px; }
+      .card { padding: 22px 18px; }
       .results-grid { grid-template-columns: 1fr; }
-      .variation-card { max-width: 100%; }
       .loading-inner-card { max-width: 95vw; }
+      .page-header { padding: 20px 16px 18px; }
     }
 
     @media (max-width: 480px) {
-      .card { padding: 22px 14px; max-width: 100%; }
+      .card { padding: 20px 14px; }
       .scanner-wrap { width: 120px !important; height: 120px !important; }
-      .toast { max-width: 85vw; }
-      .toast-container { left: 50%; transform: translateX(-50%); bottom: 16px; }
-      .phase-title { font-size: 1.4rem; }
-      .phase-sub { font-size: 0.85rem; }
+      .toast { max-width: 82vw; }
+      .section-title { font-size: 1.4rem; }
       .upload-box { min-height: 130px; }
       .error-icon { font-size: 38px; }
-      .cloud-1, .cloud-2, .cloud-3, .cloud-4, .cloud-5 { display: none; }
+      .cloud-1,.cloud-2,.cloud-3,.cloud-4,.cloud-5 { display: none; }
     }
 
-    @media (max-width: 400px) {
-      .card { padding: 24px 14px; }
+    @media (max-width: 360px) {
       .country-grid { gap: 6px; }
       .country-card { padding: 10px 4px; }
-      .country-flag { font-size: 26px; }
-      .results-grid { gap: 10px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── NAVBAR ── -->
+<!-- ─── NAVBAR ──────────────────────────────────────────────────── -->
 <nav class="navbar">
   <a href="/index.html" class="navbar-logo">
-    <img src="/logo.png" alt="Figuri" />
+    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
   </a>
-  <div style="display:flex;align-items:center;gap:10px;position:absolute;right:5%;">
-    <a id="gerar-cart-btn" href="/carrinho.html" style="display:none;align-items:center;gap:7px;background:rgba(148,221,45,0.1);border:1.5px solid rgba(148,221,45,0.35);color:#edfbd9;border-radius:10px;padding:6px 13px;text-decoration:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;transition:all .18s;">
-      🛒 <span id="gerar-cart-count" style="background:#94DD2D;color:#1a2b01;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">0</span>
-      <span id="gerar-cart-total" style="color:#FFC300;font-weight:800;">R$0</span>
+  <div class="navbar-right">
+    <a id="gerar-cart-btn" href="/carrinho.html" class="nav-cart-btn">
+      🛒
+      <span id="gerar-cart-count" class="nav-cart-count">0</span>
+      <span id="gerar-cart-total" class="nav-cart-total">R$0</span>
     </a>
-    <div class="navbar-badge" id="navbar-badge">Carregando...</div>
+    <div class="nav-badge" id="navbar-badge">Carregando...</div>
   </div>
 </nav>
 
-<!-- ── TOASTS ── -->
+<!-- ─── PAGE HEADER ─────────────────────────────────────────────── -->
+<header class="page-header" id="page-header-bar">
+  <div class="page-header-eyebrow">⚡ Preview gratuito — pague só se gostar</div>
+  <h1 class="page-header-title">Gere sua <span>figurinha</span></h1>
+  <p class="page-header-sub">Envie uma foto e vire um jogador da Copa do Mundo</p>
+</header>
+
+<!-- ─── TOASTS ─────────────────────────────────────────────────── -->
 <div id="toast-container"></div>
 
-<!-- ── MAIN ── -->
+<!-- ─── MAIN ────────────────────────────────────────────────────── -->
 <div class="main">
+<div class="wizard-wrap">
 
-  <!-- ██████████  PHASE A: WIZARD  ██████████ -->
+  <!-- ─── STEP PROGRESS ─── -->
+  <div class="step-progress" id="step-progress">
+    <div class="step-item">
+      <div class="step-circle active" id="dot-1">1</div>
+      <div class="step-label active" id="label-1">Foto</div>
+    </div>
+    <div class="step-line" id="line-1-2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="dot-2">2</div>
+      <div class="step-label" id="label-2">País</div>
+    </div>
+  </div>
+
+  <!-- ████  PHASE A: WIZARD  ████ -->
   <div class="card" id="phase-wizard">
 
-    <div class="step-indicator">
-      <div class="step-dot active" id="dot-1"></div>
-      <div class="step-dot"        id="dot-2"></div>
-    </div>
-
-    <!-- ──── STEP 1: UPLOAD ──── -->
+    <!-- ── STEP 1: UPLOAD ── -->
     <div id="step-1">
-      <h2 class="phase-title">Envie sua foto</h2>
-      <p class="phase-sub">Escolha o tipo e faça o upload</p>
+      <h2 class="section-title">Envie sua foto</h2>
+      <p class="section-sub">Escolha o modo e faça o upload</p>
 
       <!-- Type tabs -->
       <div class="type-tabs" id="type-tabs">
-        <div class="type-tab" data-tipo="sozinho">SOZINHO</div>
-        <div class="type-tab" data-tipo="pet">PET</div>
-        <div class="type-tab" data-tipo="casal">CASAL</div>
+        <div class="type-tab" data-tipo="sozinho">👤 SOZINHO</div>
+        <div class="type-tab" data-tipo="pet">🐾 PET</div>
+        <div class="type-tab" data-tipo="casal">👫 CASAL</div>
       </div>
 
-      <!-- Single upload -->
+      <!-- Upload single -->
       <div class="upload-row" id="upload-single">
         <div class="upload-box" id="box-single">
           <input type="file" id="file-single" accept="image/*" />
-          <div class="upload-icon">📷</div>
-          <div class="upload-label">Arraste sua foto aqui ou clique para selecionar</div>
+          <div class="upload-icon-wrap">📷</div>
+          <div class="upload-label">Arraste a foto aqui<br />ou clique para selecionar</div>
           <div class="upload-sublabel">JPG · PNG · WEBP</div>
         </div>
       </div>
 
-      <!-- Casal upload -->
+      <!-- Upload casal -->
       <div class="upload-row hidden" id="upload-casal">
         <div class="upload-box" id="box-casal1">
           <input type="file" id="file-casal1" accept="image/*" />
           <div class="upload-person-tag">Pessoa 1</div>
-          <div class="upload-icon">👤</div>
-          <div class="upload-label">Foto da Pessoa 1</div>
+          <div class="upload-icon-wrap">👤</div>
+          <div class="upload-label">Foto da<br />Pessoa 1</div>
         </div>
         <div class="upload-box" id="box-casal2">
           <input type="file" id="file-casal2" accept="image/*" />
           <div class="upload-person-tag">Pessoa 2</div>
-          <div class="upload-icon">👤</div>
-          <div class="upload-label">Foto da Pessoa 2</div>
+          <div class="upload-icon-wrap">👤</div>
+          <div class="upload-label">Foto da<br />Pessoa 2</div>
         </div>
       </div>
 
-      <div class="watermark-notice">Preview gratuito com marca d'água — Pague só se gostar</div>
+      <div class="watermark-notice">🔒 Preview gratuito com marca d'água — Pague só se gostar</div>
       <div class="credits-line" id="credits-line">Carregando previews...</div>
 
       <button class="btn-primary" id="btn-next" disabled>Continuar →</button>
     </div>
 
-    <!-- ──── STEP 2: COUNTRY ──── -->
+    <!-- ── STEP 2: COUNTRY ── -->
     <div id="step-2" class="hidden">
-      <h2 class="phase-title">Selecione o país</h2>
-      <p class="phase-sub">Qual vai ser a sua seleção?</p>
+      <h2 class="section-title">Selecione o país</h2>
+      <p class="section-sub">Qual vai ser a sua seleção?</p>
 
-      <!-- Group tabs -->
       <div class="group-tabs-row">
-        <button class="group-tab-btn active" data-group="0">Grupo 1</button>
-        <button class="group-tab-btn"        data-group="1">Grupo 2</button>
+        <button class="group-tab-btn active" data-group="0">América do Sul</button>
+        <button class="group-tab-btn"        data-group="1">Europa</button>
       </div>
 
-      <!-- Group 0: América do Sul -->
       <div class="country-grid" id="group-0">
-        <div class="country-card" data-country="brasil">   <img class="country-flag" src="https://flagcdn.com/w80/br.png" alt="Brasil" /></div>
-        <div class="country-card" data-country="argentina"><img class="country-flag" src="https://flagcdn.com/w80/ar.png" alt="Argentina" /></div>
-        <div class="country-card" data-country="colombia"> <img class="country-flag" src="https://flagcdn.com/w80/co.png" alt="Colômbia" /></div>
-        <div class="country-card" data-country="uruguai">  <img class="country-flag" src="https://flagcdn.com/w80/uy.png" alt="Uruguai" /></div>
+        <div class="country-card" data-country="brasil">
+          <img class="country-flag" src="https://flagcdn.com/w80/br.png" alt="Brasil" />
+          <span class="country-name">Brasil</span>
+        </div>
+        <div class="country-card" data-country="argentina">
+          <img class="country-flag" src="https://flagcdn.com/w80/ar.png" alt="Argentina" />
+          <span class="country-name">Argentina</span>
+        </div>
+        <div class="country-card" data-country="colombia">
+          <img class="country-flag" src="https://flagcdn.com/w80/co.png" alt="Colômbia" />
+          <span class="country-name">Colômbia</span>
+        </div>
+        <div class="country-card" data-country="uruguai">
+          <img class="country-flag" src="https://flagcdn.com/w80/uy.png" alt="Uruguai" />
+          <span class="country-name">Uruguai</span>
+        </div>
       </div>
 
-      <!-- Group 1: Europa -->
       <div class="country-grid hidden" id="group-1">
-        <div class="country-card" data-country="franca">   <img class="country-flag" src="https://flagcdn.com/w80/fr.png" alt="França" /></div>
-        <div class="country-card" data-country="alemanha"> <img class="country-flag" src="https://flagcdn.com/w80/de.png" alt="Alemanha" /></div>
-        <div class="country-card" data-country="espanha">  <img class="country-flag" src="https://flagcdn.com/w80/es.png" alt="Espanha" /></div>
-        <div class="country-card" data-country="portugal"> <img class="country-flag" src="https://flagcdn.com/w80/pt.png" alt="Portugal" /></div>
+        <div class="country-card" data-country="franca">
+          <img class="country-flag" src="https://flagcdn.com/w80/fr.png" alt="França" />
+          <span class="country-name">França</span>
+        </div>
+        <div class="country-card" data-country="alemanha">
+          <img class="country-flag" src="https://flagcdn.com/w80/de.png" alt="Alemanha" />
+          <span class="country-name">Alemanha</span>
+        </div>
+        <div class="country-card" data-country="espanha">
+          <img class="country-flag" src="https://flagcdn.com/w80/es.png" alt="Espanha" />
+          <span class="country-name">Espanha</span>
+        </div>
+        <div class="country-card" data-country="portugal">
+          <img class="country-flag" src="https://flagcdn.com/w80/pt.png" alt="Portugal" />
+          <span class="country-name">Portugal</span>
+        </div>
       </div>
 
-      <button class="btn-primary" id="btn-gerar" disabled>Gerar Figurinha →</button>
+      <button class="btn-primary" id="btn-gerar" disabled>⚡ Gerar Figurinha</button>
       <button class="btn-link"    id="btn-back-step1">← Voltar</button>
     </div>
   </div><!-- /phase-wizard -->
 
 
-  <!-- ██████████  PHASE B: LOADING (FULLSCREEN)  ██████████ -->
-  <div class="loading-overlay hidden" id="phase-loading">
-
-    <!-- Logo topo -->
-    <div class="loading-top-logo">
-      <img src="/logo.png" alt="Figuri" />
-    </div>
-
-    <!-- Card -->
-    <div class="loading-inner-card">
-      <h2 class="loading-card-title">Gerando figurinha</h2>
-      <p class="loading-card-sub" id="loading-status">Analisando sua foto</p>
-
-      <!-- Scanner -->
-      <div class="scanner-wrap">
-        <div class="scanner-logo"><img src="/logo-figuri.svg" alt="" /></div>
-        <div class="corner-tr"></div>
-        <div class="corner-bl"></div>
-        <div class="scan-line"></div>
-      </div>
-
-      <!-- "50% gerada" -->
-      <div class="loading-pct-row"><span id="progress-pct">0%</span> gerada</div>
-
-      <!-- Barra de progresso -->
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-
-      <!-- Counter social proof -->
-      <div class="live-counter">
-        <span class="live-hl"><span id="live-num">847</span> figurinhas</span> geradas hoje
-      </div>
-    </div>
-
-  </div><!-- /phase-loading -->
-
-
-  <!-- ██████████  PHASE C: RESULTS  ██████████ -->
+  <!-- ████  PHASE C: RESULTS  ████ -->
   <div class="card hidden" id="phase-results">
-
-    <h2 class="phase-title center">Escolha sua figurinha favorita</h2>
-    <p  class="phase-sub center"  style="margin-bottom:26px;">Clique na que você mais gostou</p>
+    <div class="results-header">
+      <h2 class="results-title">Escolha sua favorita</h2>
+      <p class="results-sub">Clique na figurinha que você mais gostou</p>
+    </div>
 
     <div class="results-grid" id="results-grid"></div>
-
     <div class="results-footer" id="results-footer"></div>
 
     <button class="btn-primary" id="btn-personalizar" disabled>✦ PERSONALIZAR FIGURINHA</button>
     <button class="btn-link"    id="btn-regenerate">↩ Gerar novas opções</button>
-  </div><!-- /phase-results -->
+  </div>
 
 
-  <!-- ██████████  PHASE D: ERROR  ██████████ -->
+  <!-- ████  PHASE D: ERROR  ████ -->
   <div class="card hidden" id="phase-error">
     <div class="error-icon">⚠️</div>
-    <h2 class="phase-title center" style="margin-bottom:10px;">Algo deu errado</h2>
-    <p  class="error-body" id="error-body">Não foi possível gerar sua figurinha. Tente novamente com outra foto.</p>
+    <h2 class="section-title" style="text-align:center;margin-bottom:10px;">Algo deu errado</h2>
+    <p class="error-body" id="error-body">Não foi possível gerar sua figurinha. Tente novamente com outra foto.</p>
     <button class="btn-primary" id="btn-retry">← Voltar e tentar novamente</button>
-  </div><!-- /phase-error -->
+  </div>
 
+</div><!-- /wizard-wrap -->
 </div><!-- /main -->
+
+
+<!-- ████  PHASE B: LOADING FULLSCREEN  ████ -->
+<div class="loading-overlay hidden" id="phase-loading">
+
+  <div class="loading-top-logo">
+    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
+  </div>
+
+  <!-- Clouds decorativos -->
+  <img class="cloud cloud-1" src="/assets/cloud-left.png"  alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-2" src="/assets/cloud-left2.png" alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-3" src="/assets/cloud-right.png" alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-4" src="/assets/cloud-right2.png" alt="" onerror="this.style.display='none'" />
+
+  <div class="loading-inner-card">
+    <h2 class="loading-card-title">Gerando figurinha</h2>
+    <p class="loading-card-sub" id="loading-status">Analisando sua foto</p>
+
+    <div class="scanner-wrap">
+      <div class="scanner-logo"><img src="/logo-figuri.svg" alt="" /></div>
+      <div class="corner-tr"></div>
+      <div class="corner-bl"></div>
+      <div class="scan-line"></div>
+    </div>
+
+    <div class="loading-pct-row"><span id="progress-pct">0%</span> gerada</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <div class="live-counter">
+      <span class="live-hl"><span id="live-num">847</span> figurinhas</span> geradas hoje
+    </div>
+  </div>
+</div><!-- /phase-loading -->
+
 
 <script>
 (function () {
@@ -874,74 +1123,105 @@
   let photo2File      = null;
 
   // Phase B
-  let taskIds       = [];
-  let imageId       = null;
+  let taskIds          = [];
+  let imageId          = null;
   let pollStatusUrls   = [];
   let pollResponseUrls = [];
-  let pollCount     = 0;
-  let pollTimerId   = null;
-  let progressTimerId = null;
-  let statusTimerId   = null;
-  let counterTimerId  = null;
-  let toastTimerId    = null;
-  let currentPct      = 0;
+  let pollCount        = 0;
+  let pollTimerId      = null;
+  let progressTimerId  = null;
+  let statusTimerId    = null;
+  let counterTimerId   = null;
+  let toastTimerId     = null;
+  let currentPct       = 0;
 
   // Phase C
-  let resultPayload       = null;
-  let selectedVariation   = null;
+  let resultPayload     = null;
+  let selectedVariation = null;
 
   /* ────────── DOM ────────── */
-  const phaseWizard  = q('phase-wizard');
-  const phaseLoading = q('phase-loading');
-  const phaseResults = q('phase-results');
-  const phaseError   = q('phase-error');
-
-  const step1El     = q('step-1');
-  const step2El     = q('step-2');
-  const dot1        = q('dot-1');
-  const dot2        = q('dot-2');
-
-  const navbarBadge   = q('navbar-badge');
-  const creditsLine   = q('credits-line');
-
-  const uploadSingle  = q('upload-single');
-  const uploadCasal   = q('upload-casal');
-  const boxSingle     = q('box-single');
-  const fileSingle    = q('file-single');
-  const boxCasal1     = q('box-casal1');
-  const boxCasal2     = q('box-casal2');
-  const fileCasal1    = q('file-casal1');
-  const fileCasal2    = q('file-casal2');
-  const btnNext       = q('btn-next');
-
-  const btnGerar      = q('btn-gerar');
-  const btnBackStep1  = q('btn-back-step1');
-
-  const loadingStatus = q('loading-status');
-  const progressFill  = q('progress-fill');
-  const progressPct   = q('progress-pct');
-  const liveNum       = q('live-num');
-
-  const resultsGrid   = q('results-grid');
-  const resultsFooter = q('results-footer');
-  const btnPersonalizar = q('btn-personalizar');
-  const btnRegenerate   = q('btn-regenerate');
-
-  const errorBody   = q('error-body');
-  const btnRetry    = q('btn-retry');
-
   function q(id) { return document.getElementById(id); }
+
+  const phaseWizard    = q('phase-wizard');
+  const phaseLoading   = q('phase-loading');
+  const phaseResults   = q('phase-results');
+  const phaseError     = q('phase-error');
+
+  const step1El        = q('step-1');
+  const step2El        = q('step-2');
+
+  // Step progress
+  const dot1           = q('dot-1');
+  const dot2           = q('dot-2');
+  const label1         = q('label-1');
+  const label2         = q('label-2');
+  const line12         = q('line-1-2');
+
+  const navbarBadge    = q('navbar-badge');
+  const creditsLine    = q('credits-line');
+
+  const uploadSingle   = q('upload-single');
+  const uploadCasal    = q('upload-casal');
+  const boxSingle      = q('box-single');
+  const fileSingle     = q('file-single');
+  const boxCasal1      = q('box-casal1');
+  const boxCasal2      = q('box-casal2');
+  const fileCasal1     = q('file-casal1');
+  const fileCasal2     = q('file-casal2');
+  const btnNext        = q('btn-next');
+
+  const btnGerar       = q('btn-gerar');
+  const btnBackStep1   = q('btn-back-step1');
+
+  const loadingStatus  = q('loading-status');
+  const progressFill   = q('progress-fill');
+  const progressPct    = q('progress-pct');
+  const liveNum        = q('live-num');
+
+  const resultsGrid    = q('results-grid');
+  const resultsFooter  = q('results-footer');
+  const btnPersonalizar = q('btn-personalizar');
+  const btnRegenerate  = q('btn-regenerate');
+
+  const errorBody      = q('error-body');
+  const btnRetry       = q('btn-retry');
 
   /* ────────── HELPERS ────────── */
   function showPhase(name) {
-    [phaseWizard, phaseLoading, phaseResults, phaseError]
+    [phaseWizard, phaseResults, phaseError]
       .forEach(el => el.classList.add('hidden'));
-    document.getElementById('phase-' + name).classList.remove('hidden');
+    phaseLoading.classList.add('hidden');
+
+    const target = q('phase-' + name);
+    if (target) target.classList.remove('hidden');
+
+    // Show/hide page header — hide during loading
+    const header = q('page-header-bar');
+    if (header) header.style.display = (name === 'loading') ? 'none' : '';
+    const stepProg = q('step-progress');
+    if (stepProg) stepProg.style.display = (name === 'loading') ? 'none' : '';
   }
 
   function updateCreditsUI() {
-    navbarBadge.textContent = creditsUsed + ' de ' + creditsLimit + ' previews usados';
-    creditsLine.innerHTML   = '<span>' + creditsUsed + ' de ' + creditsLimit + '</span> previews usados';
+    if (navbarBadge) navbarBadge.textContent = creditsUsed + ' de ' + creditsLimit + ' previews usados';
+    if (creditsLine)  creditsLine.innerHTML  = '<span>' + creditsUsed + ' de ' + creditsLimit + '</span> previews usados';
+  }
+
+  function setStepActive(step) {
+    // step 1
+    if (step === 1) {
+      dot1.className = 'step-circle active'; dot1.textContent = '1';
+      label1.className = 'step-label active';
+      line12.className = 'step-line';
+      dot2.className = 'step-circle'; dot2.textContent = '2';
+      label2.className = 'step-label';
+    } else {
+      dot1.className = 'step-circle done'; dot1.textContent = '';
+      label1.className = 'step-label';
+      line12.className = 'step-line done';
+      dot2.className = 'step-circle active'; dot2.textContent = '2';
+      label2.className = 'step-label active';
+    }
   }
 
   /* ────────── BOOT ────────── */
@@ -958,6 +1238,7 @@
     bindUploads();
     bindCountryGrid();
     bindButtons();
+    updateGerarCartNav();
   }
 
   /* ────────── CREDITS ────────── */
@@ -982,20 +1263,19 @@
     const t = p.get('tipo');
     if (t && ['sozinho','pet','casal'].includes(t)) currentTipo = t;
 
-    // Restore from sessionStorage if coming back from editor
     try {
       const saved = sessionStorage.getItem('figuri_result');
       if (saved) {
         const s = JSON.parse(saved);
-        resultPayload  = s.payload;
-        imageId        = s.imageId;
+        resultPayload   = s.payload;
+        imageId         = s.imageId;
         selectedCountry = s.country;
-        currentTipo    = s.tipo || currentTipo;
-        creditsUsed    = s.creditsUsed  || creditsUsed;
-        creditsLimit   = s.creditsLimit || creditsLimit;
+        currentTipo     = s.tipo || currentTipo;
+        creditsUsed     = s.creditsUsed  || creditsUsed;
+        creditsLimit    = s.creditsLimit || creditsLimit;
         updateCreditsUI();
         showResults(resultPayload);
-        return; // skip wizard
+        return;
       }
     } catch(_) {}
   }
@@ -1035,7 +1315,7 @@
     input.addEventListener('change', () => {
       if (input.files[0]) applyPreview(box, input.files[0], onFile);
     });
-    box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('dragover'); });
+    box.addEventListener('dragover',  e => { e.preventDefault(); box.classList.add('dragover'); });
     box.addEventListener('dragleave', () => box.classList.remove('dragover'));
     box.addEventListener('drop', e => {
       e.preventDefault();
@@ -1046,7 +1326,7 @@
 
   function clearBox(box, onFile) {
     box.querySelectorAll('.upload-preview, .upload-change-btn, .upload-clear-btn').forEach(el => el.remove());
-    box.querySelectorAll('.upload-icon, .upload-label, .upload-sublabel').forEach(el => {
+    box.querySelectorAll('.upload-icon-wrap, .upload-label, .upload-sublabel').forEach(el => {
       el.style.display = '';
     });
     const input = box.querySelector('input[type="file"]');
@@ -1060,7 +1340,7 @@
     const reader = new FileReader();
     reader.onload = ev => {
       box.querySelectorAll('.upload-preview, .upload-change-btn, .upload-clear-btn').forEach(el => el.remove());
-      box.querySelectorAll('.upload-icon, .upload-label, .upload-sublabel').forEach(el => {
+      box.querySelectorAll('.upload-icon-wrap, .upload-label, .upload-sublabel').forEach(el => {
         el.style.display = 'none';
       });
 
@@ -1074,20 +1354,14 @@
         className: 'upload-change-btn',
         textContent: 'Trocar foto',
       });
-      btn.addEventListener('click', ev => {
-        ev.stopPropagation();
-        box.querySelector('input[type="file"]').click();
-      });
+      btn.addEventListener('click', ev => { ev.stopPropagation(); box.querySelector('input[type="file"]').click(); });
 
       const clearBtn = Object.assign(document.createElement('button'), {
         className: 'upload-clear-btn',
         textContent: '✕',
         title: 'Remover foto',
       });
-      clearBtn.addEventListener('click', ev => {
-        ev.stopPropagation();
-        clearBox(box, onFile);
-      });
+      clearBtn.addEventListener('click', ev => { ev.stopPropagation(); clearBox(box, onFile); });
 
       box.appendChild(img);
       box.appendChild(btn);
@@ -1104,19 +1378,17 @@
 
   /* ────────── COUNTRY GRID ────────── */
   function bindCountryGrid() {
-    // Group tabs
     document.querySelectorAll('.group-tab-btn').forEach(tab => {
       tab.addEventListener('click', () => {
         const g = tab.dataset.group;
         document.querySelectorAll('.group-tab-btn').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        document.getElementById('group-0').classList.add('hidden');
-        document.getElementById('group-1').classList.add('hidden');
-        document.getElementById('group-' + g).classList.remove('hidden');
+        q('group-0').classList.add('hidden');
+        q('group-1').classList.add('hidden');
+        q('group-' + g).classList.remove('hidden');
       });
     });
 
-    // Country cards
     document.querySelectorAll('.country-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
@@ -1143,18 +1415,16 @@
   function goStep1() {
     step1El.classList.remove('hidden');
     step2El.classList.add('hidden');
-    dot1.classList.add('active');    dot1.classList.remove('done');
-    dot2.classList.remove('active'); dot2.classList.remove('done');
+    setStepActive(1);
   }
 
   function goStep2() {
     step1El.classList.add('hidden');
     step2El.classList.remove('hidden');
-    dot1.classList.remove('active'); dot1.classList.add('done');
-    dot2.classList.add('active');    dot2.classList.remove('done');
+    setStepActive(2);
   }
 
-  /* ────────── GENERATE API CALL ────────── */
+  /* ────────── GENERATE ────────── */
   async function startGeneration() {
     btnGerar.disabled = true;
     btnGerar.innerHTML = '<span class="spinner"></span> Enviando...';
@@ -1188,7 +1458,6 @@
       return;
     }
 
-    // Store phase B vars
     taskIds          = data.taskIds      || [];
     imageId          = data.imageId      || null;
     userId           = data.userId       || userId;
@@ -1217,7 +1486,6 @@
     currentPct = 0;
     setProgress(0);
 
-    // Rotate status text
     statusIdx = 0;
     loadingStatus.textContent = STATUS_MSGS[0];
     statusTimerId = setInterval(() => {
@@ -1225,7 +1493,6 @@
       loadingStatus.textContent = STATUS_MSGS[statusIdx];
     }, 3500);
 
-    // Fake progress crawl (stops at 90%)
     progressTimerId = setInterval(() => {
       if (currentPct < 90) {
         currentPct = Math.min(currentPct + Math.random() * 2.2, 90);
@@ -1233,7 +1500,6 @@
       }
     }, 320);
 
-    // Live counter
     let liveCount = 800 + Math.floor(Math.random() * 201);
     liveNum.textContent = liveCount;
     counterTimerId = setInterval(() => {
@@ -1241,8 +1507,6 @@
     }, 2600);
 
     startToastLoop();
-
-    // Start polling
     doPoll();
     pollTimerId = setInterval(doPoll, 3000);
   }
@@ -1311,10 +1575,9 @@
       pollResponseUrls.forEach((url, idx) => buildVariationCard(url, idx));
     }
 
-    // Refresh credits
     creditsUsed = Math.min(creditsUsed + 1, creditsLimit);
     updateCreditsUI();
-    resultsFooter.textContent = 'Previews: ' + creditsUsed + '/' + creditsLimit;
+    resultsFooter.textContent = 'Previews usados: ' + creditsUsed + '/' + creditsLimit;
 
     showPhase('results');
   }
@@ -1351,15 +1614,14 @@
       imageUrl = hiresUrl = pollResponseUrls[selectedVariation];
     }
 
-    // Persist result so user can come back without regenerating
     try {
       sessionStorage.setItem('figuri_result', JSON.stringify({
-        payload:       resultPayload,
-        imageId:       imageId,
-        country:       selectedCountry,
-        tipo:          currentTipo,
-        creditsUsed:   creditsUsed,
-        creditsLimit:  creditsLimit,
+        payload:      resultPayload,
+        imageId:      imageId,
+        country:      selectedCountry,
+        tipo:         currentTipo,
+        creditsUsed:  creditsUsed,
+        creditsLimit: creditsLimit,
       }));
     } catch(_) {}
 
@@ -1367,8 +1629,8 @@
     const qs = new URLSearchParams({
       imageUrl,
       hiresUrl,
-      imageId:    imageId          || '',
-      country:    selectedCountry  || '',
+      imageId:    imageId         || '',
+      country:    selectedCountry || '',
       type:       currentTipo === 'casal' ? 'familia' : currentTipo,
       textColors: JSON.stringify(resultPayload?.textColors || defaultColors),
     });
@@ -1395,34 +1657,27 @@
     'amou o resultado!',
   ];
 
-  function startToastLoop() {
-    scheduleToast();
-  }
+  function startToastLoop() { scheduleToast(); }
 
   function scheduleToast() {
     const delay = 4000 + Math.random() * 3000;
-    toastTimerId = setTimeout(() => {
-      fireToast();
-      scheduleToast();
-    }, delay);
+    toastTimerId = setTimeout(() => { fireToast(); scheduleToast(); }, delay);
   }
 
   function fireToast() {
-    const wrap  = document.getElementById('toast-container');
+    const wrap  = q('toast-container');
     const alive = wrap.querySelectorAll('.toast:not(.out)');
     if (alive.length >= 2) dismissToast(alive[alive.length - 1]);
 
-    const name  = T_NAMES [Math.floor(Math.random() * T_NAMES.length)];
-    const city  = T_CITIES[Math.floor(Math.random() * T_CITIES.length)];
-    const act   = T_ACTS  [Math.floor(Math.random() * T_ACTS.length)];
+    const name = T_NAMES [Math.floor(Math.random() * T_NAMES.length)];
+    const city = T_CITIES[Math.floor(Math.random() * T_CITIES.length)];
+    const act  = T_ACTS  [Math.floor(Math.random() * T_ACTS.length)];
 
     const t = document.createElement('div');
     t.className = 'toast';
-    t.innerHTML =
-      '<strong>' + name + '</strong> ' + act +
-      '<br><span style="opacity:.55;font-size:11px">' + city + '</span>';
+    t.innerHTML = '<strong>' + name + '</strong> ' + act +
+      '<br><span style="opacity:.5;font-size:11px">' + city + '</span>';
     wrap.prepend(t);
-
     setTimeout(() => dismissToast(t), 5000);
   }
 
@@ -1432,25 +1687,25 @@
     setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 340);
   }
 
-  /* ────────── START ────────── */
-  init();
-
-  // ── Carrinho na navbar ──────────────────────────────────────────────────
-  (function updateGerarCartNav() {
+  /* ────────── CART NAVBAR ────────── */
+  function updateGerarCartNav() {
     try {
       var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
       var items = cart.items || [];
       var n     = items.length;
-      if (n === 0) return;
+      var btn   = q('gerar-cart-btn');
+      var cnt   = q('gerar-cart-count');
+      var ttl   = q('gerar-cart-total');
+      if (n === 0) { if (btn) btn.style.display = 'none'; return; }
       var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
-      var btn   = document.getElementById('gerar-cart-btn');
-      var cnt   = document.getElementById('gerar-cart-count');
-      var ttl   = document.getElementById('gerar-cart-total');
-      if (btn) { btn.style.display = 'flex'; }
+      if (btn) btn.style.display = 'flex';
       if (cnt) cnt.textContent = n;
       if (ttl) ttl.textContent = 'R$' + (total / 100).toFixed(2).replace('.', ',');
     } catch(_) {}
-  })();
+  }
+
+  /* ────────── START ────────── */
+  init();
 })();
 </script>
 </body>
