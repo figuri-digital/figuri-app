@@ -3,841 +3,1027 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FIGURI IA — Editor de Figurinha</title>
-  <link rel="icon" type="image/svg+xml" href="/fav.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+  <title>Sua Figurinha – Figuri</title>
+  <link rel="icon" type="image/svg+xml" href="/fav.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ─── TOKENS ─────────────────────────────── */
+    :root {
+      --verde-escuro:  #1A2B01;
+      --verde:         #396100;
+      --amarelo:       #FFC300;
+      --cta:           #94DD2D;
+      --cta-hover:     #a8f030;
+      --text-dim:      rgba(255,255,255,0.42);
+      --border:        rgba(148,221,45,0.18);
+      --surface:       rgba(255,255,255,0.03);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Sora', sans-serif;
-      background: #0a0a0a;
+      font-family: 'Montserrat', sans-serif;
+      background: #111f02;
       color: #fff;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
     }
+    .hidden { display: none !important; }
 
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #F5C518;
-    }
-    .subtitle {
-      color: #999;
-      font-size: 14px;
-      margin-bottom: 30px;
-    }
-
-    .editor-container {
-      display: flex;
-      gap: 40px;
-      align-items: flex-start;
-      max-width: 1100px;
-      width: 100%;
-    }
-
-    /* === CARD PREVIEW === */
-    .card-area {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-
-    .arrow-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      font-size: 28px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .arrow-btn:hover {
-      background: rgba(255,255,255,0.2);
-      border-color: #F5C518;
-      color: #F5C518;
-    }
-
-    .card-wrapper {
-      position: relative;
-      width: 380px;
-      aspect-ratio: 3/4;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    }
-
-    .card-wrapper canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Moldura color indicator */
-    .moldura-indicator {
-      display: none;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 12px;
-    }
-    .moldura-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .moldura-dot.active {
-      border-color: #F5C518;
-      transform: scale(1.2);
-      box-shadow: 0 0 8px rgba(245,197,24,0.5);
-    }
-    /* Moldura dot colors set dynamically via JS */
-    #molduraDots { display: flex; gap: 8px; justify-content: center; }
-
-    /* === CONTROLS === */
-    .controls {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .control-group {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .control-group h3 {
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #F5C518;
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-    .field:last-child { margin-bottom: 0; }
-
-    .field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #999;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    .field input {
-      width: 100%;
-      padding: 12px 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Sora', sans-serif;
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .field input:focus {
-      border-color: #F5C518;
-    }
-    .field input::placeholder {
-      color: rgba(255,255,255,0.3);
-    }
-
-    /* Moldura selector — hidden (navegação só pelas setas) */
-    .moldura-options { display: none; }
-    .moldura-option  { display: none; }
-
-    /* Seletor de produto */
-    .product-selector { margin-bottom: 12px; }
-    .product-selector label { font-size: 0.78rem; color: #999; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-    .product-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .product-opt {
-      border: 1.5px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
-      padding: 10px 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.18s;
-      background: rgba(255,255,255,0.03);
-    }
-    .product-opt:hover { border-color: #94DD2D; background: rgba(148,221,45,0.07); }
-    .product-opt.selected { border-color: #94DD2D; background: rgba(148,221,45,0.13); }
-    .product-opt .opt-name { font-size: 0.78rem; font-weight: 600; color: #eee; }
-    .product-opt .opt-price { font-size: 0.9rem; font-weight: 800; color: #94DD2D; margin-top: 2px; }
-
-    .btn-comprar {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #94DD2D, #6ab520);
-      border: none;
-      border-radius: 10px;
-      color: #1a2b01;
-      font-family: 'Sora', sans-serif;
-      font-size: 15px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-comprar:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(148,221,45,0.4); }
-    .btn-comprar:disabled { opacity: 0.6; cursor: default; transform: none; }
-
-    /* Navbar */
-    .editor-navbar {
+    /* ─── NAVBAR ─────────────────────────────── */
+    .navbar {
       position: sticky; top: 0; z-index: 300;
-      background: rgba(15,26,3,0.97);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(148,221,45,0.14);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; height: 58px;
-      width: 100%;
+      background: rgba(17,31,2,0.97);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(148,221,45,0.12);
+      display: flex; align-items: center;
+      padding: 0 20px; height: 58px; gap: 12px;
     }
-    .editor-navbar .nav-back {
-      background: none; border: 1px solid rgba(255,255,255,0.18);
-      color: #ccc; padding: 7px 14px; border-radius: 8px;
-      cursor: pointer; font-family: 'Sora', sans-serif; font-size: 13px;
+    .navbar-logo { display: flex; align-items: center; text-decoration: none; }
+    .navbar-logo img { height: 38px; }
+
+    .nav-steps {
+      flex: 1; display: flex; align-items: center;
+      justify-content: center; gap: 6px;
+    }
+    .nav-dot {
+      height: 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      width: 8px;
+    }
+    .nav-dot.active { background: var(--cta); width: 26px; box-shadow: 0 0 10px rgba(148,221,45,0.5); }
+    .nav-dot.done   { background: rgba(148,221,45,0.45); }
+
+    .nav-cart {
+      display: none; align-items: center; gap: 6px;
+      background: rgba(148,221,45,0.08);
+      border: 1.5px solid rgba(148,221,45,0.28);
+      color: #edfbd9; border-radius: 10px;
+      padding: 6px 12px; text-decoration: none;
+      font-size: 12px; font-weight: 700;
       transition: all .18s; white-space: nowrap;
     }
-    .editor-navbar .nav-back:hover { border-color: #94DD2D; color: #94DD2D; }
-    .editor-navbar .nav-title {
-      font-size: 1rem; font-weight: 800; color: #94DD2D;
-      letter-spacing: 1px; text-transform: uppercase;
-    }
-    .cart-nav-btn {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(148,221,45,0.1);
-      border: 1.5px solid rgba(148,221,45,0.35);
-      color: #edfbd9; border-radius: 10px;
-      padding: 7px 14px; cursor: pointer;
-      font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700;
-      transition: all .18s; text-decoration: none;
-    }
-    .cart-nav-btn:hover { background: rgba(148,221,45,0.2); border-color: #94DD2D; }
-    .cart-nav-btn.hidden { display: none; }
-    .cart-nav-badge {
-      background: #94DD2D; color: #1a2b01;
-      border-radius: 50%; width: 20px; height: 20px;
+    .nav-cart.show { display: flex; }
+    .nav-cart:hover { background: rgba(148,221,45,0.16); border-color: var(--cta); }
+    .nav-cart-badge {
+      background: var(--cta); color: var(--verde-escuro);
+      border-radius: 50%; width: 19px; height: 19px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; flex-shrink: 0;
+      font-size: 10px; font-weight: 800;
     }
-    .cart-nav-total { color: #FFC300; font-weight: 800; }
+    .nav-cart-total { color: var(--amarelo); font-weight: 800; }
 
-    /* Botão flutuante carrinho */
-    .cart-fab {
-      position: fixed; bottom: 24px; right: 24px; z-index: 500;
-      background: #94DD2D; color: #1a2b01;
-      border: none; border-radius: 50px;
-      padding: 14px 22px; font-family: 'Sora', sans-serif;
-      font-size: 15px; font-weight: 800; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    /* ─── LAYOUT ─────────────────────────────── */
+    .main {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
     }
-    .cart-fab:hover { background: #a8f033; transform: translateY(-2px); }
-    .cart-fab .cart-count {
-      background: #1a2b01; color: #94DD2D; border-radius: 50%;
-      width: 22px; height: 22px; display: flex; align-items: center;
-      justify-content: center; font-size: 12px; font-weight: 800;
-    }
-    .cart-fab.hidden { display: none; }
 
-    .btn-download {
-      width: 100%;
-      padding: 12px;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 10px;
-      color: #999;
-      font-family: 'Sora', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
+    /* ─── BUTTONS ─────────────────────────────── */
+    .btn-primary {
+      width: 100%; padding: 16px;
+      background: var(--cta); color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px; letter-spacing: 1.5px;
+      border: none; border-radius: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: all 0.2s;
     }
-    .btn-download:hover {
-      border-color: #fff;
-      color: #fff;
+    .btn-primary:hover:not(:disabled) {
+      background: var(--cta-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(148,221,45,0.30);
     }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Mobile */
-    @media (max-width: 768px) {
-      .editor-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        padding: 16px;
-      }
-      .card-wrapper { width: min(300px, 90vw); }
-      .controls { width: 100%; }
+    .btn-outline {
+      width: 100%; padding: 14px;
+      background: transparent;
+      border: 1.5px solid rgba(148,221,45,0.28);
+      color: rgba(255,255,255,0.70);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px; font-weight: 700;
+      border-radius: 13px; cursor: pointer;
+      transition: all 0.2s;
     }
+    .btn-outline:hover { border-color: var(--cta); color: var(--cta); background: rgba(148,221,45,0.05); }
 
-    @media (max-width: 600px) {
-      .card-wrapper { width: min(280px, 88vw); }
-      .editor-container { gap: 16px; padding: 12px; }
-      .control-group { padding: 16px; }
+    .btn-ghost {
+      display: block; width: 100%; text-align: center;
+      background: none; border: none;
+      color: rgba(255,255,255,0.26); font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px; font-weight: 600; cursor: pointer;
+      padding: 12px 0 4px; text-decoration: underline;
+      transition: color 0.2s;
     }
+    .btn-ghost:hover { color: rgba(255,255,255,0.55); }
 
-    @media (max-width: 480px) {
-      .card-wrapper { width: min(260px, 92vw); }
-      .editor-container { gap: 12px; padding: 10px 8px; }
-      .control-group { padding: 12px; }
-      .field { margin-bottom: 10px; }
-      .arrow-btn { width: 48px; height: 48px; }
-      .moldura-options { gap: 6px; flex-wrap: wrap; }
-      .btn-comprar { padding: 18px; font-size: 1rem; }
-    }
-    /* ────────────────────────────────────────
-       MODAL PIX
-    ──────────────────────────────────────── */
-    .pix-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.82);
-      backdrop-filter: blur(4px);
-      align-items: center; justify-content: center;
-    }
-    .pix-overlay.open { display: flex; }
+    /* ─────────────────────────────────────────────
+       PHASE 1 — PERSONALIZE
+    ───────────────────────────────────────────── */
 
-    .pix-modal {
-      background: #111;
-      border: 1px solid #2a5a00;
-      border-radius: 18px;
-      padding: 32px 28px;
-      max-width: 420px;
-      width: 94vw;
-      text-align: center;
+    /* Canvas / sticker */
+    .sticker-wrap {
       position: relative;
-      animation: fadeUp .3s ease;
+      width: 210px; aspect-ratio: 3/4;
+      margin: 0 auto 10px;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.65);
     }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
-
-    .pix-modal .close-btn {
-      position: absolute; top: 14px; right: 16px;
-      background: none; border: none; color: #888; font-size: 22px; cursor: pointer;
+    .sticker-wrap canvas {
+      width: 100%; height: 100%; display: block;
+      opacity: 0; transform: scale(0.94);
+      transition: opacity 0.55s ease, transform 0.55s ease;
     }
-    .pix-modal .close-btn:hover { color: #fff; }
+    .sticker-wrap canvas.revealed { opacity: 1; transform: scale(1); }
 
-    .pix-modal h2 { font-size: 1.3rem; color: #94DD2D; margin-bottom: 4px; }
-    .pix-modal .pix-amount { font-size: 2rem; font-weight: 800; color: #FFC300; margin: 8px 0 18px; }
-    .pix-modal .pix-label { font-size: 0.78rem; color: #888; margin-bottom: 6px; }
-
-    .pix-qr-wrap {
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px;
-      width: 180px; height: 180px;
-      margin: 0 auto 16px;
-      display: flex; align-items: center; justify-content: center;
+    /* Loading overlay */
+    .sticker-loading {
+      position: absolute; inset: 0;
+      background: rgba(10,24,3,0.93);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      z-index: 2;
+      transition: opacity 0.45s ease;
     }
-    .pix-qr-wrap img { width: 160px; height: 160px; display: block; }
+    .sticker-loading.gone { opacity: 0; pointer-events: none; }
+    .spin-ring {
+      width: 34px; height: 34px;
+      border: 3px solid rgba(148,221,45,0.18);
+      border-top-color: var(--cta);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .sticker-loading p { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 600; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .pix-code-wrap {
-      background: #1a2b01;
-      border: 1px solid #2e4a05;
-      border-radius: 10px;
-      padding: 12px 14px;
+    /* Reveal glow */
+    @keyframes revealGlow {
+      0%   { box-shadow: 0 8px 40px rgba(0,0,0,0.65); }
+      40%  { box-shadow: 0 0 50px rgba(148,221,45,0.45), 0 0 100px rgba(148,221,45,0.18); }
+      100% { box-shadow: 0 8px 40px rgba(0,0,0,0.65); }
+    }
+    .sticker-wrap.glowing { animation: revealGlow 1.4s ease forwards; }
+
+    /* Moldura nav */
+    .moldura-nav {
+      display: flex; align-items: center;
+      justify-content: center; gap: 14px;
+      margin-bottom: 20px;
+    }
+    .mol-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.65); font-size: 20px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .mol-btn:hover { border-color: var(--cta); color: var(--cta); background: rgba(148,221,45,0.07); }
+    .mol-label {
+      font-size: 11.5px; font-weight: 700;
+      color: rgba(255,255,255,0.38);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    /* Player form */
+    .player-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px; margin-bottom: 20px;
+    }
+    .player-form h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: 1px;
+      margin-bottom: 16px; color: #fff;
+    }
+    .fld { margin-bottom: 12px; }
+    .fld:last-child { margin-bottom: 0; }
+    .fld label {
+      display: block; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35); margin-bottom: 5px;
+    }
+    .fld input {
+      width: 100%; padding: 11px 13px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 9px; color: #fff;
+      font-family: 'Montserrat', sans-serif; font-size: 14px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .fld input:focus { border-color: var(--cta); }
+    .fld input::placeholder { color: rgba(255,255,255,0.20); }
+
+    /* ─────────────────────────────────────────────
+       PHASE 2 — PRODUCT SELECTION
+    ───────────────────────────────────────────── */
+
+    /* Mini sticker + name bar */
+    .sticker-id-bar {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 13px 15px;
+      margin-bottom: 14px;
+    }
+    .mini-thumb {
+      width: 48px; height: 64px; border-radius: 7px;
+      object-fit: cover; flex-shrink: 0;
+      border: 1.5px solid rgba(148,221,45,0.22);
+    }
+    .sticker-id-texts {}
+    .sticker-id-eyebrow {
+      font-size: 9.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.30); margin-bottom: 2px;
+    }
+    .sticker-id-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 21px; letter-spacing: 1px; color: var(--cta);
+    }
+
+    /* Proof pills */
+    .proof-row {
+      display: flex; gap: 7px; flex-wrap: wrap;
       margin-bottom: 16px;
-      display: flex; align-items: center; gap: 10px;
     }
-    .pix-code-wrap code {
-      font-size: 0.65rem;
-      color: #94DD2D;
-      word-break: break-all;
-      flex: 1;
-      text-align: left;
-      font-family: monospace;
-      line-height: 1.4;
+    .proof-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px; padding: 4px 11px;
+      font-size: 10.5px; font-weight: 600;
+      color: rgba(255,255,255,0.45);
     }
-    .pix-copy-btn {
-      flex-shrink: 0;
-      background: #94DD2D;
-      color: #1a2b01;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-weight: 700;
-      font-size: 0.82rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .pix-copy-btn.copied { background: #FFC300; }
-    .pix-copy-btn:hover { background: #a8f033; }
 
-    .pix-status {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-size: 0.85rem; color: #aaa; margin-bottom: 10px;
+    .phase-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px; letter-spacing: 1.2px; color: #fff;
+      margin-bottom: 3px;
     }
-    .pix-status .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #FFC300;
-      animation: pulse 1.2s infinite;
+    .phase-sub {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-dim); margin-bottom: 18px; line-height: 1.5;
     }
-    .pix-status.approved .dot { background: #94DD2D; animation: none; }
-    .pix-status.approved { color: #94DD2D; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
 
-    .pix-timer { font-size: 0.75rem; color: #666; margin-top: 6px; }
-    .pix-success-msg {
-      display: none; padding: 16px;
-      background: rgba(148,221,45,0.12);
-      border: 1px solid #94DD2D;
-      border-radius: 12px;
-      color: #94DD2D;
-      font-size: 0.95rem;
-      margin-top: 12px;
+    /* Product cards */
+    .pcard {
+      background: var(--surface);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 16px 15px;
+      margin-bottom: 10px; cursor: pointer;
+      position: relative;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .pcard:hover {
+      border-color: rgba(148,221,45,0.35);
+      background: rgba(148,221,45,0.04);
+      transform: translateY(-1px);
+    }
+    .pcard.selected {
+      border-color: var(--cta);
+      background: rgba(148,221,45,0.07);
+      box-shadow: 0 0 22px rgba(148,221,45,0.14);
+    }
+    /* Hero card */
+    .pcard.hero {
+      border-color: rgba(148,221,45,0.50);
+      background: rgba(148,221,45,0.05);
+    }
+    .pcard.hero.selected {
+      box-shadow: 0 0 32px rgba(148,221,45,0.25);
+    }
+
+    /* Badge */
+    .pcard-badge {
+      position: absolute; top: -11px; left: 14px;
+      padding: 3px 11px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em;
+    }
+    .pcard-badge.anchor {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .pcard-badge.popular {
+      background: var(--cta);
+      color: var(--verde-escuro);
+    }
+
+    /* Card body */
+    .pcard-body { display: flex; align-items: center; gap: 13px; }
+    .pcard-img {
+      width: 52px; height: 70px;
+      border-radius: 8px; object-fit: cover; flex-shrink: 0;
+    }
+    .pcard-info { flex: 1; min-width: 0; }
+    .pcard-name { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 3px; }
+    .pcard-desc {
+      font-size: 11px; font-weight: 500;
+      color: rgba(255,255,255,0.36); line-height: 1.4; margin-bottom: 5px;
+    }
+    .pcard-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px; letter-spacing: 0.8px;
+    }
+    .pcard.hero .pcard-price { color: var(--cta); }
+    .pcard:not(.hero) .pcard-price { color: var(--amarelo); }
+
+    .pcard-check {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.14);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .pcard.selected .pcard-check {
+      background: var(--cta); border-color: var(--cta);
+      color: var(--verde-escuro);
+    }
+
+    /* Small cards row */
+    .base-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .pcard.sm { padding: 12px 11px; margin-bottom: 0; }
+    .pcard.sm .pcard-desc { display: none; }
+    .pcard.sm .pcard-img { width: 42px; height: 56px; }
+    .pcard.sm .pcard-price { font-size: 19px; }
+
+    /* ─── ORDER BUMP ─── */
+    .bump-wrap {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.42s ease;
+    }
+    .bump-wrap.open { max-height: 420px; margin-bottom: 12px; }
+
+    .bump-box {
+      background: rgba(255,195,0,0.06);
+      border: 1.5px solid rgba(255,195,0,0.26);
+      border-radius: 16px; padding: 18px 16px;
+      margin-top: 4px;
+    }
+    .bump-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 19px; letter-spacing: 1px;
+      color: var(--amarelo); margin-bottom: 13px;
+    }
+    .bump-compare {
+      display: grid; grid-template-columns: 1fr 28px 1fr;
+      gap: 8px; align-items: center; margin-bottom: 14px;
+    }
+    .bump-side { text-align: center; }
+    .bump-side-img {
+      width: 58px; height: 77px; border-radius: 7px;
+      object-fit: cover; margin: 0 auto 5px; display: block;
+    }
+    .bump-side-label {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .bump-side-label.dim  { color: rgba(255,255,255,0.32); }
+    .bump-side-label.bright { color: var(--amarelo); }
+    .bump-side-price { font-family: 'Bebas Neue', sans-serif; font-size: 15px; }
+    .bump-arrow { text-align: center; font-size: 18px; color: var(--amarelo); }
+
+    .btn-bump-yes {
+      width: 100%; padding: 13px;
+      background: var(--amarelo); color: #1a2b01;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px; letter-spacing: 1px;
+      border: none; border-radius: 10px; cursor: pointer;
+      margin-bottom: 8px; transition: all 0.2s;
+    }
+    .btn-bump-yes:hover { background: #ffd234; transform: translateY(-1px); }
+    .btn-bump-no {
+      width: 100%; padding: 0; background: none; border: none;
+      color: rgba(255,255,255,0.28); font-size: 11.5px; font-weight: 600;
+      cursor: pointer; text-decoration: underline; transition: color 0.2s;
+    }
+    .btn-bump-no:hover { color: rgba(255,255,255,0.55); }
+
+    .add-cart-wrap { margin-top: 16px; }
+
+    /* ─────────────────────────────────────────────
+       PHASE 3 — CONFIRM
+    ───────────────────────────────────────────── */
+    .confirm-top {
+      text-align: center; padding: 20px 0 18px;
+    }
+    .confirm-icon {
+      font-size: 52px; display: block; margin-bottom: 8px;
+      animation: popBounce 0.55s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popBounce {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .confirm-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px; letter-spacing: 1.5px; color: var(--cta);
+    }
+    .confirm-sub {
+      font-size: 12.5px; color: rgba(255,255,255,0.40);
+      margin-top: 4px; font-weight: 500;
+    }
+
+    .confirm-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 11px; margin-bottom: 22px;
+    }
+    .confirm-card {
+      background: var(--surface);
+      border: 1.5px solid rgba(148,221,45,0.28);
+      border-radius: 14px; padding: 14px;
+      text-align: center;
+    }
+    .confirm-thumb {
+      width: 80px; height: 107px; border-radius: 8px;
+      object-fit: cover; margin: 0 auto 8px; display: block;
+    }
+    .confirm-card-label {
+      font-size: 10.5px; font-weight: 700;
+      color: rgba(255,255,255,0.45); margin-bottom: 3px;
+    }
+    .confirm-card-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px; color: var(--cta);
+    }
+
+    .add-more-card {
+      background: rgba(255,255,255,0.02);
+      border: 2px dashed rgba(148,221,45,0.22);
+      border-radius: 14px; padding: 14px;
+      text-align: center; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 7px;
+      transition: all 0.2s;
+    }
+    .add-more-card:hover {
+      border-color: var(--cta);
+      background: rgba(148,221,45,0.04);
+    }
+    .plus-ring {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: rgba(148,221,45,0.09);
+      border: 1.5px solid rgba(148,221,45,0.28);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 200; color: var(--cta);
+    }
+    .add-more-text {
+      font-size: 12px; font-weight: 700;
+      color: rgba(255,255,255,0.55);
+    }
+    .add-more-sub { font-size: 10px; color: rgba(255,255,255,0.26); }
+
+    .confirm-actions { display: flex; flex-direction: column; gap: 10px; }
+
+    /* ─── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 480px) {
+      .main { padding: 18px 13px 70px; }
+      .sticker-wrap { width: 176px; }
+      .confirm-thumb { width: 66px; height: 88px; }
+    }
+    @media (min-width: 600px) {
+      .sticker-wrap { width: 240px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ██████████  MODAL PIX  ██████████ -->
-  <div class="pix-overlay" id="pixOverlay">
-    <div class="pix-modal">
-      <button class="close-btn" onclick="closePixModal()" title="Fechar">✕</button>
-
-      <h2>Pague com PIX 🟢</h2>
-      <div class="pix-amount" id="pixAmount">R$ 19,90</div>
-      <p class="pix-label">Escaneie o QR Code ou copie o código abaixo:</p>
-
-      <div class="pix-qr-wrap">
-        <img id="pixQrImg" src="" alt="QR Code PIX" />
-      </div>
-
-      <div class="pix-code-wrap">
-        <code id="pixCodeText"></code>
-        <button class="pix-copy-btn" id="pixCopyBtn" onclick="copyPixCode()">Copiar</button>
-      </div>
-
-      <div class="pix-status" id="pixStatus">
-        <span class="dot"></span>
-        <span id="pixStatusText">Aguardando pagamento...</span>
-      </div>
-      <div class="pix-timer" id="pixTimer"></div>
-
-      <div class="pix-success-msg" id="pixSuccessMsg">
-        ✅ Pagamento confirmado! Preparando sua figurinha...
-      </div>
-    </div>
+<!-- ─── NAVBAR ────────────────────────────────── -->
+<nav class="navbar">
+  <a href="/" class="navbar-logo">
+    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
+  </a>
+  <div class="nav-steps">
+    <div class="nav-dot active" id="dot1"></div>
+    <div class="nav-dot" id="dot2"></div>
+    <div class="nav-dot" id="dot3"></div>
   </div>
-  <!-- NAVBAR -->
-  <nav class="editor-navbar">
-    <button class="nav-back" onclick="goBackToChoose()">← Voltar</button>
-    <span class="nav-title">Editor de Figurinha</span>
-    <a class="cart-nav-btn hidden" id="cartNavBtn" href="/carrinho.html">
-      🛒 <span class="cart-nav-badge" id="cartNavCount">0</span>
-      <span class="cart-nav-total" id="cartNavTotal">R$0</span>
-      <span style="color:#aaa;font-weight:400">· Finalizar</span>
-    </a>
-  </nav>
+  <a class="nav-cart" id="cartNavBtn" href="/carrinho.html">
+    🛒
+    <span class="nav-cart-badge" id="cartNavCount">0</span>
+    <span class="nav-cart-total" id="cartNavTotal">R$0</span>
+  </a>
+</nav>
 
-  <div class="editor-container">
-    <!-- Left: Card Preview with Arrows -->
-    <div>
-      <div class="card-area">
-        <button class="arrow-btn" onclick="prevMoldura()">&#8249;</button>
-        <div class="card-wrapper">
-          <canvas id="cardCanvas" width="1543" height="2047"></canvas>
-        </div>
-        <button class="arrow-btn" onclick="nextMoldura()">&#8250;</button>
+<div class="main">
+
+  <!-- ████  FASE 1: PERSONALIZAR  ████ -->
+  <div id="phase1">
+
+    <!-- Sticker com animação de reveal -->
+    <div class="sticker-wrap" id="stickerWrap">
+      <canvas id="cardCanvas" width="1543" height="2047"></canvas>
+      <div class="sticker-loading" id="stickerLoading">
+        <div class="spin-ring"></div>
+        <p>Carregando sua figurinha...</p>
       </div>
-      <div class="moldura-indicator">
-        <div id="molduraDots"></div>
-      </div>
-      <div class="moldura-options" id="molduraButtons"></div>
     </div>
 
-    <!-- Right: Controls -->
-    <div class="controls">
-      <!-- Text Fields -->
-      <div class="control-group">
-        <h3>Detalhes do Jogador</h3>
-        <div class="field">
-          <label>Nome</label>
-          <input type="text" id="playerName" value="" placeholder="Ex: SEU NOME" maxlength="20" oninput="renderCard()" />
-        </div>
-        <div class="field">
-          <label>Data de Nascimento</label>
-          <input type="text" id="playerBirth" value="" placeholder="Ex: 15/03/1995" maxlength="10" oninput="formatBirth(this); renderCard()" />
-        </div>
-        <div class="field" id="alturaGroup">
-          <label>Altura</label>
-          <input type="text" id="playerHeight" value="" placeholder="Ex: 1,75" maxlength="4" oninput="formatHeight(this); renderCard()" />
-        </div>
-      </div>
-
-      <!-- Seletor de produto -->
-      <div class="product-selector">
-        <label>Escolha o produto</label>
-        <div class="product-options" id="productOptions">
-          <div class="product-opt selected" data-type="digital" data-price="1990" onclick="selectProduct(this)">
-            <div class="opt-name">📱 Digital</div>
-            <div class="opt-price">R$19,90</div>
-          </div>
-          <div class="product-opt" data-type="fisica" data-price="2490" onclick="selectProduct(this)">
-            <div class="opt-name">📦 Física</div>
-            <div class="opt-price">R$24,90</div>
-          </div>
-          <div class="product-opt" data-type="moldura" data-price="4990" onclick="selectProduct(this)">
-            <div class="opt-name">🖼 Com Moldura</div>
-            <div class="opt-price">R$49,90</div>
-          </div>
-          <div class="product-opt" data-type="pack" data-price="6990" onclick="selectProduct(this)">
-            <div class="opt-name">🎴 Pack</div>
-            <div class="opt-price">R$69,90</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <button class="btn-comprar" id="btnAddCart" onclick="addToCart()">🛒 Adicionar ao Carrinho</button>
-      <button class="btn-download" onclick="downloadPreview()">Baixar Preview (com marca d'agua)</button>
+    <!-- Navegação de moldura -->
+    <div class="moldura-nav">
+      <button class="mol-btn" onclick="prevMoldura()">&#8249;</button>
+      <span class="mol-label">Moldura <span id="molNum">1</span> de <span id="molTotal">4</span></span>
+      <button class="mol-btn" onclick="nextMoldura()">&#8250;</button>
     </div>
+
+    <!-- Campos de personalização -->
+    <div class="player-form">
+      <h2>✏️ Personalize</h2>
+      <div class="fld">
+        <label>Nome na figurinha</label>
+        <input type="text" id="playerName" placeholder="Ex: SEU NOME" maxlength="20" oninput="renderCard()" />
+      </div>
+      <div class="fld">
+        <label>Data de Nascimento</label>
+        <input type="text" id="playerBirth" placeholder="Ex: 15/03/1995" maxlength="10" oninput="formatBirth(this); renderCard()" />
+      </div>
+      <div class="fld" id="alturaGroup">
+        <label>Altura</label>
+        <input type="text" id="playerHeight" placeholder="Ex: 1,75" maxlength="4" oninput="formatHeight(this); renderCard()" />
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goPhase2()">AMEI! ESCOLHER MEU PRODUTO →</button>
+    <button class="btn-ghost" onclick="downloadPreview()">Baixar preview gratuito (com marca d'água)</button>
   </div>
 
-  <!-- Botão flutuante carrinho -->
-  <button class="cart-fab hidden" id="cartFab" onclick="goToCart()">
-    🛒 Ver Carrinho <span class="cart-count" id="cartFabCount">0</span>
-  </button>
 
-  <script>
-    // ── BACK TO CHOOSE ──
-    function goBackToChoose() {
-      var savedImageId = new URLSearchParams(window.location.search).get('imageId') || '';
-      window.location.href = 'gerar.html?restore=true&imageId=' + encodeURIComponent(savedImageId);
+  <!-- ████  FASE 2: ESCOLHA DO PRODUTO  ████ -->
+  <div id="phase2" class="hidden">
+
+    <!-- Miniatura da figurinha + nome -->
+    <div class="sticker-id-bar">
+      <img id="miniThumb" class="mini-thumb" src="" alt="Sua figurinha" />
+      <div class="sticker-id-texts">
+        <div class="sticker-id-eyebrow">Sua figurinha</div>
+        <div class="sticker-id-name" id="miniName">SUA FIGURINHA</div>
+      </div>
+    </div>
+
+    <!-- Social proof -->
+    <div class="proof-row">
+      <span class="proof-pill">⚡ 3.200+ figurinhas geradas</span>
+      <span class="proof-pill">⭐ 4.9 · 1.2k avaliações</span>
+      <span class="proof-pill">🔒 Pague só se gostar</span>
+    </div>
+
+    <h2 class="phase-title">Escolha sua figurinha</h2>
+    <p class="phase-sub">Quanto mais especial, mais você vai querer mostrar para todo mundo</p>
+
+    <!-- PACK — âncora de preço -->
+    <div class="pcard" id="card-pack" onclick="selectProduct('pack')">
+      <div class="pcard-badge anchor">5x mais escolhido</div>
+      <div class="pcard-body">
+        <img class="pcard-img" src="/pack-de-figurinhas.png" onerror="this.style.display='none'" alt="" />
+        <div class="pcard-info">
+          <div class="pcard-name">🎴 Pack de Figurinhas</div>
+          <div class="pcard-desc">Digital + Física + Moldura + Extra<br>O kit completo para colecionar</div>
+          <div class="pcard-price">R$69,90</div>
+        </div>
+        <div class="pcard-check" id="ck-pack"></div>
+      </div>
+    </div>
+
+    <!-- COM MOLDURA — destaque / mais popular (selecionado por padrão) -->
+    <div class="pcard hero selected" id="card-moldura" onclick="selectProduct('moldura')">
+      <div class="pcard-badge popular">🔥 MAIS POPULAR</div>
+      <div class="pcard-body">
+        <img class="pcard-img" src="/fiurinha-com-moldura.png" onerror="this.style.display='none'" alt="" />
+        <div class="pcard-info">
+          <div class="pcard-name">🖼 Com Moldura Premium</div>
+          <div class="pcard-desc">Figurinha digital + moldura exclusiva da Copa</div>
+          <div class="pcard-price">R$49,90</div>
+        </div>
+        <div class="pcard-check" id="ck-moldura">✓</div>
+      </div>
+    </div>
+
+    <!-- DIGITAL + FÍSICA — base -->
+    <div class="base-row">
+      <div class="pcard sm" id="card-digital" onclick="selectProduct('digital')">
+        <div class="pcard-body">
+          <img class="pcard-img" src="/figurinha-digital.png" onerror="this.style.display='none'" alt="" />
+          <div class="pcard-info">
+            <div class="pcard-name">📱 Digital</div>
+            <div class="pcard-price">R$19,90</div>
+          </div>
+          <div class="pcard-check" id="ck-digital"></div>
+        </div>
+      </div>
+      <div class="pcard sm" id="card-fisica" onclick="selectProduct('fisica')">
+        <div class="pcard-body">
+          <img class="pcard-img" src="/figurinha-fisica.png" onerror="this.style.display='none'" alt="" />
+          <div class="pcard-info">
+            <div class="pcard-name">📦 Física</div>
+            <div class="pcard-price">R$24,90</div>
+          </div>
+          <div class="pcard-check" id="ck-fisica"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER BUMP — aparece ao selecionar Digital ou Física -->
+    <div class="bump-wrap" id="bumpWrap">
+      <div class="bump-box">
+        <div class="bump-headline">✦ Espera! Sua figurinha vai ficar MUITO melhor...</div>
+        <div class="bump-compare">
+          <div class="bump-side">
+            <img class="bump-side-img" id="bumpBeforeImg" src="/figurinha-digital.png" onerror="this.style.display='none'" alt="" />
+            <div class="bump-side-label dim" id="bumpBeforeLabel">Sem moldura</div>
+            <div class="bump-side-price" style="color:rgba(255,255,255,0.35)" id="bumpBeforePrice">R$19,90</div>
+          </div>
+          <div class="bump-arrow">→</div>
+          <div class="bump-side">
+            <img class="bump-side-img" src="/fiurinha-com-moldura.png" onerror="this.style.display='none'" alt="" />
+            <div class="bump-side-label bright">Com Moldura</div>
+            <div class="bump-side-price" style="color:var(--amarelo)">+R$30,00</div>
+          </div>
+        </div>
+        <button class="btn-bump-yes" onclick="upgradeMoldura()">✦ SIM! QUERO A MOLDURA POR +R$30,00</button>
+        <button class="btn-bump-no" id="bumpDeclineBtn" onclick="declineBump()">Não, continuar sem moldura</button>
+      </div>
+    </div>
+
+    <!-- CTA principal -->
+    <div class="add-cart-wrap">
+      <button class="btn-primary" id="btnAddCart" onclick="addToCartAndNext()">
+        ADICIONAR AO CARRINHO · R$49,90
+      </button>
+    </div>
+    <button class="btn-ghost" onclick="goPhase1()">← Voltar para personalizar</button>
+  </div>
+
+
+  <!-- ████  FASE 3: CONFIRMAÇÃO  ████ -->
+  <div id="phase3" class="hidden">
+
+    <div class="confirm-top">
+      <span class="confirm-icon">✅</span>
+      <h2 class="confirm-title">FIGURINHA ADICIONADA!</h2>
+      <p class="confirm-sub">Sua figurinha está no carrinho esperando você</p>
+    </div>
+
+    <div class="confirm-grid">
+      <!-- Item confirmado -->
+      <div class="confirm-card">
+        <img id="confirmThumb" class="confirm-thumb" src="" alt="Figurinha" />
+        <div class="confirm-card-label" id="confirmLabel">Com Moldura Premium</div>
+        <div class="confirm-card-price" id="confirmPrice">R$49,90</div>
+      </div>
+      <!-- Slot "adicionar mais" -->
+      <div class="add-more-card" onclick="addAnother()">
+        <div class="plus-ring">+</div>
+        <div class="add-more-text">Criar para alguém especial</div>
+        <div class="add-more-sub">Amigo · Namorado(a) · Filho(a)</div>
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-primary" id="btnCheckout" onclick="window.location.href='/carrinho.html'">
+        🛒 FINALIZAR COMPRA
+      </button>
+      <button class="btn-outline" onclick="addAnother()">+ Adicionar outra figurinha</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── URL PARAMS ───────────────────────────── */
+  var p = new URLSearchParams(window.location.search);
+  var paramImageUrl  = p.get('imageUrl')  || '';
+  var paramHiresUrl  = p.get('hiresUrl')  || '';
+  var paramImageId   = p.get('imageId')   || '';
+  var paramCountry   = p.get('country')   || 'brasil';
+  var paramType      = p.get('type')      || 'sozinho';
+  var paramTextColors = (function () {
+    try { return JSON.parse(p.get('textColors') || '{}'); } catch (_) { return {}; }
+  })();
+  var legacyColor = p.get('textColor') || '#FFFFFF';
+
+  var isPetOrCasal = (paramType === 'pet' || paramType === 'familia');
+  if (isPetOrCasal) {
+    var ag = document.getElementById('alturaGroup');
+    if (ag) ag.style.display = 'none';
+  }
+
+  /* ── FORMATTERS ───────────────────────────── */
+  function formatBirth(input) {
+    var v = input.value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5)      input.value = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+    else if (v.length >= 3) input.value = v.slice(0,2) + '/' + v.slice(2);
+    else                    input.value = v;
+  }
+  function formatHeight(input) {
+    var v = input.value.replace(/\D/g, '').slice(0, 3);
+    input.value = v.length >= 2 ? v.slice(0,1) + ',' + v.slice(1) : v;
+  }
+  function fmtPrice(cents) {
+    return 'R$' + (cents / 100).toFixed(2).replace('.', ',');
+  }
+
+  /* ── CANVAS ───────────────────────────────── */
+  var CANVAS_W = 1543, CANVAS_H = 2047;
+
+  function getColor(moldura, field) {
+    var m = paramTextColors[moldura];
+    if (!m) return legacyColor;
+    return typeof m === 'string' ? m : (m[field] || legacyColor);
+  }
+
+  var TC = {
+    name:   { x: 240, y: 1750, font: '700 72px Montserrat', color: getColor('01','name')   },
+    height: { x: 320, y: 1870, font: '400 48px Montserrat', color: getColor('01','height') },
+    birth:  { x: 570, y: 1870, font: '400 48px Montserrat', color: getColor('01','birth')  },
+  };
+  function refreshColors(mol) {
+    TC.name.color   = getColor(mol, 'name');
+    TC.height.color = getColor(mol, 'height');
+    TC.birth.color  = getColor(mol, 'birth');
+  }
+
+  var COUNTRY_MOLDURAS = {
+    brasil:4, argentina:4, colombia:4, uruguai:4,
+    franca:4, alemanha:4, portugal:4, espanha:4,
+  };
+  var numMolduras = COUNTRY_MOLDURAS[paramCountry] || 4;
+  var MOLDURAS = [];
+  for (var i = 1; i <= numMolduras; i++) MOLDURAS.push(String(i).padStart(2, '0'));
+  var molIdx = 0;
+
+  document.getElementById('molTotal').textContent = numMolduras;
+
+  var layoutImg = new Image(), molduraImgs = {};
+  var loaded = 0, totalLoad = 1 + numMolduras;
+
+  function onLoad() {
+    loaded++;
+    if (loaded >= totalLoad) { renderCard(); revealCard(); }
+  }
+
+  layoutImg.crossOrigin = 'anonymous';
+  layoutImg.onload = layoutImg.onerror = onLoad;
+  layoutImg.src = paramImageUrl || '/assets/layouts/' + paramCountry + '.png';
+
+  MOLDURAS.forEach(function (m) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = img.onerror = onLoad;
+    img.src = isPetOrCasal
+      ? '/assets/molduras/' + paramCountry + '/pet-casal/' + m + '-pet-casal.png'
+      : '/assets/molduras/' + paramCountry + '/' + m + '-sozinho.png';
+    molduraImgs[m] = img;
+  });
+
+  function revealCard() {
+    var loading = document.getElementById('stickerLoading');
+    var canvas  = document.getElementById('cardCanvas');
+    var wrap    = document.getElementById('stickerWrap');
+    loading.classList.add('gone');
+    canvas.classList.add('revealed');
+    wrap.classList.add('glowing');
+    setTimeout(function () { wrap.classList.remove('glowing'); }, 1500);
+  }
+
+  function renderCard() {
+    var canvas = document.getElementById('cardCanvas');
+    var ctx    = canvas.getContext('2d');
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+    if (layoutImg.complete && layoutImg.naturalWidth) {
+      var sc = Math.max(CANVAS_W / layoutImg.naturalWidth, CANVAS_H / layoutImg.naturalHeight);
+      ctx.drawImage(layoutImg,
+        (CANVAS_W - layoutImg.naturalWidth  * sc) / 2,
+        (CANVAS_H - layoutImg.naturalHeight * sc) / 2,
+        layoutImg.naturalWidth * sc, layoutImg.naturalHeight * sc);
     }
 
-    // ── CONFIG ──
-    var CANVAS_W = 1543;
-    var CANVAS_H = 2047;
-
-    // Auto-format birth date: inserts / after DD and MM
-    function formatBirth(input) {
-      var v = input.value.replace(/\D/g, '').slice(0, 8);
-      if (v.length >= 5) {
-        input.value = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
-      } else if (v.length >= 3) {
-        input.value = v.slice(0, 2) + '/' + v.slice(2);
-      } else {
-        input.value = v;
-      }
+    var mImg = molduraImgs[MOLDURAS[molIdx]];
+    if (mImg && mImg.complete && mImg.naturalWidth) {
+      ctx.drawImage(mImg, 0, 0, CANVAS_W, CANVAS_H);
     }
 
-    // Auto-format height: inserts , after first digit
-    function formatHeight(input) {
-      var v = input.value.replace(/\D/g, '').slice(0, 3);
-      if (v.length >= 2) {
-        input.value = v.slice(0, 1) + ',' + v.slice(1);
-      } else {
-        input.value = v;
-      }
+    var name   = (document.getElementById('playerName').value  || '').toUpperCase();
+    var birth  = (document.getElementById('playerBirth').value || '').toUpperCase().replace(/\//g, '-');
+    var height = (document.getElementById('playerHeight').value || '').toUpperCase();
+
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+
+    ctx.font = TC.name.font; ctx.fillStyle = TC.name.color;
+    ctx.fillText(name, TC.name.x, TC.name.y);
+
+    if (!isPetOrCasal) {
+      ctx.font = TC.height.font; ctx.fillStyle = TC.height.color;
+      ctx.fillText(height, TC.height.x, TC.height.y);
     }
+    ctx.font = TC.birth.font; ctx.fillStyle = TC.birth.color;
+    ctx.fillText(birth, TC.birth.x, TC.birth.y);
 
-    // ── READ URL PARAMS ──
-    var editorParams = new URLSearchParams(window.location.search);
-    var paramImageUrl = editorParams.get('imageUrl') || '';
-    var paramHiresUrl = editorParams.get('hiresUrl') || '';
-    var paramImageId = editorParams.get('imageId') || '';
-    var paramCountry = editorParams.get('country') || 'brasil';
-    var paramType = editorParams.get('type') || 'jogador'; // jogador | pet | familia
-    var paramTextColors = (function() {
-      try { return JSON.parse(editorParams.get('textColors') || '{}'); } catch(_) { return {}; }
-    })();
-    var legacyColor = editorParams.get('textColor') || '#FFFFFF';
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  }
 
-    // Returns color for a specific moldura + field (name|birth|height)
-    // Supports new {name,birth,height} per-moldura structure and legacy string
-    function getFieldColor(moldura, field) {
-      var m = paramTextColors[moldura];
-      if (!m) return legacyColor;
-      if (typeof m === 'string') return m;
-      return m[field] || legacyColor;
+  function prevMoldura() {
+    molIdx = (molIdx - 1 + MOLDURAS.length) % MOLDURAS.length;
+    refreshColors(MOLDURAS[molIdx]);
+    document.getElementById('molNum').textContent = molIdx + 1;
+    renderCard();
+  }
+  function nextMoldura() {
+    molIdx = (molIdx + 1) % MOLDURAS.length;
+    refreshColors(MOLDURAS[molIdx]);
+    document.getElementById('molNum').textContent = molIdx + 1;
+    renderCard();
+  }
+
+  /* ── CART ─────────────────────────────────── */
+  var CART_KEY = 'figuri_cart';
+  var PRODUCTS = {
+    digital: { label: 'Figurinha Digital',             price: 1990 },
+    fisica:  { label: 'Figurinha Física',              price: 2490 },
+    moldura: { label: 'Figurinha com Moldura Premium', price: 4990 },
+    pack:    { label: 'Pack de Figurinhas',             price: 6990 },
+  };
+  var selProduct = 'moldura';
+
+  function getCart()     { try { return JSON.parse(localStorage.getItem(CART_KEY) || '{"items":[]}'); } catch (_) { return { items: [] }; } }
+  function saveCart(c)   { localStorage.setItem(CART_KEY, JSON.stringify(c)); refreshCartNav(); }
+
+  function refreshCartNav() {
+    var cart  = getCart();
+    var items = cart.items || [];
+    var n     = items.length;
+    var total = items.reduce(function (s, i) { return s + (i.price || 0); }, 0);
+    var btn   = document.getElementById('cartNavBtn');
+    var cnt   = document.getElementById('cartNavCount');
+    var ttl   = document.getElementById('cartNavTotal');
+    if (n > 0) {
+      btn.classList.add('show');
+      cnt.textContent = n;
+      ttl.textContent = fmtPrice(total);
+    } else {
+      btn.classList.remove('show');
     }
+  }
 
-    var isPetOrCasal = (paramType === 'pet' || paramType === 'familia');
+  /* ── NAV DOTS ─────────────────────────────── */
+  function setDots(active) {
+    ['dot1','dot2','dot3'].forEach(function (id, i) {
+      var d = document.getElementById(id);
+      d.className = 'nav-dot';
+      if (i + 1 < active)      d.classList.add('done');
+      else if (i + 1 === active) d.classList.add('active');
+    });
+  }
 
-    // Hide Altura field for pet and casal
-    if (isPetOrCasal) {
-      var alturaGroup = document.getElementById('alturaGroup');
-      if (alturaGroup) alturaGroup.style.display = 'none';
-    }
+  /* ── PHASE TRANSITIONS ────────────────────── */
+  function goPhase1() {
+    document.getElementById('phase2').classList.add('hidden');
+    document.getElementById('phase1').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setDots(1);
+  }
 
-    // Country moldura config — how many molduras each country has
-    var COUNTRY_MOLDURAS = {
-      brasil: 4, argentina: 4, colombia: 4, uruguai: 4,
-      franca: 4, alemanha: 4, portugal: 4, espanha: 4,
-    };
+  function goPhase2() {
+    // Captura thumbnail do canvas
+    var canvas = document.getElementById('cardCanvas');
+    var thumb  = '';
+    try { thumb = canvas.toDataURL('image/jpeg', 0.72); } catch (_) {}
+    document.getElementById('miniThumb').src   = thumb;
+    document.getElementById('confirmThumb').src = thumb;
 
-    var numMolduras = COUNTRY_MOLDURAS[paramCountry] || 4;
-    var MOLDURAS = [];
-    for (var i = 1; i <= numMolduras; i++) {
-      MOLDURAS.push(String(i).padStart(2, '0'));
-    }
-    var currentMolduraIndex = 0;
+    var name = (document.getElementById('playerName').value || '').toUpperCase() || 'SUA FIGURINHA';
+    document.getElementById('miniName').textContent = name;
 
-    // Text positions (based on 1543x2047 canvas)
-    var TEXT_CONFIG = {
-      name:   { x: 240, y: 1750, font: '700 72px Sora', color: getFieldColor('01', 'name') },
-      height: { x: 320, y: 1870, font: '400 48px Sora', color: getFieldColor('01', 'height') },
-      birth:  { x: 570, y: 1870, font: '400 48px Sora', color: getFieldColor('01', 'birth') },
-    };
+    document.getElementById('phase1').classList.add('hidden');
+    document.getElementById('phase2').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setDots(2);
+  }
 
-    function updateTextConfigColor(moldura) {
-      TEXT_CONFIG.name.color   = getFieldColor(moldura, 'name');
-      TEXT_CONFIG.height.color = getFieldColor(moldura, 'height');
-      TEXT_CONFIG.birth.color  = getFieldColor(moldura, 'birth');
-    }
+  /* ── PRODUCT SELECTION ────────────────────── */
+  function selectProduct(type) {
+    selProduct = type;
 
-    // ── IMAGE CACHE ──
-    var layoutImg = new Image();
-    var molduraImgs = {};
-    var imagesLoaded = 0;
-    var totalImages = 1 + numMolduras;
-
-    function onImageLoad() {
-      imagesLoaded++;
-      if (imagesLoaded >= totalImages) {
-        renderCard();
-      }
-    }
-
-    // Load layout (use generated image from URL params if available)
-    layoutImg.crossOrigin = 'anonymous';
-    layoutImg.onload = onImageLoad;
-    layoutImg.src = paramImageUrl || '/assets/layouts/' + paramCountry + '.png';
-
-    // Load molduras dynamically based on country and type
-    MOLDURAS.forEach(function(m) {
-      var img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = onImageLoad;
-      var molduraPath = isPetOrCasal
-        ? '/assets/molduras/' + paramCountry + '/pet-casal/' + m + '-pet-casal.png'
-        : '/assets/molduras/' + paramCountry + '/' + m + '-sozinho.png';
-      img.src = molduraPath;
-      molduraImgs[m] = img;
+    ['pack','moldura','digital','fisica'].forEach(function (t) {
+      var card  = document.getElementById('card-' + t);
+      var check = document.getElementById('ck-' + t);
+      card.classList.toggle('selected', t === type);
+      if (check) check.textContent = (t === type) ? '✓' : '';
     });
 
-    // ── RENDER ──
-    function renderCard() {
-      var canvas = document.getElementById('cardCanvas');
-      var ctx = canvas.getContext('2d');
-
-      // Clear
-      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-
-      // 1. Draw layout (jogador) — fit to canvas
-      if (layoutImg.complete && layoutImg.naturalWidth) {
-        // Calculate scaling to fit layout into canvas
-        var scale = Math.max(CANVAS_W / layoutImg.naturalWidth, CANVAS_H / layoutImg.naturalHeight);
-        var sw = layoutImg.naturalWidth * scale;
-        var sh = layoutImg.naturalHeight * scale;
-        var sx = (CANVAS_W - sw) / 2;
-        var sy = (CANVAS_H - sh) / 2;
-        ctx.drawImage(layoutImg, sx, sy, sw, sh);
-      }
-
-      // 2. Draw moldura overlay
-      var currentMoldura = MOLDURAS[currentMolduraIndex];
-      var molduraImg = molduraImgs[currentMoldura];
-      if (molduraImg && molduraImg.complete && molduraImg.naturalWidth) {
-        ctx.drawImage(molduraImg, 0, 0, CANVAS_W, CANVAS_H);
-      }
-
-      // 3. Draw texts
-      var name = (document.getElementById('playerName').value || '').toUpperCase();
-      var birth = (document.getElementById('playerBirth').value || '').toUpperCase();
-      var height = (document.getElementById('playerHeight').value || '').toUpperCase();
-
-      // Format birth: replace / with -
-      birth = birth.replace(/\//g, '-');
-
-      // Name — bold, centered
-      ctx.font = TEXT_CONFIG.name.font;
-      ctx.fillStyle = TEXT_CONFIG.name.color;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-
-      // Add text shadow for readability
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-
-      ctx.fillText(name, TEXT_CONFIG.name.x, TEXT_CONFIG.name.y);
-
-      // Height — only for sozinho
-      if (!isPetOrCasal) {
-        ctx.font = TEXT_CONFIG.height.font;
-        ctx.fillText(height, TEXT_CONFIG.height.x, TEXT_CONFIG.height.y);
-      }
-
-      // Birth — regular, centered at its position
-      ctx.font = TEXT_CONFIG.birth.font;
-      ctx.fillText(birth, TEXT_CONFIG.birth.x, TEXT_CONFIG.birth.y);
-
-      // Reset shadow
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+    // Bump: aparece só para base
+    var bump = document.getElementById('bumpWrap');
+    if (type === 'digital' || type === 'fisica') {
+      var prod = PRODUCTS[type];
+      document.getElementById('bumpBeforeImg').src         = type === 'digital' ? '/figurinha-digital.png' : '/figurinha-fisica.png';
+      document.getElementById('bumpBeforeLabel').textContent = type === 'digital' ? 'Só digital' : 'Só física';
+      document.getElementById('bumpBeforePrice').textContent = fmtPrice(prod.price);
+      document.getElementById('bumpDeclineBtn').textContent  = 'Não, continuar com ' + prod.label + ' (' + fmtPrice(prod.price) + ')';
+      bump.classList.add('open');
+      setTimeout(function () { bump.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
+    } else {
+      bump.classList.remove('open');
     }
 
-    // ── MOLDURA CONTROLS — navegação só pelas setas ← → ──
+    // Atualiza CTA
+    document.getElementById('btnAddCart').textContent = 'ADICIONAR AO CARRINHO · ' + fmtPrice(PRODUCTS[type].price);
+  }
 
-    function setMoldura(name) {
-      currentMolduraIndex = MOLDURAS.indexOf(name);
-      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
-      updateMolduraUI();
-      renderCard();
-    }
+  function upgradeMoldura() {
+    document.getElementById('bumpWrap').classList.remove('open');
+    selectProduct('moldura');
+  }
+  function declineBump() {
+    document.getElementById('bumpWrap').classList.remove('open');
+  }
 
-    function nextMoldura() {
-      currentMolduraIndex = (currentMolduraIndex + 1) % MOLDURAS.length;
-      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
-      updateMolduraUI();
-      renderCard();
-    }
+  function addToCartAndNext() {
+    var prod = PRODUCTS[selProduct];
+    if (!prod) return;
 
-    function prevMoldura() {
-      currentMolduraIndex = (currentMolduraIndex - 1 + MOLDURAS.length) % MOLDURAS.length;
-      updateTextConfigColor(MOLDURAS[currentMolduraIndex]);
-      updateMolduraUI();
-      renderCard();
-    }
+    var canvas = document.getElementById('cardCanvas');
+    var thumb  = '';
+    try { thumb = canvas.toDataURL('image/jpeg', 0.6); } catch (_) { thumb = paramImageUrl || ''; }
 
-    function updateMolduraUI() { /* setas controlam, sem UI de dots/botões */ }
+    var cart = getCart();
+    cart.items.push({
+      id:             Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      imageId:        paramImageId,
+      variationIndex: parseInt(p.get('varIndex') || '0', 10),
+      imageUrl:       paramImageUrl,
+      hiresUrl:       paramHiresUrl,
+      thumbnail:      thumb,
+      productType:    selProduct,
+      productLabel:   prod.label,
+      price:          prod.price,
+      country:        paramCountry,
+      type:           paramType,
+      playerName:     document.getElementById('playerName').value,
+      playerBirth:    document.getElementById('playerBirth').value,
+      playerHeight:   isPetOrCasal ? '' : document.getElementById('playerHeight').value,
+      moldura:        MOLDURAS[molIdx],
+    });
+    saveCart(cart);
 
-    // ── CARRINHO ─────────────────────────────────────────────────────────────
+    // Atualiza fase 3
+    document.getElementById('confirmLabel').textContent = prod.label;
+    document.getElementById('confirmPrice').textContent = fmtPrice(prod.price);
 
-    var CART_KEY = 'figuri_cart';
+    var cartNow = getCart();
+    var total   = cartNow.items.reduce(function (s, i) { return s + (i.price || 0); }, 0);
+    document.getElementById('btnCheckout').textContent = '🛒 FINALIZAR COMPRA · ' + fmtPrice(total);
 
-    var PRODUCTS_MAP = {
-      digital: { label: 'Figurinha Digital',             price: 1990 },
-      fisica:  { label: 'Figurinha Física',              price: 2490 },
-      moldura: { label: 'Figurinha com Moldura Premium', price: 4990 },
-      pack:    { label: 'Pack de Figurinhas',             price: 6990 },
-    };
+    document.getElementById('phase2').classList.add('hidden');
+    document.getElementById('phase3').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setDots(3);
+  }
 
-    var selectedProductType = 'digital';
+  function addAnother() { window.location.href = '/gerar.html'; }
 
-    function selectProduct(el) {
-      document.querySelectorAll('.product-opt').forEach(function(o) { o.classList.remove('selected'); });
-      el.classList.add('selected');
-      selectedProductType = el.dataset.type;
-    }
+  function downloadPreview() {
+    var canvas = document.getElementById('cardCanvas');
+    var link   = document.createElement('a');
+    link.download = 'figurinha-preview.png';
+    link.href      = canvas.toDataURL('image/png');
+    link.click();
+  }
 
-    function getCart() {
-      try { return JSON.parse(localStorage.getItem(CART_KEY) || '{"items":[]}'); } catch(_) { return { items: [] }; }
-    }
+  /* ── BACK COMPAT ─────────────────────────── */
+  window.prevMoldura   = prevMoldura;
+  window.nextMoldura   = nextMoldura;
+  window.renderCard    = renderCard;
+  window.formatBirth   = formatBirth;
+  window.formatHeight  = formatHeight;
+  window.goPhase1      = goPhase1;
+  window.goPhase2      = goPhase2;
+  window.selectProduct = selectProduct;
+  window.upgradeMoldura = upgradeMoldura;
+  window.declineBump   = declineBump;
+  window.addToCartAndNext = addToCartAndNext;
+  window.addAnother    = addAnother;
+  window.downloadPreview = downloadPreview;
 
-    function saveCart(cart) {
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      updateCartUI();
-    }
-
-    function updateCartUI() {
-      var cart  = getCart();
-      var items = cart.items || [];
-      var n     = items.length;
-      var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
-      var fmt   = 'R$' + (total / 100).toFixed(2).replace('.', ',');
-
-      // FAB
-      var fab = document.getElementById('cartFab');
-      var fabCount = document.getElementById('cartFabCount');
-      if (n > 0) { fab.classList.remove('hidden'); fabCount.textContent = n; }
-      else { fab.classList.add('hidden'); }
-
-      // Navbar
-      var navBtn   = document.getElementById('cartNavBtn');
-      var navCount = document.getElementById('cartNavCount');
-      var navTotal = document.getElementById('cartNavTotal');
-      if (n > 0) {
-        navBtn.classList.remove('hidden');
-        navCount.textContent = n;
-        navTotal.textContent = fmt;
-      } else {
-        navBtn.classList.add('hidden');
-      }
-    }
-
-    function addToCart() {
-      try {
-        var product = PRODUCTS_MAP[selectedProductType];
-        if (!product) { alert('Selecione um produto antes de adicionar.'); return; }
-
-        var canvas = document.getElementById('cardCanvas');
-        var thumbnail = '';
-        try { thumbnail = canvas.toDataURL('image/jpeg', 0.6); } catch(_) { thumbnail = paramImageUrl || ''; }
-
-        var cart = getCart();
-        cart.items.push({
-          id:             Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-          imageId:        paramImageId,
-          variationIndex: parseInt(editorParams.get('varIndex') || '0', 10),
-          imageUrl:       paramImageUrl,
-          hiresUrl:       paramHiresUrl,
-          thumbnail:      thumbnail,
-          productType:    selectedProductType,
-          productLabel:   product.label,
-          price:          product.price,
-          country:        paramCountry,
-          type:           paramType,
-          playerName:     document.getElementById('playerName').value,
-          playerBirth:    document.getElementById('playerBirth').value,
-          playerHeight:   document.getElementById('playerHeight').value,
-          moldura:        MOLDURAS[currentMolduraIndex],
-        });
-        saveCart(cart);
-        updateCartUI();
-
-        // Feedback visual no botão
-        var btn = document.getElementById('btnAddCart');
-        btn.textContent = '✅ Adicionado!';
-        btn.style.background = 'linear-gradient(135deg,#FFC300,#e6b000)';
-        setTimeout(function() {
-          btn.textContent = '🛒 Adicionar ao Carrinho';
-          btn.style.background = '';
-        }, 1800);
-
-      } catch(err) {
-        console.error('addToCart error:', err);
-        alert('Erro ao adicionar: ' + err.message);
-      }
-    }
-
-    function goToCart() { window.location.href = '/carrinho.html'; }
-
-    // Inicializa UI do carrinho ao carregar
-    updateCartUI();
-
-    function downloadPreview() {
-      var canvas = document.getElementById('cardCanvas');
-      var link = document.createElement('a');
-      link.download = 'figurinha-preview.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
-  </script>
+  /* ── INIT ────────────────────────────────── */
+  refreshCartNav();
+  selectProduct('moldura'); // padrão = mais popular
+})();
+</script>
 </body>
 </html>
