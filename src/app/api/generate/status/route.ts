@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
           // 5xx / 429 → pode ser transiente, continua tentando
           if (statusRes.status >= 400 && statusRes.status < 500 && statusRes.status !== 429) {
             let errMsg = '';
-            try { errMsg = JSON.parse(errText)?.detail || errText; } catch (_) { errMsg = errText; }
+            try { errMsg = JSON.parse(errText)?.detail || errText; } catch { errMsg = errText; }
             return { index, taskId, status: 'failed', errorMsg: errMsg.slice(0, 300) };
           }
           return { index, taskId, status: 'processing' };
@@ -204,7 +204,8 @@ export async function GET(req: NextRequest) {
     if (allCompleted && completedResults.length === 0) {
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
       // Coleta a primeira mensagem de erro encontrada nas tasks
-      const firstErr = results.find(r => (r as any).errorMsg)?.errorMsg as string | undefined;
+      type TaskResult = { index: number; taskId: string; status: string; errorMsg?: string };
+      const firstErr = (results as TaskResult[]).find(r => r.errorMsg)?.errorMsg;
       return NextResponse.json({
         status: 'failed',
         error: firstErr || 'Todas as gerações falharam. Tente com outra foto.',
