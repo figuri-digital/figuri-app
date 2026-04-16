@@ -104,16 +104,25 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Salva order no banco (Supabase) ──────────────────────────────────────
-    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
-    await adminSupabase.from('orders').insert({
-      payment_id:   String(order.id),
-      user_id:      user.id,
-      amount_cents: totalCents,
-      status:       'pending',
-      product_type: items.map(i => i.productType).join(','),
-      // Armazena os itens como JSON no campo image_id (reaproveitando coluna)
-      image_id:     JSON.stringify(items.map(i => ({ id: i.id, imageId: i.imageId, variationIndex: i.variationIndex, hiresUrl: i.hiresUrl }))),
-    });
+    // Usa try/catch isolado para não bloquear a resposta ao usuário caso
+    // a service role key não esteja configurada ou RLS bloqueie o insert.
+    // O webhook de pagamento atualizará o status quando o PIX for confirmado.
+    try {
+      const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { error: dbError } = await adminSupabase.from('orders').insert({
+        payment_id:   String(order.id),
+        user_id:      user.id,
+        amount_cents: totalCents,
+        status:       'pending',
+        product_type: items.map(i => i.productType).join(','),
+        image_id:     JSON.stringify(items.map(i => ({ id: i.id, imageId: i.imageId, variationIndex: i.variationIndex, hiresUrl: i.hiresUrl }))),
+      });
+      if (dbError) {
+        console.error('[orders] Supabase insert error (non-fatal):', dbError.message);
+      }
+    } catch (dbEx) {
+      console.error('[orders] Supabase insert exception (non-fatal):', dbEx);
+    }
 
     return NextResponse.json({
       order_id:       String(order.id),

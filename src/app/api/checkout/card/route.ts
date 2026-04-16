@@ -87,18 +87,25 @@ export async function POST(request: NextRequest) {
 
     // ── Salvar pedido no banco ───────────────────────────────────────────────
     if (payment.status === 'approved' || payment.status === 'in_process') {
-      const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
-      await adminSupabase.from('orders').insert({
-        payment_id:   String(payment.id),
-        user_id:      user.id,
-        amount_cents: Math.round(body.transaction_amount * 100),
-        status:       payment.status === 'approved' ? 'paid' : 'pending',
-        product_type: body.items.map(i => i.productType).join(','),
-        image_id:     JSON.stringify(
-          body.items.map(i => ({ id: i.id, imageId: i.imageId, variationIndex: i.variationIndex, hiresUrl: i.hiresUrl }))
-        ),
-        paid_at: payment.status === 'approved' ? new Date().toISOString() : null,
-      });
+      try {
+        const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
+        const { error: dbError } = await adminSupabase.from('orders').insert({
+          payment_id:   String(payment.id),
+          user_id:      user.id,
+          amount_cents: Math.round(body.transaction_amount * 100),
+          status:       payment.status === 'approved' ? 'paid' : 'pending',
+          product_type: body.items.map(i => i.productType).join(','),
+          image_id:     JSON.stringify(
+            body.items.map(i => ({ id: i.id, imageId: i.imageId, variationIndex: i.variationIndex, hiresUrl: i.hiresUrl }))
+          ),
+          paid_at: payment.status === 'approved' ? new Date().toISOString() : null,
+        });
+        if (dbError) {
+          console.error('[card] Supabase insert error (non-fatal):', dbError.message);
+        }
+      } catch (dbEx) {
+        console.error('[card] Supabase insert exception (non-fatal):', dbEx);
+      }
     }
 
     return NextResponse.json({
