@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerar Figurinha — Opção 2: Hexágonos da bola</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde-escuro: #1A2B01;
+      --verde: #396100;
+      --verde-claro: #EDFBD9;
+      --amarelo: #FFC300;
+      --cta: #94DD2D;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 90px;
+      color: #fff;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='none' stroke='rgba(148,221,45,0.22)' stroke-width='1.5'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='60'%3E%3Cpolygon points='26,2 50,15 50,45 26,58 2,45 2,15' fill='none' stroke='rgba(148,221,45,0.22)' stroke-width='1.5'/%3E%3C/svg%3E"),
+        #111f02;
+      background-size: 52px 60px, 52px 60px, auto;
+      background-position: 0 0, 26px 30px, 0 0;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #111f02;
+      border-bottom: 1px solid rgba(148,221,45,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 54px;
+    }
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .navbar-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--cta);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .navbar-logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+    .navbar-badge {
+      background: rgba(148,221,45,0.12);
+      border: 1px solid rgba(148,221,45,0.30);
+      color: var(--cta);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── HEADER BANNER ── */
+    .header-banner {
+      background: linear-gradient(135deg, rgba(26,43,1,0.95) 0%, rgba(17,31,2,0.98) 100%);
+      border-bottom: 1px solid rgba(148,221,45,0.12);
+      padding: 28px 20px 24px;
+      text-align: center;
+    }
+    .header-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,195,0,0.10);
+      border: 1px solid rgba(255,195,0,0.25);
+      color: var(--amarelo);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .header-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 8vw, 48px);
+      line-height: 1;
+      letter-spacing: 0.04em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .header-title span {
+      color: var(--cta);
+    }
+    .header-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      max-width: 360px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 28px 16px 20px;
+    }
+
+    /* ── STEP PROGRESS ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 24px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .step.active .step-num {
+      background: var(--cta);
+      color: #111f02;
+    }
+    .step.inactive .step-num {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.35);
+    }
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .step.active .step-label { color: var(--cta); }
+    .step.inactive .step-label { color: rgba(255,255,255,0.30); }
+    .step-connector {
+      width: 40px;
+      height: 1.5px;
+      background: rgba(255,255,255,0.12);
+      margin: 0 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow:
+        0 4px 32px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(148,221,45,0.04) inset;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 20px;
+    }
+
+    /* ── TYPE TABS ── */
+    .type-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-align: center;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .tab.active {
+      background: rgba(148,221,45,0.15);
+      border-color: var(--cta);
+      color: var(--cta);
+    }
+    .tab.inactive {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.40);
+    }
+
+    /* ── UPLOAD BOX ── */
+    .upload-box {
+      border: 2px dashed rgba(148,221,45,0.25);
+      border-radius: 14px;
+      padding: 36px 20px;
+      text-align: center;
+      background: rgba(148,221,45,0.03);
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .upload-box:hover {
+      border-color: rgba(148,221,45,0.45);
+      background: rgba(148,221,45,0.06);
+    }
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .upload-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.70);
+      margin-bottom: 5px;
+    }
+    .upload-hint {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.30);
+    }
+
+    /* ── NOTICE ── */
+    .notice {
+      background: rgba(255,195,0,0.08);
+      border: 1px solid rgba(255,195,0,0.22);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,195,0,0.85);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    /* ── CREDITS LINE ── */
+    .credits-line {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.30);
+      text-align: center;
+      margin-bottom: 18px;
+      letter-spacing: 0.02em;
+    }
+    .credits-line span {
+      color: var(--cta);
+    }
+
+    /* ── CTA BUTTON ── */
+    .cta-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      cursor: not-allowed;
+      background: rgba(148,221,45,0.15);
+      color: rgba(148,221,45,0.35);
+      border: 1.5px solid rgba(148,221,45,0.15);
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* ── SWITCHER ── */
+    .switcher {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      background: rgba(10,20,2,0.97);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(148,221,45,0.20);
+      padding: 10px 16px 14px;
+      text-align: center;
+    }
+    .switcher-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .switcher-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .sw-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      border: 1.5px solid rgba(148,221,45,0.25);
+      color: rgba(255,255,255,0.55);
+      background: rgba(148,221,45,0.05);
+      transition: all 0.18s;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .sw-btn:hover {
+      border-color: #94DD2D;
+      color: #94DD2D;
+      background: rgba(148,221,45,0.10);
+    }
+    .sw-btn.active {
+      background: rgba(148,221,45,0.15);
+      border-color: #94DD2D;
+      color: #94DD2D;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar-logo">
+      <div class="navbar-logo-icon">⚽</div>
+      <span class="navbar-logo-text">Figuri</span>
+    </a>
+    <span class="navbar-badge">0 de 5 previews</span>
+  </nav>
+
+  <!-- HEADER BANNER -->
+  <div class="header-banner">
+    <div class="header-eyebrow">⚡ Preview gratuito — pague só se gostar</div>
+    <h1 class="header-title">Gere sua <span>figurinha</span></h1>
+    <p class="header-sub">Envie uma foto e vire um jogador da Copa do Mundo</p>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- STEP PROGRESS -->
+    <div class="steps">
+      <div class="step active">
+        <div class="step-num">①</div>
+        <span class="step-label">Foto</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step inactive">
+        <div class="step-num">②</div>
+        <span class="step-label">País</span>
+      </div>
+    </div>
+
+    <!-- CARD -->
+    <div class="card">
+      <div class="card-title">Envie sua foto</div>
+      <div class="card-sub">Escolha o modo e faça o upload</div>
+
+      <!-- TYPE TABS -->
+      <div class="type-tabs">
+        <div class="tab active">👤 Sozinho</div>
+        <div class="tab inactive">🐾 Pet</div>
+        <div class="tab inactive">👫 Casal</div>
+      </div>
+
+      <!-- UPLOAD BOX -->
+      <div class="upload-box">
+        <span class="upload-icon">📷</span>
+        <div class="upload-text">Arraste a foto aqui</div>
+        <div class="upload-hint">ou clique para selecionar · JPG, PNG, WEBP até 10 MB</div>
+      </div>
+
+      <!-- NOTICE -->
+      <div class="notice">
+        🔒 Preview gratuito com marca d'água
+      </div>
+
+      <!-- CREDITS -->
+      <div class="credits-line"><span>0</span> de 5 previews usados</div>
+
+      <!-- CTA -->
+      <button class="cta-btn">Continuar →</button>
+    </div>
+
+  </main>
+
+  <!-- SWITCHER BAR -->
+  <div class="switcher">
+    <p class="switcher-label">Analisando fundos — clique para comparar</p>
+    <div class="switcher-btns">
+      <a href="/gerar.html?tipo=sozinho" class="sw-btn">Rede de gol (atual)</a>
+      <a href="/gerar-bg2.html" class="sw-btn active">Hexágonos (bola)</a>
+      <a href="/gerar-bg3.html" class="sw-btn">Linhas do campo</a>
+      <a href="/gerar-bg4.html" class="sw-btn">Arquibancada</a>
+    </div>
+  </div>
+
+</body>
+</html>
