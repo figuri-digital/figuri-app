@@ -1627,9 +1627,34 @@
   }
 
   /* ────────── PHASE D: ERROR ────────── */
+  function friendlyError(raw) {
+    if (!raw) return 'Ocorreu um erro inesperado. Tente novamente.';
+    var r = String(raw).toLowerCase();
+    // Erros de infraestrutura que o usuário não precisa ver
+    if (r.includes('exhausted') || r.includes('locked') || r.includes('balance') ||
+        r.includes('billing')   || r.includes('quota')  || r.includes('rate limit') ||
+        r.includes('429')       || r.includes('503')    || r.includes('502')) {
+      return 'Nosso serviço está com alta demanda no momento. Por favor, aguarde alguns instantes e tente novamente. 🙏';
+    }
+    if (r.includes('timeout') || r.includes('timed out') || r.includes('took too long')) {
+      return 'A geração demorou mais do que o esperado. Tente novamente — geralmente é instantâneo na segunda tentativa!';
+    }
+    if (r.includes('face') || r.includes('rosto') || r.includes('person') || r.includes('detect')) {
+      return 'Não conseguimos identificar um rosto na foto. Use uma foto com o rosto bem visível, de frente e com boa iluminação.';
+    }
+    if (r.includes('connect') || r.includes('network') || r.includes('fetch')) {
+      return 'Falha de conexão. Verifique sua internet e tente novamente.';
+    }
+    // Mensagem técnica longa (ex: JSON de erro do fal.ai) — esconde do usuário
+    if (raw.length > 120 || r.includes('task') || r.includes('{"') || r.includes('detail')) {
+      return 'Não foi possível gerar sua figurinha agora. Tente novamente em alguns instantes.';
+    }
+    return raw;
+  }
+
   function showError(msg) {
     stopLoadingPhase();
-    errorBody.textContent = msg || 'Ocorreu um erro inesperado.';
+    errorBody.textContent = friendlyError(msg);
     showPhase('error');
   }
 
