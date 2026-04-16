@@ -31,7 +31,26 @@
 
     body {
       font-family: 'Montserrat', sans-serif;
-      background: #111f02;
+      background:
+        /* ── Rede de gol: grid diagonal ── */
+        repeating-linear-gradient(
+          45deg,
+          rgba(148,221,45,0.038) 0px, rgba(148,221,45,0.038) 1px,
+          transparent 1px, transparent 28px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(148,221,45,0.038) 0px, rgba(148,221,45,0.038) 1px,
+          transparent 1px, transparent 28px
+        ),
+        /* ── Listras de gramado (campo) ── */
+        repeating-linear-gradient(
+          180deg,
+          transparent 0px, transparent 90px,
+          rgba(57,97,0,0.18) 90px, rgba(57,97,0,0.18) 180px
+        ),
+        /* ── Base ── */
+        #111f02;
       color: var(--text-bright);
       min-height: 100vh;
       display: flex;
