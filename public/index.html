@@ -1375,11 +1375,6 @@
     <div class="navbar-actions" id="navActions">
       <button class="btn-entrar" id="btnEntrar" onclick="openLogin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ENTRAR</button>
       <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg> CRIAR FIGURINHA</button>
-      <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
-        🛒
-        <span id="homeCartBadge" class="nav-cart-badge">0</span>
-        <span id="homeCartTotal" class="nav-cart-total">R$0</span>
-      </a>
       <div class="user-menu" id="userMenu">
         <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
         <div class="user-dropdown" id="userDropdown">
@@ -1387,6 +1382,11 @@
           <button class="logout-btn" onclick="doLogout()">Sair</button>
         </div>
       </div>
+      <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
+        🛒
+        <span id="homeCartBadge" class="nav-cart-badge">0</span>
+        <span id="homeCartTotal" class="nav-cart-total">R$0</span>
+      </a>
     </div>
   </nav>
 
