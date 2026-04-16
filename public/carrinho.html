@@ -7,6 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="/fav.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Supabase SDK (para auth com auto-refresh) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- Mercado Pago JS SDK -->
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <style>
@@ -355,16 +357,17 @@
     }
 
     // ── AUTH ───────────────────────────────────────────────────────────────────
-    function getSupabaseToken() {
+    var _sb = window.supabase.createClient(
+      'https://ytzkwhozesiomcvmkgyl.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE'
+    );
+
+    // Retorna o access_token válido (com auto-refresh via SDK)
+    async function getSupabaseToken() {
       try {
-        for (var i = 0; i < localStorage.length; i++) {
-          var key = localStorage.key(i);
-          if (key && key.includes('supabase') && key.includes('auth')) {
-            var val = JSON.parse(localStorage.getItem(key) || '{}');
-            if (val.access_token) return val.access_token;
-            if (val.session && val.session.access_token) return val.session.access_token;
-          }
-        }
+        var result = await _sb.auth.getSession();
+        var session = result.data && result.data.session;
+        if (session && session.access_token) return session.access_token;
       } catch(_) {}
       return null;
     }
@@ -373,7 +376,7 @@
     async function startPixCheckout() {
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
-      var token = getSupabaseToken();
+      var token = await getSupabaseToken();
       if (!token) { alert('Você precisa estar logado para comprar.'); window.location.href = '/login'; return; }
 
       var btn = document.getElementById('btnPayPix');
@@ -535,7 +538,7 @@
     async function processCardPayment() {
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
-      var token = getSupabaseToken();
+      var token = await getSupabaseToken();
       if (!token) { alert('Você precisa estar logado.'); window.location.href = '/login'; return; }
 
       var btn = document.getElementById('btnPayCard');

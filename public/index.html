@@ -1171,6 +1171,36 @@
     /* ───────────────────────────────────────
        USER MENU (logged in state)
     ─────────────────────────────────────── */
+    /* Cart button in navbar */
+    .nav-cart-link {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(148,221,45,0.08);
+      border: 1.5px solid rgba(148,221,45,0.28);
+      color: #edfbd9;
+      border-radius: 10px;
+      padding: 6px 12px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Sora', sans-serif;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+    .nav-cart-link:hover { background: rgba(148,221,45,0.16); border-color: #94DD2D; }
+    .nav-cart-link.has-items { display: flex; }
+    .nav-cart-badge {
+      background: #94DD2D;
+      color: #1A2B01;
+      border-radius: 50%;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .nav-cart-total { color: #FFC300; font-weight: 800; }
+
     .user-menu {
       position: relative;
       display: none;
@@ -1345,6 +1375,11 @@
     <div class="navbar-actions" id="navActions">
       <button class="btn-entrar" id="btnEntrar" onclick="openLogin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ENTRAR</button>
       <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg> CRIAR FIGURINHA</button>
+      <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
+        🛒
+        <span id="homeCartBadge" class="nav-cart-badge">0</span>
+        <span id="homeCartTotal" class="nav-cart-total">R$0</span>
+      </a>
       <div class="user-menu" id="userMenu">
         <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
         <div class="user-dropdown" id="userDropdown">
@@ -2045,6 +2080,22 @@
 
       buildDots();
       goTo(0);
+    })();
+
+    // ── CART NAV (home page) ────────────────────────────────────────────────
+    (function updateHomeCart() {
+      try {
+        var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
+        var items = cart.items || [];
+        if (items.length === 0) return;
+        var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
+        var btn   = document.getElementById('homeCartBtn');
+        var badge = document.getElementById('homeCartBadge');
+        var ttl   = document.getElementById('homeCartTotal');
+        if (btn)   btn.classList.add('has-items');
+        if (badge) badge.textContent = items.length;
+        if (ttl)   ttl.textContent   = 'R$' + (total / 100).toFixed(2).replace('.', ',');
+      } catch(_) {}
     })();
   </script>
 
