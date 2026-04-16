@@ -79,11 +79,16 @@
       z-index: 100;
       background: var(--verde-escuro);
       border-bottom: 1px solid rgba(237,251,217,0.10);
+      height: 64px;
+    }
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 5%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 5%;
-      height: 64px;
     }
     .navbar-logo img {
       height: 52px;
@@ -1160,7 +1165,8 @@
       .type-btn-img { padding: 0; }
       .type-btn img { height: 82px; width: 100%; }
       .products-grid { grid-template-columns: 1fr; }
-      .navbar { padding: 0 14px; height: 52px; }
+      .navbar { height: 52px; }
+      .navbar-inner { padding: 0 14px; }
       .navbar-logo img { height: 28px; }
       .hero-cta-group { flex-direction: column; align-items: stretch; gap: 10px; }
       .btn-hero-cta { text-align: center; }
@@ -1369,24 +1375,26 @@
 
   <!-- ── NAVBAR ── -->
   <nav class="navbar">
-    <a href="#" class="navbar-logo">
-      <img src="logo.png" alt="Figuri" />
-    </a>
-    <div class="navbar-actions" id="navActions">
-      <button class="btn-entrar" id="btnEntrar" onclick="openLogin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ENTRAR</button>
-      <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg> CRIAR FIGURINHA</button>
-      <div class="user-menu" id="userMenu">
-        <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
-        <div class="user-dropdown" id="userDropdown">
-          <a href="/pedidos">Meus Pedidos</a>
-          <button class="logout-btn" onclick="doLogout()">Sair</button>
-        </div>
-      </div>
-      <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
-        🛒
-        <span id="homeCartBadge" class="nav-cart-badge">0</span>
-        <span id="homeCartTotal" class="nav-cart-total">R$0</span>
+    <div class="navbar-inner">
+      <a href="#" class="navbar-logo">
+        <img src="logo.png" alt="Figuri" />
       </a>
+      <div class="navbar-actions" id="navActions">
+        <button class="btn-entrar" id="btnEntrar" onclick="openLogin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ENTRAR</button>
+        <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg> CRIAR FIGURINHA</button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
+          <div class="user-dropdown" id="userDropdown">
+            <a href="/pedidos">Meus Pedidos</a>
+            <button class="logout-btn" onclick="doLogout()">Sair</button>
+          </div>
+        </div>
+        <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
+          🛒
+          <span id="homeCartBadge" class="nav-cart-badge">0</span>
+          <span id="homeCartTotal" class="nav-cart-total">R$0</span>
+        </a>
+      </div>
     </div>
   </nav>
 
