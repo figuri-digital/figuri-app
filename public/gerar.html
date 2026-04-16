@@ -31,67 +31,36 @@
 
     body {
       font-family: 'Montserrat', sans-serif;
-      background-color: #1a3800;
-      background-image: url('/assets/P1.png');
-      background-position: center top;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
+      background: #111f02;
       color: var(--text-bright);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       overflow-x: hidden;
     }
 
     /* ────────────────────────────────────────
-       TOASTS
+       NAVBAR
     ──────────────────────────────────────── */
-    #toast-container {
-      position: fixed;
-      bottom: 24px; left: 20px;
-      z-index: 999;
-      display: flex;
-      flex-direction: column-reverse;
-      gap: 10px;
-      pointer-events: none;
-    }
-    .toast {
-      background: rgba(18,34,3,0.97);
-      border: 1px solid rgba(148,221,45,0.25);
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: #fff;
-      max-width: 240px;
-      line-height: 1.5;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
-      animation: toastIn 0.32s ease;
-    }
-    .toast.out { animation: toastOut 0.32s ease forwards; }
-    @keyframes toastIn  { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
-    @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-16px); } }
-
-    /* ────────────────────────────────────────
-       PHASE HERO – FULL SCREEN TWO-COLUMN
-    ──────────────────────────────────────── */
-    #phase-hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Slim top bar for hero: logo left + cart/credits right */
-    .hero-topbar {
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 300;
+      background: rgba(17,31,2,0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-faint);
       display: flex;
       align-items: center;
-      padding: 18px 32px;
+      padding: 0 20px;
+      height: 58px;
       gap: 12px;
-      position: relative;
-      z-index: 10;
     }
-    .hero-topbar-logo { display: flex; align-items: center; text-decoration: none; margin-right: auto; }
-    .hero-topbar-logo img { height: 40px; width: auto; display: block; }
 
-    .hero-topbar-right {
+    .navbar-logo { display: flex; align-items: center; text-decoration: none; margin-right: auto; }
+    .navbar-logo img { height: 40px; width: auto; display: block; }
+
+    .navbar-right {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -127,6 +96,7 @@
       white-space: nowrap;
     }
     .nav-cart-btn:hover { background: rgba(148,221,45,0.16); border-color: var(--btn-cta); }
+
     .nav-cart-count {
       background: var(--btn-cta);
       color: var(--verde-escuro);
@@ -136,274 +106,79 @@
       font-size: 10px; font-weight: 800;
       flex-shrink: 0;
     }
+
     .nav-cart-total { color: var(--amarelo); font-weight: 800; }
 
-    /* Two-column body */
-    .hero-body {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      padding: 20px 32px 48px;
-      gap: 32px;
+    /* ────────────────────────────────────────
+       PAGE HEADER BANNER
+    ──────────────────────────────────────── */
+    .page-header {
+      background: linear-gradient(135deg, #1a3800 0%, #0f2200 60%, #1a2b01 100%);
+      border-bottom: 1px solid rgba(148,221,45,0.12);
+      padding: 28px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(148,221,45,0.07) 0%, transparent 70%);
+      pointer-events: none;
     }
 
-    /* LEFT column */
-    .hero-left {
-      width: 45%;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 24px;
-      padding-right: 16px;
-    }
-
-    .hero-headline {
-      font-family: 'Bebas Neue', sans-serif;
-      line-height: 1;
-      letter-spacing: 2px;
-    }
-    .hero-headline .line-white {
-      display: block;
-      font-size: clamp(54px, 7vw, 80px);
-      color: #fff;
-    }
-    .hero-headline .line-yellow-box {
-      display: inline-block;
-      font-size: clamp(54px, 7vw, 80px);
-      color: var(--amarelo);
-      background: rgba(10,25,2,0.82);
-      padding: 0 12px 2px;
-      border-radius: 4px;
-      margin: 2px 0;
-    }
-
-    .hero-subtitle {
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.75);
-      line-height: 1.65;
-      max-width: 360px;
-    }
-    .hero-subtitle strong { color: #fff; font-weight: 700; }
-    .hero-subtitle em { font-style: italic; color: rgba(255,255,255,0.60); }
-
-    .hero-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .stat-badge {
-      background: rgba(20,45,3,0.85);
-      border: 1px solid rgba(148,221,45,0.22);
-      border-radius: 20px;
-      padding: 7px 16px;
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.75);
-      white-space: nowrap;
-    }
-    .stat-badge strong { color: var(--btn-cta); font-weight: 800; }
-
-    /* RIGHT column */
-    .hero-right {
-      flex: 1;
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-start;
-    }
-
-    /* The wizard card on the hero (type selection) */
-    .hero-wizard-card {
-      width: 100%;
-      max-width: 460px;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(148,221,45,0.18);
-      border-radius: 20px;
-      padding: 28px 26px;
-    }
-
-    .hero-badge {
+    .page-header-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(148,221,45,0.12);
-      border: 1px solid rgba(148,221,45,0.30);
+      background: rgba(148,221,45,0.10);
+      border: 1px solid rgba(148,221,45,0.22);
       border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 11px;
-      font-weight: 800;
+      padding: 4px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
       color: var(--btn-cta);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 18px;
-    }
-
-    /* 4-step indicator */
-    .step-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 20px;
-    }
-    .step-dot {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
-      font-weight: 800;
-      flex-shrink: 0;
-      transition: all 0.3s;
-    }
-    .step-dot.active {
-      background: var(--btn-cta);
-      color: var(--verde-escuro);
-      box-shadow: 0 0 14px rgba(148,221,45,0.40);
-    }
-    .step-dot.done {
-      background: var(--verde-principal);
-      color: #fff;
-      border: none;
-    }
-    .step-dot.done::after { content: '✓'; font-size: 12px; }
-    .step-dot.dim {
-      background: rgba(255,255,255,0.07);
-      border: 1.5px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.30);
-    }
-    .step-connector {
-      flex: 1;
-      height: 2px;
-      background: rgba(255,255,255,0.10);
-      margin: 0 6px;
-      min-width: 24px;
-      max-width: 50px;
-      transition: background 0.3s;
-    }
-    .step-connector.done { background: var(--verde-principal); }
-
-    .card-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 26px;
-      letter-spacing: 1.2px;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .card-sub {
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text-dim);
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-
-    /* Type cards for hero */
-    .type-cards-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-    .type-card {
-      flex: 1;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(255,255,255,0.10);
-      border-radius: 14px;
-      padding: 18px 8px 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
-      user-select: none;
-    }
-    .type-card:hover {
-      border-color: rgba(148,221,45,0.45);
-      background: rgba(148,221,45,0.07);
-      transform: translateY(-2px);
-    }
-    .type-card.active {
-      border-color: var(--btn-cta);
-      background: rgba(148,221,45,0.12);
-      box-shadow: 0 0 18px rgba(148,221,45,0.22);
-      transform: translateY(-2px);
-    }
-    .type-card-emoji {
-      font-size: 32px;
-      line-height: 1;
-    }
-    .type-card-label {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 16px;
-      letter-spacing: 1.5px;
-      color: rgba(255,255,255,0.70);
-    }
-    .type-card.active .type-card-label {
-      color: var(--btn-cta);
-    }
-
-    .watermark-notice-hero {
-      background: rgba(255,195,0,0.08);
-      border: 1px solid rgba(255,195,0,0.20);
-      border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--amarelo);
-      text-align: center;
       margin-bottom: 10px;
     }
-    .credits-line-hero {
-      text-align: center;
-      font-size: 11px;
-      color: rgba(255,255,255,0.38);
-      font-weight: 500;
+
+    .page-header-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(30px, 7vw, 46px);
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
     }
-    .credits-line-hero span { color: var(--btn-cta); font-weight: 700; }
+    .page-header-title span { color: var(--btn-cta); }
+
+    .page-header-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 0;
+    }
 
     /* ────────────────────────────────────────
-       WIZARD PHASES (1 & 2)  – Centered card
+       MAIN LAYOUT
     ──────────────────────────────────────── */
-    #phase-wizard-wrap {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .wizard-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 24px;
-      position: relative;
-    }
-    .wizard-topbar-logo img { height: 44px; width: auto; display: block; }
-    .wizard-topbar-right {
-      position: absolute;
-      right: 24px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .wizard-main {
+    .main {
       flex: 1;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding: 8px 16px 72px;
+      padding: 28px 16px 72px;
     }
 
-    .wizard-inner {
+    .wizard-wrap {
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
     }
 
-    /* Step progress bar (wizard phases) */
+    /* ────────────────────────────────────────
+       STEP PROGRESS
+    ──────────────────────────────────────── */
     .step-progress {
       display: flex;
       align-items: center;
@@ -411,18 +186,23 @@
       gap: 0;
       margin-bottom: 20px;
     }
+
     .step-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 5px;
+      position: relative;
     }
+
     .step-circle {
       width: 32px; height: 32px;
       border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.05);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 12px;
       font-weight: 800;
       color: var(--text-dim);
@@ -442,6 +222,7 @@
       color: #fff;
     }
     .step-circle.done::after { content: '✓'; font-size: 13px; }
+
     .step-label {
       font-size: 9.5px;
       font-weight: 700;
@@ -451,6 +232,7 @@
       white-space: nowrap;
     }
     .step-label.active { color: var(--btn-cta); }
+
     .step-line {
       flex: 1;
       height: 1px;
@@ -458,39 +240,53 @@
       margin: 0 6px;
       align-self: flex-start;
       margin-top: 15px;
-      min-width: 24px;
-      max-width: 52px;
+      min-width: 32px;
+      max-width: 64px;
       transition: background 0.3s;
     }
     .step-line.done { background: var(--verde-principal); }
 
-    /* Wizard card */
+    /* ────────────────────────────────────────
+       CARD (wizard container)
+    ──────────────────────────────────────── */
     .card {
-      background: rgba(0,0,0,0.35);
+      background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px 26px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(6px);
     }
 
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.45);
-      text-decoration: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      margin-bottom: 18px;
-      transition: color 0.2s;
-      font-family: 'Montserrat', sans-serif;
+    /* ────────────────────────────────────────
+       TYPE TABS
+    ──────────────────────────────────────── */
+    .type-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(0,0,0,0.30);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 22px;
     }
-    .back-link:hover { color: #fff; }
+    .type-tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 4px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .type-tab.active {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      box-shadow: 0 2px 12px rgba(148,221,45,0.28);
+    }
+    .type-tab:not(.active):hover { color: rgba(255,255,255,0.8); }
 
     /* ────────────────────────────────────────
        SECTION HEADER
@@ -518,6 +314,7 @@
       gap: 12px;
       margin-bottom: 16px;
     }
+
     .upload-box {
       flex: 1;
       border: 2px dashed rgba(148,221,45,0.28);
@@ -547,6 +344,7 @@
       position: absolute; inset: 0;
       opacity: 0; cursor: pointer; width: 100%; height: 100%;
     }
+
     .upload-icon-wrap {
       width: 52px; height: 52px;
       border-radius: 50%;
@@ -565,7 +363,6 @@
       pointer-events: none;
       font-weight: 500;
     }
-    .upload-label strong { color: rgba(255,255,255,0.80); }
     .upload-sublabel {
       font-size: 9.5px;
       font-weight: 700;
@@ -640,6 +437,7 @@
       justify-content: center;
       gap: 7px;
     }
+
     .credits-line {
       text-align: center;
       font-size: 11.5px;
@@ -654,28 +452,9 @@
     ──────────────────────────────────────── */
     .group-tabs-row {
       display: flex;
-      align-items: center;
       gap: 6px;
       margin-bottom: 14px;
     }
-    .group-tabs-inner {
-      display: flex;
-      gap: 6px;
-      flex: 1;
-    }
-    .group-nav-btn {
-      background: rgba(255,255,255,0.06);
-      border: 1.5px solid rgba(255,255,255,0.10);
-      border-radius: 8px;
-      color: rgba(255,255,255,0.50);
-      cursor: pointer;
-      font-size: 14px;
-      width: 30px; height: 30px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .group-nav-btn:hover { border-color: rgba(148,221,45,0.40); color: #fff; }
     .group-tab-btn {
       flex: 1;
       padding: 8px 4px;
@@ -703,6 +482,7 @@
       gap: 8px;
       margin-bottom: 20px;
     }
+
     .country-card {
       background: rgba(255,255,255,0.04);
       border: 2px solid rgba(255,255,255,0.08);
@@ -728,6 +508,7 @@
       box-shadow: 0 0 16px rgba(148,221,45,0.20);
       transform: translateY(-2px);
     }
+
     .country-flag {
       width: 48px; height: 32px;
       object-fit: cover;
@@ -797,39 +578,27 @@
       position: fixed;
       inset: 0;
       z-index: 250;
-      background-color: #1a3800;
-      background-image: url('/assets/P1.png');
-      background-position: center top;
-      background-size: cover;
-      background-repeat: no-repeat;
+      background: #0b1a02;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding: 0 16px 32px;
+      padding: 36px 16px 32px;
       overflow: hidden;
     }
     .loading-overlay.hidden { display: none !important; }
 
+    /* Particles / lines bg */
     .loading-overlay::before {
       content: '';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(148,221,45,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(148,221,45,0.07) 0%, transparent 65%),
         radial-gradient(ellipse 80% 30% at 50% 100%, rgba(57,97,0,0.18) 0%, transparent 60%);
       pointer-events: none;
       z-index: 0;
     }
-
-    .loading-logo-top {
-      position: absolute;
-      top: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 3;
-    }
-    .loading-logo-top img { height: 44px; width: auto; display: block; }
 
     .loading-inner-card {
       background: rgba(10, 24, 3, 0.80);
@@ -843,7 +612,6 @@
       text-align: center;
       position: relative;
       z-index: 2;
-      margin-top: 108px;
     }
 
     .loading-card-title {
@@ -951,38 +719,17 @@
     }
     .live-hl { color: var(--btn-cta); font-weight: 700; }
 
+    /* Clouds */
+    .cloud { position: absolute; z-index: 1; pointer-events: none; }
+    .cloud-1 { width: 300px; left: -80px;  bottom: 36%; opacity: 0.85; }
+    .cloud-2 { width: 380px; left: -120px; bottom: 42%; opacity: 0.7;  }
+    .cloud-3 { width: 270px; right: -60px; bottom: 38%; opacity: 0.82; }
+    .cloud-4 { width: 210px; right: -40px; bottom: 44%; opacity: 0.65; }
+    .cloud-5 { width: 200px; left: 50%; transform: translateX(-50%); bottom: 22%; opacity: 0.5; }
+
     /* ────────────────────────────────────────
-       RESULTS PHASE
+       PHASE C – RESULTS
     ──────────────────────────────────────── */
-    #phase-results-wrap {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .results-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 24px;
-      width: 100%;
-    }
-    .results-topbar img { height: 44px; width: auto; display: block; }
-
-    .results-main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 4px 16px 72px;
-      width: 100%;
-    }
-
-    .results-inner {
-      width: 100%;
-      max-width: 480px;
-    }
-
     .results-header {
       text-align: center;
       margin-bottom: 20px;
@@ -1055,29 +802,11 @@
     }
 
     /* ────────────────────────────────────────
-       ERROR PHASE
+       PHASE D – ERROR
     ──────────────────────────────────────── */
-    #phase-error-wrap {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 16px;
-    }
-    .error-card {
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(148,221,45,0.18);
-      border-radius: 20px;
-      padding: 36px 28px;
-      width: 100%;
-      max-width: 420px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      text-align: center;
-    }
-    .error-icon { font-size: 52px; margin-bottom: 14px; }
+    .error-icon { font-size: 52px; text-align: center; margin-bottom: 14px; }
     .error-body {
+      text-align: center;
       font-size: 14px;
       color: rgba(255,255,255,0.55);
       line-height: 1.65;
@@ -1099,6 +828,34 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ────────────────────────────────────────
+       TOASTS
+    ──────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px; left: 20px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: rgba(18,34,3,0.97);
+      border: 1px solid rgba(148,221,45,0.25);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #fff;
+      max-width: 240px;
+      line-height: 1.5;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+      animation: toastIn 0.32s ease;
+    }
+    .toast.out { animation: toastOut 0.32s ease forwards; }
+    @keyframes toastIn  { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-16px); } }
+
+    /* ────────────────────────────────────────
        UTILS
     ──────────────────────────────────────── */
     .hidden { display: none !important; }
@@ -1107,33 +864,21 @@
     /* ────────────────────────────────────────
        RESPONSIVE
     ──────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .hero-left { display: none; }
-      .hero-body { padding: 16px 16px 40px; justify-content: center; }
-      .hero-right { justify-content: center; width: 100%; }
-      .hero-wizard-card { max-width: 100%; }
-    }
-
     @media (max-width: 600px) {
       .card { padding: 22px 18px; }
-      .hero-wizard-card { padding: 22px 18px; }
       .results-grid { grid-template-columns: 1fr; }
       .loading-inner-card { max-width: 95vw; }
-      .hero-topbar { padding: 14px 16px; }
+      .page-header { padding: 20px 16px 18px; }
     }
 
     @media (max-width: 480px) {
       .card { padding: 20px 14px; }
-      .hero-wizard-card { padding: 20px 14px; }
       .scanner-wrap { width: 130px !important; height: 174px !important; }
       .toast { max-width: 82vw; }
       .section-title { font-size: 1.4rem; }
-      .card-title { font-size: 1.3rem; }
       .upload-box { min-height: 130px; }
       .error-icon { font-size: 38px; }
-      .type-cards-row { gap: 7px; }
-      .type-card { padding: 14px 6px 10px; }
-      .type-card-emoji { font-size: 26px; }
+      .cloud-1,.cloud-2,.cloud-3,.cloud-4,.cloud-5 { display: none; }
     }
 
     @media (max-width: 360px) {
@@ -1144,257 +889,191 @@
 </head>
 <body>
 
+<!-- ─── NAVBAR ──────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <a href="/index.html" class="navbar-logo">
+    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
+  </a>
+  <div class="navbar-right">
+    <a id="gerar-cart-btn" href="/carrinho.html" class="nav-cart-btn">
+      🛒
+      <span id="gerar-cart-count" class="nav-cart-count">0</span>
+      <span id="gerar-cart-total" class="nav-cart-total">R$0</span>
+    </a>
+    <div class="nav-badge" id="navbar-badge">Carregando...</div>
+  </div>
+</nav>
+
+<!-- ─── PAGE HEADER ─────────────────────────────────────────────── -->
+<header class="page-header" id="page-header-bar">
+  <div class="page-header-eyebrow">⚡ Preview gratuito — pague só se gostar</div>
+  <h1 class="page-header-title">Gere sua <span>figurinha</span></h1>
+  <p class="page-header-sub">Envie uma foto e vire um jogador da Copa do Mundo</p>
+</header>
+
 <!-- ─── TOASTS ─────────────────────────────────────────────────── -->
 <div id="toast-container"></div>
 
-<!-- ████  PHASE HERO: Full-screen two-column layout  ████ -->
-<div id="phase-hero">
+<!-- ─── MAIN ────────────────────────────────────────────────────── -->
+<div class="main">
+<div class="wizard-wrap">
 
-  <!-- Top bar: logo left + cart/credits right -->
-  <div class="hero-topbar">
-    <a href="/index.html" class="hero-topbar-logo">
-      <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
-    </a>
-    <div class="hero-topbar-right">
-      <a id="gerar-cart-btn" href="/carrinho.html" class="nav-cart-btn">
-        🛒
-        <span id="gerar-cart-count" class="nav-cart-count">0</span>
-        <span id="gerar-cart-total" class="nav-cart-total">R$0</span>
-      </a>
-      <div class="nav-badge" id="navbar-badge">Carregando...</div>
+  <!-- ─── STEP PROGRESS ─── -->
+  <div class="step-progress" id="step-progress">
+    <div class="step-item">
+      <div class="step-circle active" id="dot-1">1</div>
+      <div class="step-label active" id="label-1">Foto</div>
+    </div>
+    <div class="step-line" id="line-1-2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="dot-2">2</div>
+      <div class="step-label" id="label-2">País</div>
     </div>
   </div>
 
-  <!-- Two-column body -->
-  <div class="hero-body">
+  <!-- ████  PHASE A: WIZARD  ████ -->
+  <div class="card" id="phase-wizard">
 
-    <!-- LEFT: Headline + subtitle + stats -->
-    <div class="hero-left">
-      <div class="hero-headline">
-        <span class="line-white">VIRE UM</span>
-        <span class="line-yellow-box">JOGADOR</span>
-        <span class="line-white">DA COPA</span>
+    <!-- ── STEP 1: UPLOAD ── -->
+    <div id="step-1">
+      <h2 class="section-title">Envie sua foto</h2>
+      <p class="section-sub">Escolha o modo e faça o upload</p>
+
+      <!-- Type tabs -->
+      <div class="type-tabs" id="type-tabs">
+        <div class="type-tab" data-tipo="sozinho">👤 SOZINHO</div>
+        <div class="type-tab" data-tipo="pet">🐾 PET</div>
+        <div class="type-tab" data-tipo="casal">👫 CASAL</div>
       </div>
-      <p class="hero-subtitle">
-        Envie qualquer foto e nós transformamos você, seu pet ou alguém especial em uma
-        <strong>figurinha oficial da Copa</strong>.
-        <em>Preview grátis antes de comprar.</em>
-      </p>
-      <div class="hero-stats">
-        <div class="stat-badge"><strong>30s</strong> / gere na hora</div>
-        <div class="stat-badge"><strong>R$19</strong> / preço inicial</div>
-        <div class="stat-badge"><strong>100%</strong> / preview grátis</div>
+
+      <!-- Upload single -->
+      <div class="upload-row" id="upload-single">
+        <div class="upload-box" id="box-single">
+          <input type="file" id="file-single" accept="image/*" />
+          <div class="upload-icon-wrap">📷</div>
+          <div class="upload-label">Arraste a foto aqui<br />ou clique para selecionar</div>
+          <div class="upload-sublabel">JPG · PNG · WEBP</div>
+        </div>
       </div>
+
+      <!-- Upload casal -->
+      <div class="upload-row hidden" id="upload-casal">
+        <div class="upload-box" id="box-casal1">
+          <input type="file" id="file-casal1" accept="image/*" />
+          <div class="upload-person-tag">Pessoa 1</div>
+          <div class="upload-icon-wrap">👤</div>
+          <div class="upload-label">Foto da<br />Pessoa 1</div>
+        </div>
+        <div class="upload-box" id="box-casal2">
+          <input type="file" id="file-casal2" accept="image/*" />
+          <div class="upload-person-tag">Pessoa 2</div>
+          <div class="upload-icon-wrap">👤</div>
+          <div class="upload-label">Foto da<br />Pessoa 2</div>
+        </div>
+      </div>
+
+      <div class="watermark-notice">🔒 Preview gratuito com marca d'água — Pague só se gostar</div>
+      <div class="credits-line" id="credits-line">Carregando previews...</div>
+
+      <button class="btn-primary" id="btn-next" disabled>Continuar →</button>
     </div>
 
-    <!-- RIGHT: Wizard card -->
-    <div class="hero-right">
-      <div class="hero-wizard-card">
+    <!-- ── STEP 2: COUNTRY ── -->
+    <div id="step-2" class="hidden">
+      <h2 class="section-title">Selecione o país</h2>
+      <p class="section-sub">Qual vai ser a sua seleção?</p>
 
-        <!-- Yellow badge -->
-        <div class="hero-badge">⚡ GERE NA HORA</div>
-
-        <!-- 4-step indicator -->
-        <div class="step-indicator" id="hero-step-indicator">
-          <div class="step-dot active" id="hero-dot-1">1</div>
-          <div class="step-connector" id="hero-conn-1"></div>
-          <div class="step-dot dim" id="hero-dot-2">2</div>
-          <div class="step-connector" id="hero-conn-2"></div>
-          <div class="step-dot dim" id="hero-dot-3">3</div>
-          <div class="step-connector" id="hero-conn-3"></div>
-          <div class="step-dot dim" id="hero-dot-4">4</div>
-        </div>
-
-        <h2 class="card-title">Escolha o tipo</h2>
-        <p class="card-sub">Quem vai virar figurinha?</p>
-
-        <!-- Type cards -->
-        <div class="type-cards-row">
-          <div class="type-card" data-tipo="sozinho" id="hero-card-sozinho">
-            <div class="type-card-emoji">👤</div>
-            <div class="type-card-label">SOZINHO</div>
-          </div>
-          <div class="type-card" data-tipo="pet" id="hero-card-pet">
-            <div class="type-card-emoji">🐾</div>
-            <div class="type-card-label">PET</div>
-          </div>
-          <div class="type-card" data-tipo="casal" id="hero-card-casal">
-            <div class="type-card-emoji">👫</div>
-            <div class="type-card-label">CASAL</div>
-          </div>
-        </div>
-
-        <div class="watermark-notice-hero">Preview gratuito com marca d'água — Pague só se gostar</div>
-        <div class="credits-line-hero" id="hero-credits-line">Carregando previews...</div>
-
+      <div class="group-tabs-row">
+        <button class="group-tab-btn active" data-group="0">América do Sul</button>
+        <button class="group-tab-btn"        data-group="1">Europa</button>
       </div>
+
+      <div class="country-grid" id="group-0">
+        <div class="country-card" data-country="brasil">
+          <img class="country-flag" src="https://flagcdn.com/w80/br.png" alt="Brasil" />
+          <span class="country-name">Brasil</span>
+        </div>
+        <div class="country-card" data-country="argentina">
+          <img class="country-flag" src="https://flagcdn.com/w80/ar.png" alt="Argentina" />
+          <span class="country-name">Argentina</span>
+        </div>
+        <div class="country-card" data-country="colombia">
+          <img class="country-flag" src="https://flagcdn.com/w80/co.png" alt="Colômbia" />
+          <span class="country-name">Colômbia</span>
+        </div>
+        <div class="country-card" data-country="uruguai">
+          <img class="country-flag" src="https://flagcdn.com/w80/uy.png" alt="Uruguai" />
+          <span class="country-name">Uruguai</span>
+        </div>
+      </div>
+
+      <div class="country-grid hidden" id="group-1">
+        <div class="country-card" data-country="franca">
+          <img class="country-flag" src="https://flagcdn.com/w80/fr.png" alt="França" />
+          <span class="country-name">França</span>
+        </div>
+        <div class="country-card" data-country="alemanha">
+          <img class="country-flag" src="https://flagcdn.com/w80/de.png" alt="Alemanha" />
+          <span class="country-name">Alemanha</span>
+        </div>
+        <div class="country-card" data-country="espanha">
+          <img class="country-flag" src="https://flagcdn.com/w80/es.png" alt="Espanha" />
+          <span class="country-name">Espanha</span>
+        </div>
+        <div class="country-card" data-country="portugal">
+          <img class="country-flag" src="https://flagcdn.com/w80/pt.png" alt="Portugal" />
+          <span class="country-name">Portugal</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-gerar" disabled>⚡ Gerar Figurinha</button>
+      <button class="btn-link"    id="btn-back-step1">← Voltar</button>
+    </div>
+  </div><!-- /phase-wizard -->
+
+
+  <!-- ████  PHASE C: RESULTS  ████ -->
+  <div class="card hidden" id="phase-results">
+    <div class="results-header">
+      <h2 class="results-title">Escolha sua favorita</h2>
+      <p class="results-sub">Clique na figurinha que você mais gostou</p>
     </div>
 
+    <div class="results-grid" id="results-grid"></div>
+    <div class="results-footer" id="results-footer"></div>
+
+    <button class="btn-primary" id="btn-personalizar" disabled>✦ PERSONALIZAR FIGURINHA</button>
+    <button class="btn-link"    id="btn-regenerate">↩ Gerar novas opções</button>
   </div>
-</div><!-- /phase-hero -->
 
 
-<!-- ████  PHASE WIZARD: Steps 1 + 2 (centered, after type chosen)  ████ -->
-<div id="phase-wizard-wrap" class="hidden">
-
-  <!-- Top bar: centered logo + cart/credits right -->
-  <div class="wizard-topbar">
-    <a href="/index.html" class="wizard-topbar-logo">
-      <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
-    </a>
-    <div class="wizard-topbar-right">
-      <a id="gerar-cart-btn-2" href="/carrinho.html" class="nav-cart-btn">
-        🛒
-        <span id="gerar-cart-count-2" class="nav-cart-count">0</span>
-        <span id="gerar-cart-total-2" class="nav-cart-total">R$0</span>
-      </a>
-      <div class="nav-badge" id="navbar-badge-2">Carregando...</div>
-    </div>
+  <!-- ████  PHASE D: ERROR  ████ -->
+  <div class="card hidden" id="phase-error">
+    <div class="error-icon">⚠️</div>
+    <h2 class="section-title" style="text-align:center;margin-bottom:10px;">Algo deu errado</h2>
+    <p class="error-body" id="error-body">Não foi possível gerar sua figurinha. Tente novamente com outra foto.</p>
+    <button class="btn-primary" id="btn-retry">← Voltar e tentar novamente</button>
   </div>
 
-  <div class="wizard-main">
-    <div class="wizard-inner">
-
-      <!-- Step progress bar -->
-      <div class="step-progress" id="step-progress">
-        <div class="step-item">
-          <div class="step-circle" id="dot-1">1</div>
-          <div class="step-label" id="label-1">Tipo</div>
-        </div>
-        <div class="step-line" id="line-0-1"></div>
-        <div class="step-item">
-          <div class="step-circle active" id="dot-2">2</div>
-          <div class="step-label active" id="label-2">Foto</div>
-        </div>
-        <div class="step-line" id="line-1-2"></div>
-        <div class="step-item">
-          <div class="step-circle" id="dot-3">3</div>
-          <div class="step-label" id="label-3">País</div>
-        </div>
-        <div class="step-line" id="line-2-3"></div>
-        <div class="step-item">
-          <div class="step-circle" id="dot-4">4</div>
-          <div class="step-label" id="label-4">Pronto</div>
-        </div>
-      </div>
-
-      <!-- Wizard card -->
-      <div class="card" id="phase-wizard">
-
-        <!-- ── STEP 1: UPLOAD ── -->
-        <div id="step-1">
-          <button class="back-link" id="btn-back-hero">← Voltar</button>
-          <h2 class="section-title">Envie sua foto</h2>
-          <p class="section-sub">Uma foto frontal, com o rosto nítido e sem o uso de acessórios.</p>
-
-          <!-- Upload single -->
-          <div class="upload-row" id="upload-single">
-            <div class="upload-box" id="box-single">
-              <input type="file" id="file-single" accept="image/*" />
-              <div class="upload-icon-wrap">📷</div>
-              <div class="upload-label">Arraste sua foto aqui ou <strong>clique para selecionar</strong></div>
-              <div class="upload-sublabel">JPG · PNG · WEBP</div>
-            </div>
-          </div>
-
-          <!-- Upload casal -->
-          <div class="upload-row hidden" id="upload-casal">
-            <div class="upload-box" id="box-casal1">
-              <input type="file" id="file-casal1" accept="image/*" />
-              <div class="upload-person-tag">Pessoa 1</div>
-              <div class="upload-icon-wrap">👤</div>
-              <div class="upload-label">Foto da<br />Pessoa 1</div>
-            </div>
-            <div class="upload-box" id="box-casal2">
-              <input type="file" id="file-casal2" accept="image/*" />
-              <div class="upload-person-tag">Pessoa 2</div>
-              <div class="upload-icon-wrap">👤</div>
-              <div class="upload-label">Foto da<br />Pessoa 2</div>
-            </div>
-          </div>
-
-          <div class="watermark-notice">🔒 Preview gratuito com marca d'água — Pague só se gostar</div>
-          <div class="credits-line" id="credits-line">Carregando previews...</div>
-
-          <button class="btn-primary" id="btn-next" disabled>Continuar →</button>
-        </div>
-
-        <!-- ── STEP 2: COUNTRY ── -->
-        <div id="step-2" class="hidden">
-          <button class="back-link" id="btn-back-step1">← Voltar</button>
-          <h2 class="section-title">Selecione o país</h2>
-          <p class="section-sub">Qual vai ser a sua seleção?</p>
-
-          <div class="group-tabs-row">
-            <button class="group-nav-btn" id="btn-group-prev">←</button>
-            <div class="group-tabs-inner">
-              <button class="group-tab-btn active" data-group="0">Grupo 1</button>
-              <button class="group-tab-btn"        data-group="1">Grupo 2</button>
-            </div>
-            <button class="group-nav-btn" id="btn-group-next">→</button>
-          </div>
-
-          <div class="country-grid" id="group-0">
-            <div class="country-card" data-country="brasil">
-              <img class="country-flag" src="https://flagcdn.com/w80/br.png" alt="Brasil" />
-              <span class="country-name">Brasil</span>
-            </div>
-            <div class="country-card" data-country="argentina">
-              <img class="country-flag" src="https://flagcdn.com/w80/ar.png" alt="Argentina" />
-              <span class="country-name">Argentina</span>
-            </div>
-            <div class="country-card" data-country="colombia">
-              <img class="country-flag" src="https://flagcdn.com/w80/co.png" alt="Colômbia" />
-              <span class="country-name">Colômbia</span>
-            </div>
-            <div class="country-card" data-country="uruguai">
-              <img class="country-flag" src="https://flagcdn.com/w80/uy.png" alt="Uruguai" />
-              <span class="country-name">Uruguai</span>
-            </div>
-          </div>
-
-          <div class="country-grid hidden" id="group-1">
-            <div class="country-card" data-country="franca">
-              <img class="country-flag" src="https://flagcdn.com/w80/fr.png" alt="França" />
-              <span class="country-name">França</span>
-            </div>
-            <div class="country-card" data-country="alemanha">
-              <img class="country-flag" src="https://flagcdn.com/w80/de.png" alt="Alemanha" />
-              <span class="country-name">Alemanha</span>
-            </div>
-            <div class="country-card" data-country="espanha">
-              <img class="country-flag" src="https://flagcdn.com/w80/es.png" alt="Espanha" />
-              <span class="country-name">Espanha</span>
-            </div>
-            <div class="country-card" data-country="portugal">
-              <img class="country-flag" src="https://flagcdn.com/w80/pt.png" alt="Portugal" />
-              <span class="country-name">Portugal</span>
-            </div>
-          </div>
-
-          <button class="btn-primary" id="btn-gerar" disabled>⚡ Gerar Figurinha</button>
-          <button class="btn-link"    id="btn-back-step1-bottom">← Voltar</button>
-        </div>
-
-      </div><!-- /card -->
-    </div><!-- /wizard-inner -->
-  </div><!-- /wizard-main -->
-</div><!-- /phase-wizard-wrap -->
+</div><!-- /wizard-wrap -->
+</div><!-- /main -->
 
 
 <!-- ████  PHASE B: LOADING FULLSCREEN  ████ -->
 <div class="loading-overlay hidden" id="phase-loading">
 
-  <div class="loading-logo-top">
-    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
-  </div>
+  <!-- Clouds decorativos -->
+  <img class="cloud cloud-1" src="/assets/cloud-left.png"  alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-2" src="/assets/cloud-left2.png" alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-3" src="/assets/cloud-right.png" alt="" onerror="this.style.display='none'" />
+  <img class="cloud cloud-4" src="/assets/cloud-right2.png" alt="" onerror="this.style.display='none'" />
 
   <div class="loading-inner-card">
     <h2 class="loading-card-title">Gerando figurinha</h2>
-    <p class="loading-card-sub" id="loading-status">Analisando sua foto...</p>
+    <p class="loading-card-sub" id="loading-status">Analisando sua foto</p>
 
     <div class="scanner-wrap">
-      <div class="scanner-logo"><img src="/logo-figuri.svg" alt="" onerror="this.style.display='none'" /></div>
+      <div class="scanner-logo"><img src="/logo-figuri.svg" alt="" /></div>
       <div class="corner-tr"></div>
       <div class="corner-bl"></div>
       <div class="scan-line"></div>
@@ -1410,41 +1089,6 @@
     </div>
   </div>
 </div><!-- /phase-loading -->
-
-
-<!-- ████  PHASE C: RESULTS  ████ -->
-<div id="phase-results-wrap" class="hidden">
-  <div class="results-topbar">
-    <img src="/logo.png" alt="Figuri" onerror="this.style.display='none'" />
-  </div>
-  <div class="results-main">
-    <div class="results-inner">
-      <div class="card" id="phase-results">
-        <div class="results-header">
-          <h2 class="results-title">Escolha sua figurinha favorita</h2>
-          <p class="results-sub">Clique na que você mais gostou</p>
-        </div>
-
-        <div class="results-grid" id="results-grid"></div>
-        <div class="results-footer" id="results-footer"></div>
-
-        <button class="btn-primary" id="btn-personalizar" disabled>✦ PERSONALIZAR FIGURINHA</button>
-        <button class="btn-link"    id="btn-regenerate">↩ Gerar novas opções</button>
-      </div>
-    </div>
-  </div>
-</div><!-- /phase-results-wrap -->
-
-
-<!-- ████  PHASE D: ERROR  ████ -->
-<div id="phase-error-wrap" class="hidden">
-  <div class="error-card" id="phase-error">
-    <div class="error-icon">⚠️</div>
-    <h2 class="section-title" style="text-align:center;margin-bottom:10px;">Algo deu errado</h2>
-    <p class="error-body" id="error-body">Não foi possível gerar sua figurinha. Tente novamente com outra foto.</p>
-    <button class="btn-primary" id="btn-retry">← Voltar e tentar novamente</button>
-  </div>
-</div><!-- /phase-error-wrap -->
 
 
 <script>
@@ -1487,119 +1131,85 @@
   /* ────────── DOM ────────── */
   function q(id) { return document.getElementById(id); }
 
-  const phaseHero          = q('phase-hero');
-  const phaseWizardWrap    = q('phase-wizard-wrap');
-  const phaseLoading       = q('phase-loading');
-  const phaseResultsWrap   = q('phase-results-wrap');
-  const phaseErrorWrap     = q('phase-error-wrap');
+  const phaseWizard    = q('phase-wizard');
+  const phaseLoading   = q('phase-loading');
+  const phaseResults   = q('phase-results');
+  const phaseError     = q('phase-error');
 
-  const phaseWizard        = q('phase-wizard');
-  const phaseResults       = q('phase-results');
-  const phaseError         = q('phase-error');
+  const step1El        = q('step-1');
+  const step2El        = q('step-2');
 
-  const step1El            = q('step-1');
-  const step2El            = q('step-2');
+  // Step progress
+  const dot1           = q('dot-1');
+  const dot2           = q('dot-2');
+  const label1         = q('label-1');
+  const label2         = q('label-2');
+  const line12         = q('line-1-2');
 
-  // Step progress (wizard)
-  const dot1               = q('dot-1');
-  const dot2               = q('dot-2');
-  const dot3               = q('dot-3');
-  const dot4               = q('dot-4');
-  const label1             = q('label-1');
-  const label2             = q('label-2');
-  const label3             = q('label-3');
-  const label4             = q('label-4');
-  const line01             = q('line-0-1');
-  const line12             = q('line-1-2');
-  const line23             = q('line-2-3');
+  const navbarBadge    = q('navbar-badge');
+  const creditsLine    = q('credits-line');
 
-  const navbarBadge        = q('navbar-badge');
-  const navbarBadge2       = q('navbar-badge-2');
-  const creditsLine        = q('credits-line');
-  const heroCreditsLine    = q('hero-credits-line');
+  const uploadSingle   = q('upload-single');
+  const uploadCasal    = q('upload-casal');
+  const boxSingle      = q('box-single');
+  const fileSingle     = q('file-single');
+  const boxCasal1      = q('box-casal1');
+  const boxCasal2      = q('box-casal2');
+  const fileCasal1     = q('file-casal1');
+  const fileCasal2     = q('file-casal2');
+  const btnNext        = q('btn-next');
 
-  const uploadSingle       = q('upload-single');
-  const uploadCasal        = q('upload-casal');
-  const boxSingle          = q('box-single');
-  const fileSingle         = q('file-single');
-  const boxCasal1          = q('box-casal1');
-  const boxCasal2          = q('box-casal2');
-  const fileCasal1         = q('file-casal1');
-  const fileCasal2         = q('file-casal2');
-  const btnNext            = q('btn-next');
+  const btnGerar       = q('btn-gerar');
+  const btnBackStep1   = q('btn-back-step1');
 
-  const btnGerar           = q('btn-gerar');
-  const btnBackStep1       = q('btn-back-step1');
-  const btnBackStep1Bottom = q('btn-back-step1-bottom');
-  const btnBackHero        = q('btn-back-hero');
-  const btnGroupPrev       = q('btn-group-prev');
-  const btnGroupNext       = q('btn-group-next');
+  const loadingStatus  = q('loading-status');
+  const progressFill   = q('progress-fill');
+  const progressPct    = q('progress-pct');
+  const liveNum        = q('live-num');
 
-  const loadingStatus      = q('loading-status');
-  const progressFill       = q('progress-fill');
-  const progressPct        = q('progress-pct');
-  const liveNum            = q('live-num');
+  const resultsGrid    = q('results-grid');
+  const resultsFooter  = q('results-footer');
+  const btnPersonalizar = q('btn-personalizar');
+  const btnRegenerate  = q('btn-regenerate');
 
-  const resultsGrid        = q('results-grid');
-  const resultsFooter      = q('results-footer');
-  const btnPersonalizar    = q('btn-personalizar');
-  const btnRegenerate      = q('btn-regenerate');
-
-  const errorBody          = q('error-body');
-  const btnRetry           = q('btn-retry');
+  const errorBody      = q('error-body');
+  const btnRetry       = q('btn-retry');
 
   /* ────────── HELPERS ────────── */
   function showPhase(name) {
-    phaseHero.classList.add('hidden');
-    phaseWizardWrap.classList.add('hidden');
+    [phaseWizard, phaseResults, phaseError]
+      .forEach(el => el.classList.add('hidden'));
     phaseLoading.classList.add('hidden');
-    phaseResultsWrap.classList.add('hidden');
-    phaseErrorWrap.classList.add('hidden');
 
-    if (name === 'hero')    phaseHero.classList.remove('hidden');
-    if (name === 'wizard')  phaseWizardWrap.classList.remove('hidden');
-    if (name === 'loading') phaseLoading.classList.remove('hidden');
-    if (name === 'results') phaseResultsWrap.classList.remove('hidden');
-    if (name === 'error')   phaseErrorWrap.classList.remove('hidden');
-  }
+    const target = q('phase-' + name);
+    if (target) target.classList.remove('hidden');
 
-  function showPhaseHero() {
-    showPhase('hero');
+    // Show/hide page header — hide during loading
+    const header = q('page-header-bar');
+    if (header) header.style.display = (name === 'loading') ? 'none' : '';
+    const stepProg = q('step-progress');
+    if (stepProg) stepProg.style.display = (name === 'loading') ? 'none' : '';
   }
 
   function updateCreditsUI() {
-    const txt = creditsUsed + ' de ' + creditsLimit + ' previews usados';
-    const html = '<span>' + creditsUsed + ' de ' + creditsLimit + '</span> previews usados';
-    if (navbarBadge)     navbarBadge.textContent  = txt;
-    if (navbarBadge2)    navbarBadge2.textContent  = txt;
-    if (creditsLine)     creditsLine.innerHTML    = html;
-    if (heroCreditsLine) heroCreditsLine.innerHTML = html;
+    if (navbarBadge) navbarBadge.textContent = creditsUsed + ' de ' + creditsLimit + ' previews usados';
+    if (creditsLine)  creditsLine.innerHTML  = '<span>' + creditsUsed + ' de ' + creditsLimit + '</span> previews usados';
   }
 
   function setStepActive(step) {
-    // Reset all
-    [dot1, dot2, dot3, dot4].forEach((d, i) => {
-      d.className = 'step-circle';
-      d.textContent = String(i + 1);
-    });
-    [label1, label2, label3, label4].forEach(l => l.className = 'step-label');
-    [line01, line12, line23].forEach(l => l.className = 'step-line');
-
-    if (step === 2) {
-      // Step 1 (Tipo) = done, step 2 (Foto) = active
+    // step 1
+    if (step === 1) {
+      dot1.className = 'step-circle active'; dot1.textContent = '1';
+      label1.className = 'step-label active';
+      line12.className = 'step-line';
+      dot2.className = 'step-circle'; dot2.textContent = '2';
+      label2.className = 'step-label';
+    } else {
       dot1.className = 'step-circle done'; dot1.textContent = '';
       label1.className = 'step-label';
-      line01.className = 'step-line done';
+      line12.className = 'step-line done';
       dot2.className = 'step-circle active'; dot2.textContent = '2';
       label2.className = 'step-label active';
-    } else if (step === 3) {
-      // Steps 1+2 done, step 3 (País) active
-      dot1.className = 'step-circle done'; dot1.textContent = '';
-      dot2.className = 'step-circle done'; dot2.textContent = '';
-      label3.className = 'step-label active';
-      line01.className = 'step-line done';
-      line12.className = 'step-line done';
-      dot3.className = 'step-circle active'; dot3.textContent = '3';
     }
   }
 
@@ -1657,26 +1267,21 @@
         return;
       }
     } catch(_) {}
-    // Default: show hero
-    showPhaseHero();
   }
 
-  /* ────────── TYPE TABS (hero cards) ────────── */
+  /* ────────── TYPE TABS ────────── */
   function bindTabs() {
-    document.querySelectorAll('.type-card').forEach(card => {
-      card.addEventListener('click', () => {
-        currentTipo = card.dataset.tipo;
+    document.querySelectorAll('.type-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentTipo = tab.dataset.tipo;
         applyTipo(currentTipo);
-        // Proceed to wizard step 1
-        goToWizardStep1();
       });
     });
   }
 
   function applyTipo(tipo) {
-    // Highlight the selected type card
-    document.querySelectorAll('.type-card').forEach(c =>
-      c.classList.toggle('active', c.dataset.tipo === tipo));
+    document.querySelectorAll('.type-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tipo === tipo));
 
     if (tipo === 'casal') {
       uploadSingle.classList.add('hidden');
@@ -1755,7 +1360,6 @@
   }
 
   function validateStep1() {
-    if (!btnNext) return;
     btnNext.disabled = (currentTipo === 'casal')
       ? !(photo1File && photo2File)
       : !photoFile;
@@ -1763,26 +1367,16 @@
 
   /* ────────── COUNTRY GRID ────────── */
   function bindCountryGrid() {
-    let activeGroupIdx = 0;
-
-    function switchGroup(idx) {
-      activeGroupIdx = idx;
-      document.querySelectorAll('.group-tab-btn').forEach(t =>
-        t.classList.toggle('active', parseInt(t.dataset.group) === idx));
-      q('group-0').classList.toggle('hidden', idx !== 0);
-      q('group-1').classList.toggle('hidden', idx !== 1);
-    }
-
     document.querySelectorAll('.group-tab-btn').forEach(tab => {
-      tab.addEventListener('click', () => switchGroup(parseInt(tab.dataset.group)));
+      tab.addEventListener('click', () => {
+        const g = tab.dataset.group;
+        document.querySelectorAll('.group-tab-btn').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        q('group-0').classList.add('hidden');
+        q('group-1').classList.add('hidden');
+        q('group-' + g).classList.remove('hidden');
+      });
     });
-
-    if (btnGroupPrev) {
-      btnGroupPrev.addEventListener('click', () => switchGroup(Math.max(0, activeGroupIdx - 1)));
-    }
-    if (btnGroupNext) {
-      btnGroupNext.addEventListener('click', () => switchGroup(Math.min(1, activeGroupIdx + 1)));
-    }
 
     document.querySelectorAll('.country-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -1794,12 +1388,10 @@
     });
   }
 
-  /* ────────── NAVIGATION ────────── */
+  /* ────────── STEP NAVIGATION ────────── */
   function bindButtons() {
     btnNext.addEventListener('click', goStep2);
     btnBackStep1.addEventListener('click', goStep1);
-    if (btnBackStep1Bottom) btnBackStep1Bottom.addEventListener('click', goStep1);
-    btnBackHero.addEventListener('click', showPhaseHero);
     btnGerar.addEventListener('click', startGeneration);
     btnRetry.addEventListener('click', () => { window.location.href = '/gerar.html'; });
     btnRegenerate.addEventListener('click', () => {
@@ -1809,24 +1401,16 @@
     btnPersonalizar.addEventListener('click', goToEditor);
   }
 
-  function goToWizardStep1() {
-    showPhase('wizard');
-    step1El.classList.remove('hidden');
-    step2El.classList.add('hidden');
-    applyTipo(currentTipo);
-    setStepActive(2);
-  }
-
   function goStep1() {
     step1El.classList.remove('hidden');
     step2El.classList.add('hidden');
-    setStepActive(2);
+    setStepActive(1);
   }
 
   function goStep2() {
     step1El.classList.add('hidden');
     step2El.classList.remove('hidden');
-    setStepActive(3);
+    setStepActive(2);
   }
 
   /* ────────── GENERATE ────────── */
@@ -2098,23 +1682,14 @@
       var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
       var items = cart.items || [];
       var n     = items.length;
+      var btn   = q('gerar-cart-btn');
+      var cnt   = q('gerar-cart-count');
+      var ttl   = q('gerar-cart-total');
+      if (n === 0) { if (btn) btn.style.display = 'none'; return; }
       var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
-
-      // Update both instances of cart button (hero topbar + wizard topbar)
-      ['gerar-cart-btn','gerar-cart-btn-2'].forEach(function(btnId) {
-        var btn = q(btnId);
-        if (!btn) return;
-        if (n === 0) { btn.style.display = 'none'; return; }
-        btn.style.display = 'flex';
-      });
-      ['gerar-cart-count','gerar-cart-count-2'].forEach(function(cntId) {
-        var el = q(cntId);
-        if (el) el.textContent = n;
-      });
-      ['gerar-cart-total','gerar-cart-total-2'].forEach(function(ttlId) {
-        var el = q(ttlId);
-        if (el) el.textContent = 'R$' + (total / 100).toFixed(2).replace('.', ',');
-      });
+      if (btn) btn.style.display = 'flex';
+      if (cnt) cnt.textContent = n;
+      if (ttl) ttl.textContent = 'R$' + (total / 100).toFixed(2).replace('.', ',');
     } catch(_) {}
   }
 
