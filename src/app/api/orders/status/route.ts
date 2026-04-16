@@ -11,7 +11,8 @@ const supabaseServiceKey =
 
 /**
  * GET /api/orders/status?order_id=xxxxx
- * Consultado pelo carrinho a cada 3s para verificar se o pedido foi pago.
+ * Consultado pelo carrinho a cada 3s para verificar se o PIX foi pago.
+ * order_id aqui é o payment.id retornado pela Payments API (/v1/payments).
  */
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get('order_id');
@@ -20,35 +21,41 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 1. Consulta o Mercado Pago diretamente
-    const res = await fetch(`https://api.mercadopago.com/v1/orders/${encodeURIComponent(orderId)}`, {
+    // Consulta o pagamento diretamente pela Payments API clássica
+    const res = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(orderId)}`, {
       headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+      next: { revalidate: 0 },
     });
 
     if (!res.ok) {
-      throw new Error('Erro ao consultar order no Mercado Pago');
+      throw new Error('Erro ao consultar pagamento no Mercado Pago');
     }
 
-    const order = await res.json();
+    const payment = await res.json();
 
-    // Status possíveis: open, action_required, processed, expired, canceled
-    const isPaid = order.status === 'processed';
-    const isCancelled = order.status === 'expired' || order.status === 'canceled';
+    // Status possíveis: pending, approved, authorized, in_process, in_mediation,
+    //                   rejected, cancelled, refunded, charged_back
+    const isPaid      = payment.status === 'approved';
+    const isCancelled = payment.status === 'cancelled' || payment.status === 'rejected';
 
-    // 2. Se pago, atualiza o banco
+    // Se pago, atualiza o banco
     if (isPaid) {
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      await supabase
-        .from('orders')
-        .update({ status: 'paid', paid_at: new Date().toISOString() })
-        .eq('payment_id', orderId)
-        .eq('status', 'pending');
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        await supabase
+          .from('orders')
+          .update({ status: 'paid', paid_at: new Date().toISOString() })
+          .eq('payment_id', orderId)
+          .eq('status', 'pending');
+      } catch (dbEx) {
+        console.error('[orders/status] DB update error (non-fatal):', dbEx);
+      }
     }
 
     return NextResponse.json(
       {
-        status:  isPaid ? 'paid' : isCancelled ? 'cancelled' : 'pending',
-        mp_status: order.status,
+        status:    isPaid ? 'paid' : isCancelled ? 'cancelled' : 'pending',
+        mp_status: payment.status,
       },
       { headers: { 'Cache-Control': 'no-store' } }
     );

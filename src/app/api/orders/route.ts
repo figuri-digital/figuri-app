@@ -54,68 +54,63 @@ export async function POST(request: NextRequest) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://figuri.com.br';
     const totalCents = items.reduce((sum, i) => sum + i.price, 0);
-    const totalReais = (totalCents / 100).toFixed(2);
+    const totalReais = totalCents / 100;
 
-    // ── Criar Order no Mercado Pago (API de Orders) ──────────────────────────
-    const res = await fetch('https://api.mercadopago.com/v1/orders', {
+    // Descrição resumida dos itens
+    const description = items.length === 1
+      ? (PRODUCT_LABELS[items[0].productType] || 'Figurinha Figuri')
+      : `Figuri – ${items.length} itens`;
+
+    // ── Criar pagamento PIX via API clássica de Payments ────────────────────
+    const res = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
-        'X-Idempotency-Key': `figuri-order-${user.id}-${Date.now()}`,
+        'X-Idempotency-Key': `figuri-pix-${user.id}-${Date.now()}`,
       },
       body: JSON.stringify({
-        type: 'online',
-        processing_mode: 'automatic',
-        total_amount: totalReais,
+        transaction_amount: totalReais,
+        description,
+        payment_method_id: 'pix',
         external_reference: `figuri-${user.id}-${Date.now()}`,
         payer: { email: user.email },
-        items: items.map(item => ({
-          title: PRODUCT_LABELS[item.productType] || 'Figurinha Figuri',
-          unit_price: (item.price / 100).toFixed(2),
-          quantity: 1,
-          external_reference: item.id,
-        })),
-        transactions: {
-          payments: [{
-            amount: totalReais,
-            payment_method: {
-              id: 'pix',
-              type: 'bank_transfer',
-            },
-          }],
-        },
         notification_url: `${siteUrl}/api/webhook`,
       }),
     });
 
-    const order = await res.json();
+    const payment = await res.json();
 
     if (!res.ok) {
-      console.error('MP Orders error:', order);
-      throw new Error(order.message || order.error || 'Erro ao criar order no Mercado Pago');
+      console.error('MP Payments (PIX) error:', payment);
+      throw new Error(
+        payment.message ||
+        (payment.cause?.[0]?.description) ||
+        'Erro ao criar pagamento PIX'
+      );
     }
 
-    // Extrai QR Code do primeiro pagamento
-    const pixData = order.transactions?.payments?.[0]?.point_of_interaction?.transaction_data;
-
+    // Extrai QR Code
+    const pixData = payment.point_of_interaction?.transaction_data;
     if (!pixData?.qr_code) {
       throw new Error('Mercado Pago não retornou QR Code PIX');
     }
 
-    // ── Salva order no banco (Supabase) ──────────────────────────────────────
-    // Usa try/catch isolado para não bloquear a resposta ao usuário caso
-    // a service role key não esteja configurada ou RLS bloqueie o insert.
-    // O webhook de pagamento atualizará o status quando o PIX for confirmado.
+    // ── Salva pedido no banco (Supabase) ─────────────────────────────────────
     try {
       const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
       const { error: dbError } = await adminSupabase.from('orders').insert({
-        payment_id:   String(order.id),
+        payment_id:   String(payment.id),
         user_id:      user.id,
         amount_cents: totalCents,
         status:       'pending',
         product_type: items.map(i => i.productType).join(','),
-        image_id:     JSON.stringify(items.map(i => ({ id: i.id, imageId: i.imageId, variationIndex: i.variationIndex, hiresUrl: i.hiresUrl }))),
+        image_id:     JSON.stringify(items.map(i => ({
+          id: i.id,
+          imageId: i.imageId,
+          variationIndex: i.variationIndex,
+          hiresUrl: i.hiresUrl,
+        }))),
       });
       if (dbError) {
         console.error('[orders] Supabase insert error (non-fatal):', dbError.message);
@@ -125,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      order_id:       String(order.id),
+      order_id:       String(payment.id),
       qr_code:        pixData.qr_code,
       qr_code_base64: pixData.qr_code_base64,
       expires_at:     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
