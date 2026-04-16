@@ -67,6 +67,13 @@ export async function GET(req: NextRequest) {
         if (!statusRes.ok) {
           const errText = await statusRes.text();
           console.log(`Task ${index} status failed: ${statusRes.status} ${errText.slice(0, 200)}`);
+          // 4xx (exceto 429 rate-limit) → falha definitiva, não adianta continuar
+          // 5xx / 429 → pode ser transiente, continua tentando
+          if (statusRes.status >= 400 && statusRes.status < 500 && statusRes.status !== 429) {
+            let errMsg = '';
+            try { errMsg = JSON.parse(errText)?.detail || errText; } catch (_) { errMsg = errText; }
+            return { index, taskId, status: 'failed', errorMsg: errMsg.slice(0, 300) };
+          }
           return { index, taskId, status: 'processing' };
         }
 
@@ -196,9 +203,11 @@ export async function GET(req: NextRequest) {
     // All tasks failed — surface as error instead of looping forever
     if (allCompleted && completedResults.length === 0) {
       await supabase.from('images').update({ status: 'failed' }).eq('id', imageId);
+      // Coleta a primeira mensagem de erro encontrada nas tasks
+      const firstErr = results.find(r => (r as any).errorMsg)?.errorMsg as string | undefined;
       return NextResponse.json({
         status: 'failed',
-        error: 'Todas as gerações falharam. Tente com outra foto.',
+        error: firstErr || 'Todas as gerações falharam. Tente com outra foto.',
       });
     }
 
