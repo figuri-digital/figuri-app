@@ -13,223 +13,492 @@
       background: #396100;
     }
 
-    /* ── Root container ── */
-    .fundo {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
+    .viewport {
+      position: fixed;
+      inset: 0;
       overflow: hidden;
     }
 
-    /* All layers fill the container */
-    .fundo img,
-    .fundo .layer {
+    .fundo {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      max-width: none;
-      display: block;
-      object-fit: fill;
+      width: 1440px;
+      height: 1213px;
+      transform-origin: top left;
     }
 
-    /* Masked layers */
+    .layer {
+      position: absolute;
+    }
+
+    .layer img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .clip-group {
+      position: absolute;
+      overflow: hidden;
+    }
+
     .masked {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      -webkit-mask-repeat: no-repeat;
+      inset: 0;
       mask-repeat: no-repeat;
-      -webkit-mask-composite: source-in;
-      mask-composite: intersect;
-    }
-    .masked img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      max-width: none;
-      object-fit: fill;
+      -webkit-mask-repeat: no-repeat;
     }
 
-    /* Extended layers (negative insets) */
-    .ext-g13  { position:absolute; top:-0.38%; right:0; bottom:-0.27%; left:0; }
-    .ext-g33  { position:absolute; top:-0.93%; right:-0.18%; bottom:-0.93%; left:-0.18%; }
-    .ext-g34  { position:absolute; top:-4.79%; right:-1.28%; bottom:-4.79%; left:-1.28%; }
-    .ext-g36  { position:absolute; top:-7.25%; right:-3.66%; bottom:-7.25%; left:-3.66%; }
-    .ext-g37  { position:absolute; top:-1.5px; right:0; bottom:-1.5px; left:0; }
-    .ext-g32  { position:absolute; top:-14.15%; right:-0.91%; bottom:-14.15%; left:-0.91%; }
-    .ext-g13 img, .ext-g33 img, .ext-g34 img,
-    .ext-g36 img, .ext-g37 img, .ext-g32 img {
-      position:absolute; top:0; left:0;
-      width:100%; height:100%; max-width:none; object-fit:fill;
+    .masked img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
   </style>
 </head>
 <body>
-<div class="fundo">
+<div class="viewport">
+<div class="fundo" id="fundo">
 
-  <!-- ── Base background layers ── -->
-  <img src="/assets/fundo/bg1.svg" alt="" />
-  <img src="/assets/fundo/bg2.svg" alt="" />
-  <img src="/assets/fundo/bg3.svg" alt="" />
-  <img src="/assets/fundo/bg4.svg" alt="" />
-  <img src="/assets/fundo/bg5.svg" alt="" />
-
-  <!-- ── Stadium group ── -->
-  <img src="/assets/fundo/g0.svg" alt="" />
-
-  <!-- Clip group: g1 mask → g2 + g3 -->
-  <div class="masked" style="
-    -webkit-mask-image: url('/assets/fundo/g1.svg');
-    mask-image: url('/assets/fundo/g1.svg');
-    -webkit-mask-size: 95.92% 21.99%;
-    mask-size: 95.92% 21.99%;
-    -webkit-mask-position: -8.63% -1.46%;
-    mask-position: -8.63% -1.46%;">
-    <img src="/assets/fundo/g2.svg" alt="" />
-  </div>
-  <div class="masked" style="
-    -webkit-mask-image: url('/assets/fundo/g1.svg');
-    mask-image: url('/assets/fundo/g1.svg');
-    -webkit-mask-size: 95.92% 21.99%;
-    mask-size: 95.92% 21.99%;
-    -webkit-mask-position: -48.32% -1.46%;
-    mask-position: -48.32% -1.46%;">
-    <img src="/assets/fundo/g3.svg" alt="" />
+  <!-- 1. bg1: left=0, top=0, width=1440, height=1058.5 -->
+  <div class="layer" style="left:0px;top:0px;width:1440px;height:1058.5px;">
+    <img src="/assets/fundo/bg1.svg" alt="" />
   </div>
 
-  <img src="/assets/fundo/g4.svg" alt="" />
-  <img src="/assets/fundo/g5.svg" alt="" />
-  <img src="/assets/fundo/g6.svg" alt="" />
-
-  <!-- Clip group: g7 mask → g8 -->
-  <div class="masked" style="
-    -webkit-mask-image: url('/assets/fundo/g7.svg');
-    mask-image: url('/assets/fundo/g7.svg');
-    -webkit-mask-size: 47.2% 10.35%;
-    mask-size: 47.2% 10.35%;
-    -webkit-mask-position: 0.35% 0.39%;
-    mask-position: 0.35% 0.39%;">
-    <img src="/assets/fundo/g8.svg" alt="" />
+  <!-- 2. bg2: left=695.8, top=792.1, width=145.4, height=60.2 -->
+  <div class="layer" style="left:695.8px;top:792.1px;width:145.4px;height:60.2px;">
+    <img src="/assets/fundo/bg2.svg" alt="" />
   </div>
 
-  <img src="/assets/fundo/g9.svg" alt="" />
-  <img src="/assets/fundo/g10.svg" alt="" />
-  <img src="/assets/fundo/g11.svg" alt="" />
-  <img src="/assets/fundo/g12.svg" alt="" />
-
-  <!-- Crowd rows: mg mask → mg1..mg16 -->
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-80.47% -6.21%;mask-position:-80.47% -6.21%;"><img src="/assets/fundo/mg1.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-89.42% -2.91%;mask-position:-89.42% -2.91%;"><img src="/assets/fundo/mg2.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-74.06% -8.15%;mask-position:-74.06% -8.15%;"><img src="/assets/fundo/mg3.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-68.99% -9.17%;mask-position:-68.99% -9.17%;"><img src="/assets/fundo/mg4.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-65.37% -9.92%;mask-position:-65.37% -9.92%;"><img src="/assets/fundo/mg5.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-61.78% -10.41%;mask-position:-61.78% -10.41%;"><img src="/assets/fundo/mg6.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-58.46% -10.73%;mask-position:-58.46% -10.73%;"><img src="/assets/fundo/mg7.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-55.01% -10.78%;mask-position:-55.01% -10.78%;"><img src="/assets/fundo/mg8.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-16.55% -6.21%;mask-position:-16.55% -6.21%;"><img src="/assets/fundo/mg9.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-6.57% -2.91%;mask-position:-6.57% -2.91%;"><img src="/assets/fundo/mg10.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-24.03% -8.15%;mask-position:-24.03% -8.15%;"><img src="/assets/fundo/mg11.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-29.12% -9.17%;mask-position:-29.12% -9.17%;"><img src="/assets/fundo/mg12.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-33.41% -9.92%;mask-position:-33.41% -9.92%;"><img src="/assets/fundo/mg13.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-37.3% -10.41%;mask-position:-37.3% -10.41%;"><img src="/assets/fundo/mg14.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-41.09% -10.73%;mask-position:-41.09% -10.73%;"><img src="/assets/fundo/mg15.svg" alt=""/></div>
-  <div class="masked" style="-webkit-mask-image:url('/assets/fundo/mg.svg');mask-image:url('/assets/fundo/mg.svg');-webkit-mask-size:99.998% 13.1%;mask-size:99.998% 13.1%;-webkit-mask-position:-44.76% -10.78%;mask-position:-44.76% -10.78%;"><img src="/assets/fundo/mg16.svg" alt=""/></div>
-
-  <!-- g13: slightly extended vertically -->
-  <div class="ext-g13"><img src="/assets/fundo/g13.svg" alt="" /></div>
-
-  <img src="/assets/fundo/g14.svg" alt="" />
-
-  <!-- Clip group: g15 mask → g16 + g17 -->
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g15.svg');
-    mask-image:url('/assets/fundo/g15.svg');
-    -webkit-mask-size:99.998% 12.03%;
-    mask-size:99.998% 12.03%;
-    -webkit-mask-position:-55.03% -2.55%;
-    mask-position:-55.03% -2.55%;">
-    <img src="/assets/fundo/g16.svg" alt="" />
-  </div>
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g15.svg');
-    mask-image:url('/assets/fundo/g15.svg');
-    -webkit-mask-size:99.998% 12.03%;
-    mask-size:99.998% 12.03%;
-    -webkit-mask-position:-6.6% -2.55%;
-    mask-position:-6.6% -2.55%;">
-    <img src="/assets/fundo/g17.svg" alt="" />
+  <!-- 3. bg3: left=820.2, top=643.4, width=404.8, height=206.1 -->
+  <div class="layer" style="left:820.2px;top:643.4px;width:404.8px;height:206.1px;">
+    <img src="/assets/fundo/bg3.svg" alt="" />
   </div>
 
-  <img src="/assets/fundo/g18.svg" alt="" />
-  <img src="/assets/fundo/g19.svg" alt="" />
-  <img src="/assets/fundo/g20.svg" alt="" />
-
-  <!-- Clip group: g21 mask → g22 -->
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g21.svg');
-    mask-image:url('/assets/fundo/g21.svg');
-    -webkit-mask-size:100% 28.9%;
-    mask-size:100% 28.9%;
-    -webkit-mask-position:0.97% -0.5%;
-    mask-position:0.97% -0.5%;">
-    <img src="/assets/fundo/g22.svg" alt="" />
+  <!-- 4. bg4: left=433, top=737, width=217, height=102 -->
+  <div class="layer" style="left:433px;top:737px;width:217px;height:102px;">
+    <img src="/assets/fundo/bg4.svg" alt="" />
   </div>
 
-  <img src="/assets/fundo/g23.svg" alt="" />
-  <img src="/assets/fundo/g24.svg" alt="" />
-
-  <!-- Clip group: g25 mask → g26 + g27 -->
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g25.svg');
-    mask-image:url('/assets/fundo/g25.svg');
-    -webkit-mask-size:99.996% 6.23%;
-    mask-size:99.996% 6.23%;
-    -webkit-mask-position:-10.05% -2.36%;
-    mask-position:-10.05% -2.36%;">
-    <img src="/assets/fundo/g26.svg" alt="" />
-  </div>
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g25.svg');
-    mask-image:url('/assets/fundo/g25.svg');
-    -webkit-mask-size:99.996% 6.23%;
-    mask-size:99.996% 6.23%;
-    -webkit-mask-position:-55.03% -2.36%;
-    mask-position:-55.03% -2.36%;">
-    <img src="/assets/fundo/g27.svg" alt="" />
+  <!-- 5. bg5: left=0, top=0, width=1440, height=173.3 -->
+  <div class="layer" style="left:0px;top:0px;width:1440px;height:173.3px;">
+    <img src="/assets/fundo/bg5.svg" alt="" />
   </div>
 
-  <img src="/assets/fundo/g28.svg" alt="" />
-  <img src="/assets/fundo/g29.svg" alt="" />
-  <img src="/assets/fundo/g30.svg" alt="" />
-
-  <!-- Clip group: g31 mask → g32 (extended) -->
-  <div class="masked" style="
-    -webkit-mask-image:url('/assets/fundo/g31.svg');
-    mask-image:url('/assets/fundo/g31.svg');
-    -webkit-mask-size:56.82% 15.24%;
-    mask-size:56.82% 15.24%;
-    -webkit-mask-position:-22.66% 0.12%;
-    mask-position:-22.66% 0.12%;">
-    <div class="ext-g32"><img src="/assets/fundo/g32.svg" alt="" /></div>
+  <!-- 6. g0: left=44.4, top=924.5, width=1381.3, height=232.6 -->
+  <div class="layer" style="left:44.4px;top:924.5px;width:1381.3px;height:232.6px;">
+    <img src="/assets/fundo/g0.svg" alt="" />
   </div>
 
-  <!-- Extended layers -->
-  <div class="ext-g33"><img src="/assets/fundo/g33.svg" alt="" /></div>
-  <div class="ext-g34"><img src="/assets/fundo/g34.svg" alt="" /></div>
-  <img src="/assets/fundo/g35.svg" alt="" />
-  <div class="ext-g36"><img src="/assets/fundo/g36.svg" alt="" /></div>
-  <div class="ext-g37"><img src="/assets/fundo/g37.svg" alt="" /></div>
+  <!-- 7. CLIP GROUP: left=44.4, top=924.5, width=1381.3, height=232.6 -->
+  <!--    masked-g2: mask=g1.svg, mask-position="-124.243px -15.464px", mask-size="1381.264px 232.643px" -->
+  <!--    masked-g3: mask=g1.svg, mask-position="-695.827px -15.464px", mask-size="1381.264px 232.643px" -->
+  <div class="clip-group" style="left:44.4px;top:924.5px;width:1381.3px;height:232.6px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g1.svg');
+      -webkit-mask-image:url('/assets/fundo/g1.svg');
+      mask-position:-124.243px -15.464px;
+      -webkit-mask-position:-124.243px -15.464px;
+      mask-size:1381.264px 232.643px;
+      -webkit-mask-size:1381.264px 232.643px;">
+      <img src="/assets/fundo/g2.svg" alt="" />
+    </div>
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g1.svg');
+      -webkit-mask-image:url('/assets/fundo/g1.svg');
+      mask-position:-695.827px -15.464px;
+      -webkit-mask-position:-695.827px -15.464px;
+      mask-size:1381.264px 232.643px;
+      -webkit-mask-size:1381.264px 232.643px;">
+      <img src="/assets/fundo/g3.svg" alt="" />
+    </div>
+  </div>
 
-  <!-- ── Top-layer bg images ── -->
-  <img src="/assets/fundo/bg6.svg" alt="" />
-  <img src="/assets/fundo/bg7.svg" alt="" />
-  <img src="/assets/fundo/bg8.svg" alt="" />
-  <img src="/assets/fundo/bg9.svg" alt="" />
-  <img src="/assets/fundo/bg10.svg" alt="" />
+  <!-- 8. g5: left=271.3, top=969, width=897.4, height=123.6 -->
+  <div class="layer" style="left:271.3px;top:969px;width:897.4px;height:123.6px;">
+    <img src="/assets/fundo/g5.svg" alt="" />
+  </div>
 
-  <!-- ── Camada 1: Figuri logo overlay ── -->
-  <img src="/assets/fundo/camada1.svg" alt="" />
+  <!-- 9. g6: left=381.3, top=973.9, width=679.7, height=109.5 -->
+  <div class="layer" style="left:381.3px;top:973.9px;width:679.7px;height:109.5px;">
+    <img src="/assets/fundo/g6.svg" alt="" />
+  </div>
+
+  <!-- 10. CLIP GROUP: left=381.3, top=973.9, width=679.7, height=109.5 -->
+  <!--     masked-g8: mask=g7.svg, mask-position="5.094px 4.147px", mask-size="679.707px 109.476px" -->
+  <div class="clip-group" style="left:381.3px;top:973.9px;width:679.7px;height:109.5px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g7.svg');
+      -webkit-mask-image:url('/assets/fundo/g7.svg');
+      mask-position:5.094px 4.147px;
+      -webkit-mask-position:5.094px 4.147px;
+      mask-size:679.707px 109.476px;
+      -webkit-mask-size:679.707px 109.476px;">
+      <img src="/assets/fundo/g8.svg" alt="" />
+    </div>
+  </div>
+
+  <!-- 11. g10: left=0, top=619, width=1439.9, height=266.8 -->
+  <div class="layer" style="left:0px;top:619px;width:1439.9px;height:266.8px;">
+    <img src="/assets/fundo/g10.svg" alt="" />
+  </div>
+
+  <!-- 12. g11: left=0, top=591, width=1440, height=277.4 -->
+  <div class="layer" style="left:0px;top:591px;width:1440px;height:277.4px;">
+    <img src="/assets/fundo/g11.svg" alt="" />
+  </div>
+
+  <!-- 13. g12: left=0, top=770, width=1440, height=138.6 -->
+  <div class="layer" style="left:0px;top:770px;width:1440px;height:138.6px;">
+    <img src="/assets/fundo/g12.svg" alt="" />
+  </div>
+
+  <!-- 14. CLIP GROUP (crowd): left=0, top=770, width=1440, height=138.6 -->
+  <!--     16 masked divs, all mask=mg.svg, mask-size="1439.966px 138.632px" -->
+  <div class="clip-group" style="left:0px;top:770px;width:1440px;height:138.6px;">
+    <!-- mg1: "-1158.649px -65.759px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-1158.649px -65.759px;
+      -webkit-mask-position:-1158.649px -65.759px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg1.svg" alt="" />
+    </div>
+    <!-- mg2: "-1287.609px -30.832px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-1287.609px -30.832px;
+      -webkit-mask-position:-1287.609px -30.832px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg2.svg" alt="" />
+    </div>
+    <!-- mg3: "-1066.414px -86.204px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-1066.414px -86.204px;
+      -webkit-mask-position:-1066.414px -86.204px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg3.svg" alt="" />
+    </div>
+    <!-- mg4: "-993.534px -97.014px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-993.534px -97.014px;
+      -webkit-mask-position:-993.534px -97.014px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg4.svg" alt="" />
+    </div>
+    <!-- mg5: "-941.369px -104.902px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-941.369px -104.902px;
+      -webkit-mask-position:-941.369px -104.902px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg5.svg" alt="" />
+    </div>
+    <!-- mg6: "-889.576px -110.132px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-889.576px -110.132px;
+      -webkit-mask-position:-889.576px -110.132px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg6.svg" alt="" />
+    </div>
+    <!-- mg7: "-841.743px -113.507px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-841.743px -113.507px;
+      -webkit-mask-position:-841.743px -113.507px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg7.svg" alt="" />
+    </div>
+    <!-- mg8: "-792.099px -114.046px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-792.099px -114.046px;
+      -webkit-mask-position:-792.099px -114.046px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg8.svg" alt="" />
+    </div>
+    <!-- mg9: "-238.376px -65.759px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-238.376px -65.759px;
+      -webkit-mask-position:-238.376px -65.759px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg9.svg" alt="" />
+    </div>
+    <!-- mg10: "-94.627px -30.832px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-94.627px -30.832px;
+      -webkit-mask-position:-94.627px -30.832px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg10.svg" alt="" />
+    </div>
+    <!-- mg11: "-346.062px -86.204px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-346.062px -86.204px;
+      -webkit-mask-position:-346.062px -86.204px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg11.svg" alt="" />
+    </div>
+    <!-- mg12: "-419.36px -97.014px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-419.36px -97.014px;
+      -webkit-mask-position:-419.36px -97.014px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg12.svg" alt="" />
+    </div>
+    <!-- mg13: "-481.246px -104.902px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-481.246px -104.902px;
+      -webkit-mask-position:-481.246px -104.902px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg13.svg" alt="" />
+    </div>
+    <!-- mg14: "-537.467px -110.132px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-537.467px -110.132px;
+      -webkit-mask-position:-537.467px -110.132px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg14.svg" alt="" />
+    </div>
+    <!-- mg15: "-591.713px -113.507px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-591.713px -113.507px;
+      -webkit-mask-position:-591.713px -113.507px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg15.svg" alt="" />
+    </div>
+    <!-- mg16: "-644.581px -114.046px" -->
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/mg.svg');
+      -webkit-mask-image:url('/assets/fundo/mg.svg');
+      mask-position:-644.581px -114.046px;
+      -webkit-mask-position:-644.581px -114.046px;
+      mask-size:1439.966px 138.632px;
+      -webkit-mask-size:1439.966px 138.632px;">
+      <img src="/assets/fundo/mg16.svg" alt="" />
+    </div>
+  </div>
+
+  <!-- 15. g13: left=0, top=767.6, width=1440, height=142.7 -->
+  <div class="layer" style="left:0px;top:767.6px;width:1440px;height:142.7px;">
+    <img src="/assets/fundo/g13.svg" alt="" />
+  </div>
+
+  <!-- 16. g14: left=0, top=761, width=1440, height=127.2 -->
+  <div class="layer" style="left:0px;top:761px;width:1440px;height:127.2px;">
+    <img src="/assets/fundo/g14.svg" alt="" />
+  </div>
+
+  <!-- 17. CLIP GROUP: left=0, top=761, width=1440, height=127.2 -->
+  <!--     masked-g16: mask=g15.svg, mask-position="-792.439px -26.945px", mask-size="1439.966px 127.248px" -->
+  <!--     masked-g17: mask=g15.svg, mask-position="-94.973px -26.945px", mask-size="1439.966px 127.248px" -->
+  <div class="clip-group" style="left:0px;top:761px;width:1440px;height:127.2px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g15.svg');
+      -webkit-mask-image:url('/assets/fundo/g15.svg');
+      mask-position:-792.439px -26.945px;
+      -webkit-mask-position:-792.439px -26.945px;
+      mask-size:1439.966px 127.248px;
+      -webkit-mask-size:1439.966px 127.248px;">
+      <img src="/assets/fundo/g16.svg" alt="" />
+    </div>
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g15.svg');
+      -webkit-mask-image:url('/assets/fundo/g15.svg');
+      mask-position:-94.973px -26.945px;
+      -webkit-mask-position:-94.973px -26.945px;
+      mask-size:1439.966px 127.248px;
+      -webkit-mask-size:1439.966px 127.248px;">
+      <img src="/assets/fundo/g17.svg" alt="" />
+    </div>
+  </div>
+
+  <!-- 18. g19: left=80.1, top=926, width=1279.8, height=142.6 -->
+  <div class="layer" style="left:80.1px;top:926px;width:1279.8px;height:142.6px;">
+    <img src="/assets/fundo/g19.svg" alt="" />
+  </div>
+
+  <!-- 19. g20: left=0, top=904.2, width=1440, height=305.8 -->
+  <div class="layer" style="left:0px;top:904.2px;width:1440px;height:305.8px;">
+    <img src="/assets/fundo/g20.svg" alt="" />
+  </div>
+
+  <!-- 20. CLIP GROUP: left=0, top=904.2, width=1440, height=305.8 -->
+  <!--     masked-g22: mask=g21.svg, mask-position="13.996px -5.306px", mask-size="1440px 305.793px" -->
+  <div class="clip-group" style="left:0px;top:904.2px;width:1440px;height:305.8px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g21.svg');
+      -webkit-mask-image:url('/assets/fundo/g21.svg');
+      mask-position:13.996px -5.306px;
+      -webkit-mask-position:13.996px -5.306px;
+      mask-size:1440px 305.793px;
+      -webkit-mask-size:1440px 305.793px;">
+      <img src="/assets/fundo/g22.svg" alt="" />
+    </div>
+  </div>
+
+  <!-- 21. g24: left=0, top=851.7, width=1439.9, height=65.9 -->
+  <div class="layer" style="left:0px;top:851.7px;width:1439.9px;height:65.9px;">
+    <img src="/assets/fundo/g24.svg" alt="" />
+  </div>
+
+  <!-- 22. CLIP GROUP: left=0, top=851.7, width=1439.9, height=65.9 -->
+  <!--     masked-g26: mask=g25.svg, mask-position="-144.729px -24.975px", mask-size="1439.931px 65.927px" -->
+  <!--     masked-g27: mask=g25.svg, mask-position="-792.439px -24.975px", mask-size="1439.931px 65.927px" -->
+  <div class="clip-group" style="left:0px;top:851.7px;width:1439.9px;height:65.9px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g25.svg');
+      -webkit-mask-image:url('/assets/fundo/g25.svg');
+      mask-position:-144.729px -24.975px;
+      -webkit-mask-position:-144.729px -24.975px;
+      mask-size:1439.931px 65.927px;
+      -webkit-mask-size:1439.931px 65.927px;">
+      <img src="/assets/fundo/g26.svg" alt="" />
+    </div>
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g25.svg');
+      -webkit-mask-image:url('/assets/fundo/g25.svg');
+      mask-position:-792.439px -24.975px;
+      -webkit-mask-position:-792.439px -24.975px;
+      mask-size:1439.931px 65.927px;
+      -webkit-mask-size:1439.931px 65.927px;">
+      <img src="/assets/fundo/g27.svg" alt="" />
+    </div>
+  </div>
+
+  <!-- 23. g29: left=0, top=836.8, width=1440, height=74.3 -->
+  <div class="layer" style="left:0px;top:836.8px;width:1440px;height:74.3px;">
+    <img src="/assets/fundo/g29.svg" alt="" />
+  </div>
+
+  <!-- 24. g30: left=60.7, top=930.3, width=1318.6, height=203.2 -->
+  <div class="layer" style="left:60.7px;top:930.3px;width:1318.6px;height:203.2px;">
+    <img src="/assets/fundo/g30.svg" alt="" />
+  </div>
+
+  <!-- 25. CLIP GROUP: left=310.8, top=985.1, width=818.3, height=161.2 (overflow:hidden) -->
+  <!--     masked-g32: mask=g31.svg, mask-position="-326.305px 1.238px", mask-size="818.284px 161.206px" -->
+  <!--     content div: position:absolute;inset:-22.8px -7.5px -->
+  <div class="clip-group" style="left:310.8px;top:985.1px;width:818.3px;height:161.2px;">
+    <div class="masked" style="
+      mask-image:url('/assets/fundo/g31.svg');
+      -webkit-mask-image:url('/assets/fundo/g31.svg');
+      mask-position:-326.305px 1.238px;
+      -webkit-mask-position:-326.305px 1.238px;
+      mask-size:818.284px 161.206px;
+      -webkit-mask-size:818.284px 161.206px;">
+      <div style="position:absolute;inset:-22.8px -7.5px;">
+        <img src="/assets/fundo/g32.svg" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 26. g33: left=308.2, top=979.3, width=823.5, height=172.8 -->
+  <div class="layer" style="left:308.2px;top:979.3px;width:823.5px;height:172.8px;">
+    <img src="/assets/fundo/g33.svg" alt="" />
+  </div>
+
+  <!-- 27. g34: left=643.2, top=981.5, width=153.6, height=90.9 -->
+  <div class="layer" style="left:643.2px;top:981.5px;width:153.6px;height:90.9px;">
+    <img src="/assets/fundo/g34.svg" alt="" />
+  </div>
+
+  <!-- 28. g35: left=0, top=1036.3, width=1440, height=173.3 -->
+  <div class="layer" style="left:0px;top:1036.3px;width:1440px;height:173.3px;">
+    <img src="/assets/fundo/g35.svg" alt="" />
+  </div>
+
+  <!-- 29. g36: left=640.3, top=912.4, width=160, height=117.8 -->
+  <div class="layer" style="left:640.3px;top:912.4px;width:160px;height:117.8px;">
+    <img src="/assets/fundo/g36.svg" alt="" />
+  </div>
+
+  <!-- 30. g37: left=517, top=1025.5, width=405.9, height=3 -->
+  <div class="layer" style="left:517px;top:1025.5px;width:405.9px;height:3px;">
+    <img src="/assets/fundo/g37.svg" alt="" />
+  </div>
+
+  <!-- 31. bg6: left=120.4, top=623.1, width=386.2, height=185.2 -->
+  <div class="layer" style="left:120.4px;top:623.1px;width:386.2px;height:185.2px;">
+    <img src="/assets/fundo/bg6.svg" alt="" />
+  </div>
+
+  <!-- 32. bg7: left=1192.9, top=572.7, width=166.5, height=70.7 -->
+  <div class="layer" style="left:1192.9px;top:572.7px;width:166.5px;height:70.7px;">
+    <img src="/assets/fundo/bg7.svg" alt="" />
+  </div>
+
+  <!-- 33. bg8: left=555, top=730.9, width=140.8, height=67.1 -->
+  <div class="layer" style="left:555px;top:730.9px;width:140.8px;height:67.1px;">
+    <img src="/assets/fundo/bg8.svg" alt="" />
+  </div>
+
+  <!-- 34. bg9: left=716.3, top=822.2, width=58.4, height=22.8 -->
+  <div class="layer" style="left:716.3px;top:822.2px;width:58.4px;height:22.8px;">
+    <img src="/assets/fundo/bg9.svg" alt="" />
+  </div>
+
+  <!-- 35. bg10: left=716.3, top=737.3, width=39.3, height=18.3 -->
+  <div class="layer" style="left:716.3px;top:737.3px;width:39.3px;height:18.3px;">
+    <img src="/assets/fundo/bg10.svg" alt="" />
+  </div>
+
+  <!-- 36. camada1 (Figuri logo TOP layer): left=623, top=110.4, width=194, height=98.2 -->
+  <div class="layer" style="left:623px;top:110.4px;width:194px;height:98.2px;">
+    <img src="/assets/fundo/camada1.svg" alt="" />
+  </div>
 
 </div>
+</div>
+<script>
+  function scaleFundo() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var scale = Math.max(vw / 1440, vh / 1213);
+    var x = (vw - 1440 * scale) / 2, y = (vh - 1213 * scale) / 2;
+    document.getElementById('fundo').style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + scale + ')';
+  }
+  scaleFundo();
+  window.addEventListener('resize', scaleFundo);
+</script>
 </body>
 </html>
