@@ -1926,8 +1926,22 @@
     async function doLogout() {
       await sb.auth.signOut();
       isLoggedIn = false;
+      // Limpa carrinho e dados de sessão do usuário
+      localStorage.removeItem('figuri_cart');
+      sessionStorage.removeItem('figuri_result');
       resetUI();
+      clearCartUI();
       closeUserDropdown();
+    }
+
+    /* Limpa o badge do carrinho na navbar */
+    function clearCartUI() {
+      var btn   = document.getElementById('homeCartBtn');
+      var badge = document.getElementById('homeCartBadge');
+      var ttl   = document.getElementById('homeCartTotal');
+      if (btn)   btn.classList.remove('has-items');
+      if (badge) badge.textContent = '0';
+      if (ttl)   ttl.textContent   = 'R$0';
     }
 
     /* User dropdown */
@@ -1953,12 +1967,14 @@
         const btn = document.getElementById('userAvatarBtn');
         btn.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
       }
+      updateHomeCart(); // só mostra carrinho após confirmar que está logado
     }
     function resetUI() {
       document.getElementById('btnEntrar').style.display = '';
       document.getElementById('btnCriarNav').style.display = '';
       document.getElementById('userMenu').classList.remove('visible');
       document.getElementById('userAvatarBtn').innerHTML = '👤';
+      clearCartUI(); // esconde o carrinho da navbar ao deslogar
     }
 
     /* Guard: must be logged in to create */
@@ -2091,7 +2107,8 @@
     })();
 
     // ── CART NAV (home page) ────────────────────────────────────────────────
-    (function updateHomeCart() {
+    // Chamada apenas por setLoggedIn() — garante que o carrinho só aparece quando autenticado
+    function updateHomeCart() {
       try {
         var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
         var items = cart.items || [];
@@ -2104,7 +2121,7 @@
         if (badge) badge.textContent = items.length;
         if (ttl)   ttl.textContent   = 'R$' + (total / 100).toFixed(2).replace('.', ',');
       } catch(_) {}
-    })();
+    }
   </script>
 
 </body>
