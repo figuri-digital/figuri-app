@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 42.9404 47.7574" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mask group">
+<mask id="mask0_0_144" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="43" height="48">
+<g id="Group">
+<path id="Vector" d="M42.9404 0H0V47.7574H42.9404V0Z" fill="url(#paint0_linear_0_144)"/>
+</g>
+</mask>
+<g mask="url(#mask0_0_144)">
+<path id="_1_1" fill-rule="evenodd" clip-rule="evenodd" d="M37.8594 1.39362L37.8611 0.921527L42.6 0.344418L42.5995 0.396011L5.08 47.4129H0.339905L37.8594 1.39362Z" fill="var(--fill-0, #C0CC85)"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_144" x1="40.2307" y1="0.633289" x2="4.52259" y2="46.9833" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>
