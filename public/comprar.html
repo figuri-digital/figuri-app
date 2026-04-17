@@ -265,7 +265,7 @@
 <!-- ── NAVBAR ── -->
 <nav class="navbar">
   <button class="navbar-back" onclick="history.back()">← Voltar</button>
-  <a href="/index.html" class="navbar-logo">
+  <a href="/" class="navbar-logo">
     <img src="/logo.png" alt="Figuri" />
   </a>
 </nav>
@@ -392,7 +392,7 @@
   // Verificar autenticação
   (async function () {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = '/index.html'; }
+    if (!session) { window.location.href = '/'; }
   })();
 })();
 </script>
