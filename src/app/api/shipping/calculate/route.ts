@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       error?: string;
     }
 
-    const options = (Array.isArray(data) ? (data as MEService[]) : [])
+    const all = (Array.isArray(data) ? (data as MEService[]) : [])
       .filter((s) => !s.error && s.price)
       .map((s) => ({
         id:            s.id,
@@ -96,8 +96,20 @@ export async function POST(request: NextRequest) {
         delivery_time: s.delivery_time,
         currency:      'BRL',
       }))
-      .sort((a, b) => a.price - b.price) // ordena do mais barato
-      .slice(0, 4);                       // pega só os 4 mais baratos
+      .sort((a, b) => a.price - b.price);
+
+    // Pega todas as opções dos Correios
+    const correios = all.filter((s) =>
+      s.company.toLowerCase().includes('correios')
+    );
+
+    // Pega só o Loggi mais barato (já está ordenado por preço)
+    const loggi = all.filter((s) =>
+      s.company.toLowerCase().includes('loggi')
+    ).slice(0, 1);
+
+    const options = [...correios, ...loggi]
+      .sort((a, b) => a.price - b.price);
 
     return NextResponse.json({ options });
   } catch (error) {
