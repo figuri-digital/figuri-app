@@ -65,9 +65,10 @@ export async function POST(request: NextRequest) {
 
     if (!res.ok) {
       console.error('[shipping] Melhor Envio error:', JSON.stringify(data));
-      const detail = typeof data?.message === 'string' ? data.message
-        : typeof data?.error === 'string' ? data.error
-        : JSON.stringify(data);
+      // Retorna detalhes completos dos erros de validação para debug
+      const detail = data?.errors
+        ? JSON.stringify(data.errors)
+        : (data?.message || JSON.stringify(data));
       return NextResponse.json({ error: 'Erro ao calcular frete: ' + detail }, { status: 500 });
     }
 
