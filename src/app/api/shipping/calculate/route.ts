@@ -47,6 +47,15 @@ export async function POST(request: NextRequest) {
       if (p && p.weight > pkg.weight) pkg = p;
     }
 
+    const reqBody = {
+      from:    { postal_code: formattedOrigin },
+      to:      { postal_code: formattedCep },
+      package: pkg,
+      options: { receipt: false, own_hand: false },
+      services: '1,2',
+    };
+    console.log('[shipping] ME request:', JSON.stringify(reqBody));
+
     const res = await fetch('https://melhorenvio.com.br/api/v2/me/shipment/calculate', {
       method: 'POST',
       headers: {
@@ -56,23 +65,18 @@ export async function POST(request: NextRequest) {
         'User-Agent':    'Figuri/1.0 (guilherme@guilhermevitor.com)',
       },
       body: JSON.stringify({
-        from:    { postal_code: formattedOrigin },
-        to:      { postal_code: formattedCep },
-        package: pkg,
-        options: { receipt: false, own_hand: false },
-        services: '1,2', // 1 = PAC, 2 = SEDEX
+        ...reqBody,
       }),
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      console.error('[shipping] Melhor Envio error:', JSON.stringify(data));
-      // Retorna detalhes completos dos erros de validação para debug
+      console.error('[shipping] ME status:', res.status, JSON.stringify(data));
       const detail = data?.errors
         ? JSON.stringify(data.errors)
         : (data?.message || JSON.stringify(data));
-      return NextResponse.json({ error: 'Erro ao calcular frete: ' + detail }, { status: 500 });
+      return NextResponse.json({ error: `[HTTP ${res.status}] ${detail}` }, { status: 500 });
     }
 
     interface MEService {
