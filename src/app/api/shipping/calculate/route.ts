@@ -23,8 +23,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica se há algum produto físico
-    const hasPhysical = (items || []).some(
-      (i: { productType: string }) => i.productType !== 'digital'
+    interface ShipItem { productType: string }
+    const hasPhysical = (items as ShipItem[] || []).some(
+      (i) => i.productType !== 'digital'
     );
     if (!hasPhysical) {
       return NextResponse.json({ options: [], digital_only: true });
@@ -66,9 +67,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao calcular frete' }, { status: 500 });
     }
 
-    const options = (Array.isArray(data) ? data : [])
-      .filter((s: any) => !s.error && s.price)
-      .map((s: any) => ({
+    interface MEService {
+      id: number;
+      name: string;
+      company?: { name?: string };
+      price?: string;
+      delivery_time?: number;
+      error?: string;
+    }
+
+    const options = (Array.isArray(data) ? (data as MEService[]) : [])
+      .filter((s) => !s.error && s.price)
+      .map((s) => ({
         id:            s.id,
         name:          s.name,
         company:       s.company?.name || '',
