@@ -447,7 +447,8 @@
           '<div class="shipping-option-detail">Prazo: ' + opt.delivery_time + ' dias úteis</div>';
         var price = document.createElement('div');
         price.className = 'shipping-option-price';
-        price.textContent = 'R$' + opt.price.toFixed(2).replace('.',',');
+        price.textContent = opt.price === 0 ? 'Grátis' : 'R$' + opt.price.toFixed(2).replace('.',',');
+        if (opt.price === 0) price.style.color = '#94DD2D';
         div.appendChild(input);
         div.appendChild(info);
         div.appendChild(price);

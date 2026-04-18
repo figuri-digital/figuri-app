@@ -98,17 +98,29 @@ export async function POST(request: NextRequest) {
       }))
       .sort((a, b) => a.price - b.price);
 
-    // Pega todas as opções dos Correios
+    // Correios PAC, SEDEX e Mini Envios
     const correios = all.filter((s) =>
       s.company.toLowerCase().includes('correios')
     );
 
-    // Pega só o Loggi mais barato (já está ordenado por preço)
-    const loggi = all.filter((s) =>
-      s.company.toLowerCase().includes('loggi')
+    // Loggi Express apenas
+    const loggiExpress = all.filter((s) =>
+      s.company.toLowerCase().includes('loggi') &&
+      s.name.toLowerCase().includes('express')
     ).slice(0, 1);
 
-    const options = [...correios, ...loggi]
+    // Carta Registrada — frete grátis (valor embutido no produto), prazo 15 dias
+    const cartaRegistrada = {
+      id:            9999,
+      name:          'Carta Registrada',
+      company:       'Correios',
+      price:         0,
+      price_cents:   0,
+      delivery_time: 15,
+      currency:      'BRL',
+    };
+
+    const options = [...correios, ...loggiExpress, cartaRegistrada]
       .sort((a, b) => a.price - b.price);
 
     return NextResponse.json({ options });
