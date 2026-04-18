@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
     if (cleanCep.length !== 8) {
       return NextResponse.json({ error: 'CEP inválido' }, { status: 400 });
     }
+    // Melhor Envio espera formato XXXXX-XXX
+    const formattedCep = `${cleanCep.slice(0,5)}-${cleanCep.slice(5)}`;
+    const formattedOrigin = `${CEP_ORIGEM.slice(0,5)}-${CEP_ORIGEM.slice(5)}`;
 
     // Verifica se há algum produto físico
     interface ShipItem { productType: string }
@@ -53,8 +56,8 @@ export async function POST(request: NextRequest) {
         'User-Agent':    'Figuri/1.0 (guilherme@guilhermevitor.com)',
       },
       body: JSON.stringify({
-        from:    { postal_code: CEP_ORIGEM },
-        to:      { postal_code: cleanCep },
+        from:    { postal_code: formattedOrigin },
+        to:      { postal_code: formattedCep },
         package: pkg,
         options: { receipt: false, own_hand: false },
         services: '1,2', // 1 = PAC, 2 = SEDEX
