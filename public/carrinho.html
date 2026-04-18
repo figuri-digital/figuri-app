@@ -425,19 +425,32 @@
       }
     }
 
+    var shippingOptionsMap = {};
+
     function renderShippingOptions(options) {
+      shippingOptionsMap = {};
       var el = document.getElementById('shippingOptions');
       el.innerHTML = '';
       options.forEach(function(opt) {
+        shippingOptionsMap[opt.id] = opt; // guarda no map global
         var div = document.createElement('label');
         div.className = 'shipping-option';
-        div.innerHTML =
-          '<input type="radio" name="shipping" value="' + opt.id + '" onchange="selectShipping(' + JSON.stringify(opt) + ')" />' +
-          '<div class="shipping-option-info">' +
-            '<div class="shipping-option-name">' + opt.company + ' — ' + opt.name + '</div>' +
-            '<div class="shipping-option-detail">Prazo: ' + opt.delivery_time + ' dias úteis</div>' +
-          '</div>' +
-          '<div class="shipping-option-price">R$' + opt.price.toFixed(2).replace('.',',') + '</div>';
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'shipping';
+        input.value = opt.id;
+        input.addEventListener('change', function() { selectShipping(opt); });
+        var info = document.createElement('div');
+        info.className = 'shipping-option-info';
+        info.innerHTML =
+          '<div class="shipping-option-name">' + opt.company + ' — ' + opt.name + '</div>' +
+          '<div class="shipping-option-detail">Prazo: ' + opt.delivery_time + ' dias úteis</div>';
+        var price = document.createElement('div');
+        price.className = 'shipping-option-price';
+        price.textContent = 'R$' + opt.price.toFixed(2).replace('.',',');
+        div.appendChild(input);
+        div.appendChild(info);
+        div.appendChild(price);
         el.appendChild(div);
       });
     }
