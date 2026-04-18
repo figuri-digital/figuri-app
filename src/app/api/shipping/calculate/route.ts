@@ -5,12 +5,13 @@ import { NextRequest, NextResponse } from 'next/server';
 const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN;
 const CEP_ORIGEM = '31710010';
 
-// Dimensões do envelope (cm) e peso (kg) por tipo de produto
+// Dimensões (cm, inteiros) e peso (kg) por tipo de produto
+// Correios exigem dimensões inteiras e peso mínimo de 0.1kg
 const PACKAGES: Record<string, { height: number; width: number; length: number; weight: number }> = {
-  digital: { height: 0,   width: 0,      length: 0,     weight: 0     }, // sem envio físico
-  fisica:  { height: 1,   width: 16.7,   length: 10.5,  weight: 0.01  }, // figurinha + envelope carta 16,7x10,5cm = 10g
-  moldura: { height: 3,   width: 16.7,   length: 16.7,  weight: 0.05  }, // acrílico 30g + embalagem 20g = 50g
-  pack:    { height: 3,   width: 16.7,   length: 16.7,  weight: 0.1   }, // pack com embalagem ~100g
+  digital: { height: 1,  width: 11,  length: 17,  weight: 0.1  }, // fallback (não deve chegar aqui)
+  fisica:  { height: 1,  width: 11,  length: 17,  weight: 0.1  }, // envelope carta 16,7x10,5 → arredondado 17x11cm, mín. 100g
+  moldura: { height: 3,  width: 17,  length: 17,  weight: 0.1  }, // caixa acrílico, mín. 100g
+  pack:    { height: 3,  width: 17,  length: 17,  weight: 0.2  }, // pack, ~200g
 };
 
 export async function POST(request: NextRequest) {
