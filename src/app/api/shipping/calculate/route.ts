@@ -5,28 +5,22 @@ import { NextRequest, NextResponse } from 'next/server';
 const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN;
 const CEP_ORIGEM = '31710010';
 
-// Dimensões (cm, inteiros) e peso (kg) por tipo de produto
-// Correios exigem dimensões inteiras e peso mínimo de 0.1kg
 const PACKAGES: Record<string, { height: number; width: number; length: number; weight: number }> = {
-  digital: { height: 1,  width: 11,  length: 17,  weight: 0.1  }, // fallback (não deve chegar aqui)
-  fisica:  { height: 1,  width: 11,  length: 17,  weight: 0.1  }, // envelope carta 16,7x10,5 → arredondado 17x11cm, mín. 100g
-  moldura: { height: 3,  width: 17,  length: 17,  weight: 0.1  }, // caixa acrílico, mín. 100g
-  pack:    { height: 3,  width: 17,  length: 17,  weight: 0.2  }, // pack, ~200g
+  digital: { height: 1, width: 11, length: 17, weight: 0.3 },
+  fisica:  { height: 1, width: 11, length: 17, weight: 0.3 },
+  moldura: { height: 3, width: 17, length: 17, weight: 0.3 },
+  pack:    { height: 3, width: 17, length: 17, weight: 0.3 },
 };
 
 export async function POST(request: NextRequest) {
   try {
     const { cep, items } = await request.json();
 
-    const cleanCep = (cep || '').replace(/\D/g, '');
+    const cleanCep = (cep || '').replace(/\D/g, '').trim();
     if (cleanCep.length !== 8) {
       return NextResponse.json({ error: 'CEP inválido' }, { status: 400 });
     }
-    // Melhor Envio espera formato XXXXX-XXX
-    const formattedCep = `${cleanCep.slice(0,5)}-${cleanCep.slice(5)}`;
-    const formattedOrigin = `${CEP_ORIGEM.slice(0,5)}-${CEP_ORIGEM.slice(5)}`;
 
-    // Verifica se há algum produto físico
     interface ShipItem { productType: string }
     const hasPhysical = (items as ShipItem[] || []).some(
       (i) => i.productType !== 'digital'
@@ -40,21 +34,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Serviço de frete não configurado' }, { status: 503 });
     }
 
-    // Usa o pacote do item mais pesado do carrinho
     let pkg = PACKAGES.fisica;
     for (const item of (items || [])) {
-      const p = PACKAGES[item.productType];
+      const p = PACKAGES[(item as ShipItem).productType];
       if (p && p.weight > pkg.weight) pkg = p;
     }
 
+    // Testa ambos os formatos — sem hífen (formato mais comum na API ME)
     const reqBody = {
-      from:    { postal_code: formattedOrigin },
-      to:      { postal_code: formattedCep },
-      package: pkg,
-      options: { receipt: false, own_hand: false },
-      services: '1,2',
+      from:    { postal_code: CEP_ORIGEM },
+      to:      { postal_code: cleanCep },
+      package: {
+        height: pkg.height,
+        width:  pkg.width,
+        length: pkg.length,
+        weight: pkg.weight,
+      },
+      options: {
+        receipt:  false,
+        own_hand: false,
+      },
     };
-    console.log('[shipping] ME request:', JSON.stringify(reqBody));
+
+    console.log('[shipping] request body:', JSON.stringify(reqBody));
+    console.log('[shipping] token prefix:', ME_TOKEN?.substring(0, 20));
 
     const res = await fetch('https://melhorenvio.com.br/api/v2/me/shipment/calculate', {
       method: 'POST',
@@ -62,17 +65,15 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${ME_TOKEN}`,
         'Content-Type':  'application/json',
         'Accept':        'application/json',
-        'User-Agent':    'Figuri/1.0 (guilherme@guilhermevitor.com)',
+        'User-Agent':    'Figuri/1.0 guilherme@guilhermevitor.com',
       },
-      body: JSON.stringify({
-        ...reqBody,
-      }),
+      body: JSON.stringify(reqBody),
     });
 
     const data = await res.json();
+    console.log('[shipping] ME response status:', res.status, JSON.stringify(data).substring(0, 300));
 
     if (!res.ok) {
-      console.error('[shipping] ME status:', res.status, JSON.stringify(data));
       const detail = data?.errors
         ? JSON.stringify(data.errors)
         : (data?.message || JSON.stringify(data));
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
         company:       s.company?.name || '',
         price:         parseFloat(s.price ?? '0'),
         price_cents:   Math.round(parseFloat(s.price ?? '0') * 100),
-        delivery_time: s.delivery_time,              // dias úteis
+        delivery_time: s.delivery_time,
         currency:      'BRL',
       }));
 
