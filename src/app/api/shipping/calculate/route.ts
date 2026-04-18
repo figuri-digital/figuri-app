@@ -56,9 +56,6 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    console.log('[shipping] request body:', JSON.stringify(reqBody));
-    console.log('[shipping] token prefix:', ME_TOKEN?.substring(0, 20));
-
     const res = await fetch('https://melhorenvio.com.br/api/v2/me/shipment/calculate', {
       method: 'POST',
       headers: {
@@ -71,7 +68,6 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await res.json();
-    console.log('[shipping] ME response status:', res.status, JSON.stringify(data).substring(0, 300));
 
     if (!res.ok) {
       const detail = data?.errors
