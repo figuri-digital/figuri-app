@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
         id:            s.id,
         name:          s.name,
         company:       s.company?.name || '',
-        price:         parseFloat(s.price),          // R$ float
-        price_cents:   Math.round(parseFloat(s.price) * 100),
+        price:         parseFloat(s.price ?? '0'),
+        price_cents:   Math.round(parseFloat(s.price ?? '0') * 100),
         delivery_time: s.delivery_time,              // dias úteis
         currency:      'BRL',
       }));
