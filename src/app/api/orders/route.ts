@@ -61,6 +61,12 @@ export async function POST(request: NextRequest) {
       ? (PRODUCT_LABELS[items[0].productType] || 'Figurinha Figuri')
       : `Figuri – ${items.length} itens`;
 
+    // ── Verificação prévia das credenciais ──────────────────────────────────
+    if (!process.env.MP_ACCESS_TOKEN) {
+      console.error('[orders] MP_ACCESS_TOKEN não configurado nas variáveis de ambiente');
+      return NextResponse.json({ error: 'Pagamento temporariamente indisponível. Contate o suporte.' }, { status: 503 });
+    }
+
     // ── Criar pagamento PIX via API clássica de Payments ────────────────────
     const res = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',

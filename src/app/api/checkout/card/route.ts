@@ -58,6 +58,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dados do cartão incompletos' }, { status: 400 });
     }
 
+    if (!process.env.MP_ACCESS_TOKEN) {
+      console.error('[card] MP_ACCESS_TOKEN não configurado nas variáveis de ambiente');
+      return NextResponse.json({ error: 'Pagamento temporariamente indisponível. Contate o suporte.' }, { status: 503 });
+    }
+
     // ── Criar pagamento via MP Payments API ──────────────────────────────────
     const paymentClient = new Payment(mpClient);
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://figuri.com.br';
