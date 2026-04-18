@@ -63,8 +63,11 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
 
     if (!res.ok) {
-      console.error('[shipping] Melhor Envio error:', data);
-      return NextResponse.json({ error: 'Erro ao calcular frete' }, { status: 500 });
+      console.error('[shipping] Melhor Envio error:', JSON.stringify(data));
+      const detail = typeof data?.message === 'string' ? data.message
+        : typeof data?.error === 'string' ? data.error
+        : JSON.stringify(data);
+      return NextResponse.json({ error: 'Erro ao calcular frete: ' + detail }, { status: 500 });
     }
 
     interface MEService {
