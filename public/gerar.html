@@ -128,57 +128,6 @@
 
     .nav-cart-total { color: var(--amarelo); font-weight: 800; }
 
-    /* ────────────────────────────────────────
-       PAGE HEADER BANNER
-    ──────────────────────────────────────── */
-    .page-header {
-      background: linear-gradient(135deg, #1a3800 0%, #0f2200 60%, #1a2b01 100%);
-      border-bottom: 1px solid rgba(148,221,45,0.12);
-      padding: 28px 20px 24px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .page-header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(148,221,45,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .page-header-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(148,221,45,0.10);
-      border: 1px solid rgba(148,221,45,0.22);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 10.5px;
-      font-weight: 700;
-      color: var(--btn-cta);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .page-header-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(30px, 7vw, 46px);
-      letter-spacing: 2px;
-      color: #fff;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-    .page-header-title span { color: var(--btn-cta); }
-
-    .page-header-sub {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-dim);
-      margin-bottom: 0;
-    }
 
     /* ────────────────────────────────────────
        MAIN LAYOUT
@@ -923,12 +872,6 @@
   </div>
 </nav>
 
-<!-- ─── PAGE HEADER ─────────────────────────────────────────────── -->
-<header class="page-header" id="page-header-bar">
-  <div class="page-header-eyebrow">⚡ Preview gratuito — pague só se gostar</div>
-  <h1 class="page-header-title">Gere sua <span>figurinha</span></h1>
-  <p class="page-header-sub">Envie uma foto e vire um jogador da Copa do Mundo</p>
-</header>
 
 <!-- ─── TOASTS ─────────────────────────────────────────────────── -->
 <div id="toast-container"></div>
@@ -1203,9 +1146,7 @@
     const target = q('phase-' + name);
     if (target) target.classList.remove('hidden');
 
-    // Show/hide page header — hide during loading
-    const header = q('page-header-bar');
-    if (header) header.style.display = (name === 'loading') ? 'none' : '';
+
     const stepProg = q('step-progress');
     if (stepProg) stepProg.style.display = (name === 'loading') ? 'none' : '';
   }
