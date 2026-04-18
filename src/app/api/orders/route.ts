@@ -28,6 +28,14 @@ interface CartItem {
   country?:       string;
 }
 
+interface ShippingInfo {
+  id:            number;
+  name:          string;
+  price_cents:   number;
+  delivery_time: number;
+  cep:           string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // ── Auth ────────────────────────────────────────────────────────────────
@@ -46,17 +54,20 @@ export async function POST(request: NextRequest) {
 
     // ── Payload ─────────────────────────────────────────────────────────────
     const body = await request.json();
-    const items: CartItem[] = body.items;
+    const items: CartItem[]       = body.items;
+    const shipping: ShippingInfo | null = body.shipping || null;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://figuri.com.br';
-    const totalCents = items.reduce((sum, i) => sum + i.price, 0);
-    const totalReais = totalCents / 100;
+    const siteUrl      = process.env.NEXT_PUBLIC_SITE_URL || 'https://figuri.com.br';
+    const itemsCents   = items.reduce((sum, i) => sum + i.price, 0);
+    const freteCents   = shipping?.price_cents || 0;
+    const totalCents   = itemsCents + freteCents;
+    const totalReais   = totalCents / 100;
 
-    // Descrição resumida dos itens
+    // Descrição resumida
     const description = items.length === 1
       ? (PRODUCT_LABELS[items[0].productType] || 'Figurinha Figuri')
       : `Figuri – ${items.length} itens`;
@@ -67,21 +78,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Pagamento temporariamente indisponível. Contate o suporte.' }, { status: 503 });
     }
 
-    // ── Criar pagamento PIX via API clássica de Payments ────────────────────
+    // ── Criar pagamento PIX ─────────────────────────────────────────────────
     const res = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
+        'Authorization':     `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+        'Content-Type':      'application/json',
         'X-Idempotency-Key': `figuri-pix-${user.id}-${Date.now()}`,
       },
       body: JSON.stringify({
         transaction_amount: totalReais,
         description,
-        payment_method_id: 'pix',
+        payment_method_id:  'pix',
         external_reference: `figuri-${user.id}-${Date.now()}`,
-        payer: { email: process.env.MP_TEST_PAYER_EMAIL || user.email },
-        notification_url: `${siteUrl}/api/webhook`,
+        payer:              { email: user.email },
+        notification_url:   `${siteUrl}/api/webhook`,
       }),
     });
 
@@ -102,21 +113,22 @@ export async function POST(request: NextRequest) {
       throw new Error('Mercado Pago não retornou QR Code PIX');
     }
 
-    // ── Salva pedido no banco (Supabase) ─────────────────────────────────────
+    // ── Salva pedido no banco ────────────────────────────────────────────────
     try {
       const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
       const { error: dbError } = await adminSupabase.from('orders').insert({
-        payment_id:   String(payment.id),
-        user_id:      user.id,
-        amount_cents: totalCents,
-        status:       'pending',
-        product_type: items.map(i => i.productType).join(','),
-        image_id:     JSON.stringify(items.map(i => ({
+        payment_id:    String(payment.id),
+        user_id:       user.id,
+        amount_cents:  totalCents,
+        status:        'pending',
+        product_type:  items.map(i => i.productType).join(','),
+        image_id:      JSON.stringify(items.map(i => ({
           id: i.id,
           imageId: i.imageId,
           variationIndex: i.variationIndex,
           hiresUrl: i.hiresUrl,
         }))),
+        shipping_info: shipping ? JSON.stringify(shipping) : null,
       });
       if (dbError) {
         console.error('[orders] Supabase insert error (non-fatal):', dbError.message);

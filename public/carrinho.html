@@ -139,12 +139,34 @@
     .card-success .check { font-size: 2.5rem; margin-bottom: 8px; }
     .card-success p { color: #94DD2D; font-weight: 700; }
     .card-error { display: none; padding: 12px 16px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.4); border-radius: 10px; color: #ff9999; font-size: 0.88rem; margin-top: 10px; }
+
+    /* ── SHIPPING SECTION ── */
+    .shipping-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(148,221,45,0.12); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    .shipping-section h3 { font-size: 0.95rem; font-weight: 700; color: #edfbd9; margin-bottom: 14px; }
+    .cep-row { display: flex; gap: 10px; }
+    .cep-input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 0.95rem; outline: none; transition: border-color .2s; }
+    .cep-input:focus { border-color: #94DD2D; }
+    .cep-input::placeholder { color: rgba(255,255,255,0.3); }
+    .btn-calc-frete { background: #94DD2D; color: #1a2b01; border: none; border-radius: 10px; padding: 11px 18px; font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
+    .btn-calc-frete:disabled { opacity: 0.6; cursor: default; }
+    .shipping-options { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .shipping-option { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(148,221,45,0.15); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all .18s; }
+    .shipping-option:hover { border-color: rgba(148,221,45,0.4); }
+    .shipping-option.selected { border-color: #94DD2D; background: rgba(148,221,45,0.08); }
+    .shipping-option input[type=radio] { accent-color: #94DD2D; width: 16px; height: 16px; flex-shrink: 0; }
+    .shipping-option-info { flex: 1; }
+    .shipping-option-name { font-size: 0.88rem; font-weight: 700; color: #edfbd9; }
+    .shipping-option-detail { font-size: 0.75rem; color: #7a9f3e; margin-top: 2px; }
+    .shipping-option-price { font-size: 1rem; font-weight: 800; color: #FFC300; flex-shrink: 0; }
+    .shipping-msg { font-size: 0.82rem; color: #7a9f3e; margin-top: 10px; text-align: center; }
+    .shipping-error { font-size: 0.82rem; color: #ff9999; margin-top: 10px; }
+    .summary-row.frete span:last-child { color: #94DD2D; }
   </style>
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="/gerar.html" class="navbar-logo"><img src="/logo.png" alt="Figuri" /></a>
+    <a href="/" class="navbar-logo"><img src="/logo.png" alt="Figuri" /></a>
     <button class="nav-back" onclick="history.back()">← Voltar</button>
   </nav>
 
@@ -167,6 +189,18 @@
       <button class="btn-add-more" onclick="window.location.href='/gerar.html'">
         ➕ Gerar e adicionar outra figurinha
       </button>
+
+      <!-- ── SHIPPING SECTION ── -->
+      <div class="shipping-section" id="shippingSection" style="display:none">
+        <h3>📦 Calcular frete</h3>
+        <div class="cep-row">
+          <input class="cep-input" id="cepInput" type="text" placeholder="Digite seu CEP" maxlength="9" oninput="formatCEP(this)" onkeydown="if(event.key==='Enter')calcularFrete()" />
+          <button class="btn-calc-frete" id="btnCalcFrete" onclick="calcularFrete()">Calcular</button>
+        </div>
+        <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" style="font-size:0.75rem;color:#7a9f3e;display:inline-block;margin-top:6px;">Não sei meu CEP</a>
+        <div class="shipping-options" id="shippingOptions"></div>
+        <div class="shipping-error" id="shippingError" style="display:none"></div>
+      </div>
 
       <!-- ── PAYMENT SECTION ── -->
       <div class="payment-section">
@@ -281,6 +315,87 @@
     function clearCart() { localStorage.removeItem(CART_KEY); }
     function formatPrice(cents) { return 'R$' + (cents / 100).toFixed(2).replace('.', ','); }
 
+    // ── FRETE ─────────────────────────────────────────────────────────────────
+    var selectedShipping = null; // { id, name, price_cents, delivery_time }
+
+    function formatCEP(input) {
+      var v = input.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
+      input.value = v;
+    }
+
+    function hasPhysicalItem() {
+      var items = getCart().items || [];
+      return items.some(function(i) { return i.productType !== 'digital'; });
+    }
+
+    async function calcularFrete() {
+      var cep = document.getElementById('cepInput').value.replace(/\D/g,'');
+      if (cep.length !== 8) { showShippingError('CEP inválido. Digite 8 números.'); return; }
+      var btn = document.getElementById('btnCalcFrete');
+      btn.disabled = true; btn.textContent = 'Calculando...';
+      hideShippingError();
+      document.getElementById('shippingOptions').innerHTML = '';
+      selectedShipping = null;
+      updateSummary();
+      try {
+        var res = await fetch('/api/shipping/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cep: cep, items: getCart().items }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao calcular frete');
+        if (data.digital_only) {
+          document.getElementById('shippingOptions').innerHTML = '<p class="shipping-msg">✅ Produto digital — sem frete!</p>';
+          return;
+        }
+        if (!data.options || data.options.length === 0) {
+          showShippingError('Nenhuma opção de frete disponível para este CEP.');
+          return;
+        }
+        renderShippingOptions(data.options);
+      } catch(err) {
+        showShippingError(err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Calcular';
+      }
+    }
+
+    function renderShippingOptions(options) {
+      var el = document.getElementById('shippingOptions');
+      el.innerHTML = '';
+      options.forEach(function(opt) {
+        var div = document.createElement('label');
+        div.className = 'shipping-option';
+        div.innerHTML =
+          '<input type="radio" name="shipping" value="' + opt.id + '" onchange="selectShipping(' + JSON.stringify(opt) + ')" />' +
+          '<div class="shipping-option-info">' +
+            '<div class="shipping-option-name">' + opt.company + ' — ' + opt.name + '</div>' +
+            '<div class="shipping-option-detail">Prazo: ' + opt.delivery_time + ' dias úteis</div>' +
+          '</div>' +
+          '<div class="shipping-option-price">R$' + opt.price.toFixed(2).replace('.',',') + '</div>';
+        el.appendChild(div);
+      });
+    }
+
+    function selectShipping(opt) {
+      selectedShipping = opt;
+      document.querySelectorAll('.shipping-option').forEach(function(el) {
+        el.classList.toggle('selected', el.querySelector('input').value == opt.id);
+      });
+      updateSummary();
+    }
+
+    function showShippingError(msg) {
+      var el = document.getElementById('shippingError');
+      el.textContent = '⚠️ ' + msg; el.style.display = 'block';
+    }
+    function hideShippingError() {
+      var el = document.getElementById('shippingError');
+      if (el) el.style.display = 'none';
+    }
+
     function formatCPF(input) {
       var v = input.value.replace(/\D/g, '').slice(0, 11);
       if (v.length >= 10) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
@@ -340,13 +455,30 @@
         list.appendChild(div);
       });
 
-      // Resumo
-      var total = items.reduce(function(s, i) { return s + i.price; }, 0);
+      // Seção de frete: só mostra se tiver item físico
+      var shippingSection = document.getElementById('shippingSection');
+      if (shippingSection) shippingSection.style.display = hasPhysicalItem() ? 'block' : 'none';
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      var items = getCart().items || [];
+      var subtotal = items.reduce(function(s, i) { return s + i.price; }, 0);
+      var freteCents = selectedShipping ? selectedShipping.price_cents : 0;
+      var total = subtotal + freteCents;
       var sumEl = document.getElementById('cartSummary');
-      var rows  = items.map(function(i) {
+      if (!sumEl) return;
+      var rows = items.map(function(i) {
         return '<div class="summary-row"><span>' + (i.playerName || 'Figurinha') + ' · ' + (i.productLabel || i.productType) + '</span><span>' + formatPrice(i.price) + '</span></div>';
       }).join('');
-      sumEl.innerHTML = rows + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
+      var freteRow = '';
+      if (hasPhysicalItem()) {
+        freteRow = selectedShipping
+          ? '<div class="summary-row frete"><span>Frete (' + selectedShipping.name + ')</span><span>' + formatPrice(freteCents) + '</span></div>'
+          : '<div class="summary-row frete"><span>Frete</span><span style="color:#aaa">Calcule acima</span></div>';
+      }
+      sumEl.innerHTML = rows + freteRow + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
     }
 
     function removeItem(id) {
@@ -376,16 +508,34 @@
     async function startPixCheckout() {
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
+
+      // Bloqueia se tiver item físico sem frete selecionado
+      if (hasPhysicalItem() && !selectedShipping) {
+        alert('Selecione uma opção de frete antes de pagar.');
+        document.getElementById('cepInput').focus();
+        return;
+      }
+
       var token = await getSupabaseToken();
       if (!token) { alert('Você precisa estar logado para comprar.'); window.location.href = '/login'; return; }
 
       var btn = document.getElementById('btnPayPix');
       btn.disabled = true; btn.textContent = 'Gerando PIX...';
       try {
+        var payload = {
+          items: cart.items,
+          shipping: selectedShipping ? {
+            id:            selectedShipping.id,
+            name:          selectedShipping.name,
+            price_cents:   selectedShipping.price_cents,
+            delivery_time: selectedShipping.delivery_time,
+            cep:           document.getElementById('cepInput').value.replace(/\D/g,''),
+          } : null,
+        };
         var res  = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ items: cart.items }),
+          body: JSON.stringify(payload),
         });
         var data = await res.json();
         if (!res.ok || !data.qr_code) throw new Error(data.error || 'Erro ao gerar PIX');
@@ -402,8 +552,9 @@
 
     function openPixModal(data) {
       currentOrderId = data.order_id;
-      var total = getCart().items.reduce(function(s,i){return s+i.price;},0);
-      document.getElementById('pixAmount').textContent = formatPrice(total);
+      var subtotal = getCart().items.reduce(function(s,i){return s+i.price;},0);
+      var frete    = selectedShipping ? selectedShipping.price_cents : 0;
+      document.getElementById('pixAmount').textContent = formatPrice(subtotal + frete);
       var qrImg = document.getElementById('pixQrImg');
       if (data.qr_code_base64) { qrImg.src = 'data:image/png;base64,' + data.qr_code_base64; }
       else { qrImg.src = ''; qrImg.alt = 'Copie o código abaixo'; }
@@ -538,6 +689,13 @@
     async function processCardPayment() {
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
+
+      if (hasPhysicalItem() && !selectedShipping) {
+        alert('Selecione uma opção de frete antes de pagar.');
+        document.getElementById('cepInput').focus();
+        return;
+      }
+
       var token = await getSupabaseToken();
       if (!token) { alert('Você precisa estar logado.'); window.location.href = '/login'; return; }
 
@@ -548,6 +706,9 @@
 
       try {
         var formData = cardFormInstance.getCardFormData();
+        var subtotal = cart.items.reduce(function(s,i){return s+i.price;},0);
+        var freteCents = selectedShipping ? selectedShipping.price_cents : 0;
+        var totalCents = subtotal + freteCents;
 
         var res = await fetch('/api/checkout/card', {
           method: 'POST',
@@ -556,7 +717,7 @@
             token:               formData.token,
             issuer_id:           formData.issuerId,
             payment_method_id:   formData.paymentMethodId,
-            transaction_amount:  parseFloat((cart.items.reduce(function(s,i){return s+i.price;},0) / 100).toFixed(2)),
+            transaction_amount:  parseFloat((totalCents / 100).toFixed(2)),
             installments:        parseInt(formData.installments, 10) || 1,
             payer: {
               email:              formData.cardholderEmail,
