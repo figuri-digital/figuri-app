@@ -6,12 +6,11 @@ const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN;
 const CEP_ORIGEM = '31710010';
 
 // Dimensões do envelope (cm) e peso (kg) por tipo de produto
-// Todos usam o mesmo envelope 7x8.5cm; peso mínimo real dos Correios ~100g
 const PACKAGES: Record<string, { height: number; width: number; length: number; weight: number }> = {
-  digital: { height: 0,   width: 0,   length: 0,   weight: 0     }, // sem envio
-  fisica:  { height: 1,   width: 9,   length: 7,   weight: 0.1   }, // ~100g
-  moldura: { height: 2,   width: 12,  length: 12,  weight: 0.15  }, // ~150g (com acrílico)
-  pack:    { height: 2,   width: 12,  length: 12,  weight: 0.2   }, // ~200g
+  digital: { height: 0,   width: 0,    length: 0,    weight: 0     }, // sem envio físico
+  fisica:  { height: 1,   width: 9,    length: 7,    weight: 0.02  }, // figurinha + envelope ~20g
+  moldura: { height: 3,   width: 14,   length: 14,   weight: 0.05  }, // acrílico 30g + embalagem 20g = 50g
+  pack:    { height: 3,   width: 14,   length: 14,   weight: 0.1   }, // pack com embalagem ~100g
 };
 
 export async function POST(request: NextRequest) {
