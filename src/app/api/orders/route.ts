@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         description,
         payment_method_id: 'pix',
         external_reference: `figuri-${user.id}-${Date.now()}`,
-        payer: { email: user.email },
+        payer: { email: process.env.MP_TEST_PAYER_EMAIL || user.email },
         notification_url: `${siteUrl}/api/webhook`,
       }),
     });
