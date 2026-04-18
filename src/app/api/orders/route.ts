@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
 
     // ── Payload ─────────────────────────────────────────────────────────────
     const body = await request.json();
-    const items: CartItem[]       = body.items;
+    const items: CartItem[]             = body.items;
     const shipping: ShippingInfo | null = body.shipping || null;
+    const address: Record<string, string> | null = body.address || null;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 });
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
           hiresUrl: i.hiresUrl,
         }))),
         shipping_info: shipping ? JSON.stringify(shipping) : null,
+        delivery_address: address ? JSON.stringify(address) : null,
       });
       if (dbError) {
         console.error('[orders] Supabase insert error (non-fatal):', dbError.message);

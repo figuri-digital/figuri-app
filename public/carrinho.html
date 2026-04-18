@@ -161,6 +161,17 @@
     .shipping-msg { font-size: 0.82rem; color: #7a9f3e; margin-top: 10px; text-align: center; }
     .shipping-error { font-size: 0.82rem; color: #ff9999; margin-top: 10px; }
     .summary-row.frete span:last-child { color: #94DD2D; }
+
+    /* ── ADDRESS FORM ── */
+    .address-form { margin-top: 18px; border-top: 1px solid rgba(148,221,45,0.12); padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .address-form h4 { font-size: 0.88rem; font-weight: 700; color: #edfbd9; margin-bottom: 2px; }
+    .addr-field { display: flex; flex-direction: column; gap: 5px; }
+    .addr-field label { font-size: 0.72rem; color: #999; text-transform: uppercase; letter-spacing: .5px; }
+    .addr-field input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 0.9rem; outline: none; transition: border-color .2s; width: 100%; }
+    .addr-field input:focus { border-color: #94DD2D; }
+    .addr-field input::placeholder { color: rgba(255,255,255,0.3); }
+    .addr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .addr-row-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
   </style>
 </head>
 <body>
@@ -200,6 +211,58 @@
         <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" style="font-size:0.75rem;color:#7a9f3e;display:inline-block;margin-top:6px;">Não sei meu CEP</a>
         <div class="shipping-options" id="shippingOptions"></div>
         <div class="shipping-error" id="shippingError" style="display:none"></div>
+
+        <!-- Endereço completo — aparece após selecionar frete -->
+        <div class="address-form" id="addressForm" style="display:none">
+          <h4>📍 Endereço de entrega</h4>
+          <div class="addr-field">
+            <label>Nome completo</label>
+            <input type="text" id="addrNome" placeholder="Quem vai receber" autocomplete="name" />
+          </div>
+          <div class="addr-row-3">
+            <div class="addr-field">
+              <label>Rua / Avenida</label>
+              <input type="text" id="addrRua" placeholder="Ex: Rua das Flores" autocomplete="address-line1" />
+            </div>
+            <div class="addr-field">
+              <label>Número</label>
+              <input type="text" id="addrNumero" placeholder="123" autocomplete="address-line2" />
+            </div>
+          </div>
+          <div class="addr-field">
+            <label>Complemento <span style="color:#666;font-size:0.7rem">(opcional)</span></label>
+            <input type="text" id="addrComplemento" placeholder="Apto, bloco, casa..." />
+          </div>
+          <div class="addr-row">
+            <div class="addr-field">
+              <label>Bairro</label>
+              <input type="text" id="addrBairro" placeholder="Ex: Centro" />
+            </div>
+            <div class="addr-field">
+              <label>Cidade</label>
+              <input type="text" id="addrCidade" placeholder="Ex: Belo Horizonte" autocomplete="address-level2" />
+            </div>
+          </div>
+          <div class="addr-row">
+            <div class="addr-field">
+              <label>Estado</label>
+              <select id="addrEstado" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;padding:11px 14px;font-family:'Sora',sans-serif;font-size:0.9rem;outline:none;width:100%">
+                <option value="">UF</option>
+                <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+                <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                <option>SP</option><option>SE</option><option>TO</option>
+              </select>
+            </div>
+            <div class="addr-field">
+              <label>CEP</label>
+              <input type="text" id="addrCep" readonly style="opacity:0.6;cursor:default" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ── PAYMENT SECTION ── -->
@@ -384,7 +447,54 @@
       document.querySelectorAll('.shipping-option').forEach(function(el) {
         el.classList.toggle('selected', el.querySelector('input').value == opt.id);
       });
+      // Mostra formulário de endereço e preenche CEP
+      var addrForm = document.getElementById('addressForm');
+      if (addrForm) {
+        addrForm.style.display = 'flex';
+        var addrCep = document.getElementById('addrCep');
+        if (addrCep) addrCep.value = document.getElementById('cepInput').value;
+        // Tenta auto-preencher cidade/bairro via ViaCEP
+        var cep = document.getElementById('cepInput').value.replace(/\D/g,'');
+        if (cep.length === 8) fetchViaCep(cep);
+      }
       updateSummary();
+    }
+
+    async function fetchViaCep(cep) {
+      try {
+        var res  = await fetch('https://viacep.com.br/ws/' + cep + '/json/');
+        var data = await res.json();
+        if (!data.erro) {
+          if (data.logradouro) document.getElementById('addrRua').value       = data.logradouro;
+          if (data.bairro)     document.getElementById('addrBairro').value    = data.bairro;
+          if (data.localidade) document.getElementById('addrCidade').value    = data.localidade;
+          if (data.uf)         document.getElementById('addrEstado').value    = data.uf;
+        }
+      } catch(_) {}
+    }
+
+    function getAddressData() {
+      return {
+        nome:        document.getElementById('addrNome').value.trim(),
+        rua:         document.getElementById('addrRua').value.trim(),
+        numero:      document.getElementById('addrNumero').value.trim(),
+        complemento: document.getElementById('addrComplemento').value.trim(),
+        bairro:      document.getElementById('addrBairro').value.trim(),
+        cidade:      document.getElementById('addrCidade').value.trim(),
+        estado:      document.getElementById('addrEstado').value.trim(),
+        cep:         document.getElementById('cepInput').value.replace(/\D/g,''),
+      };
+    }
+
+    function validateAddress() {
+      var a = getAddressData();
+      if (!a.nome)    { alert('Preencha o nome do destinatário.'); document.getElementById('addrNome').focus();   return false; }
+      if (!a.rua)     { alert('Preencha a rua/avenida.');          document.getElementById('addrRua').focus();    return false; }
+      if (!a.numero)  { alert('Preencha o número.');               document.getElementById('addrNumero').focus(); return false; }
+      if (!a.bairro)  { alert('Preencha o bairro.');               document.getElementById('addrBairro').focus(); return false; }
+      if (!a.cidade)  { alert('Preencha a cidade.');               document.getElementById('addrCidade').focus(); return false; }
+      if (!a.estado)  { alert('Selecione o estado.');              document.getElementById('addrEstado').focus(); return false; }
+      return true;
     }
 
     function showShippingError(msg) {
@@ -509,11 +619,14 @@
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
 
-      // Bloqueia se tiver item físico sem frete selecionado
-      if (hasPhysicalItem() && !selectedShipping) {
-        alert('Selecione uma opção de frete antes de pagar.');
-        document.getElementById('cepInput').focus();
-        return;
+      // Bloqueia se tiver item físico sem frete/endereço
+      if (hasPhysicalItem()) {
+        if (!selectedShipping) {
+          alert('Selecione uma opção de frete antes de pagar.');
+          document.getElementById('cepInput').focus();
+          return;
+        }
+        if (!validateAddress()) return;
       }
 
       var token = await getSupabaseToken();
@@ -531,6 +644,7 @@
             delivery_time: selectedShipping.delivery_time,
             cep:           document.getElementById('cepInput').value.replace(/\D/g,''),
           } : null,
+          address: hasPhysicalItem() ? getAddressData() : null,
         };
         var res  = await fetch('/api/orders', {
           method: 'POST',
@@ -690,10 +804,13 @@
       var cart = getCart();
       if (!cart.items || cart.items.length === 0) { alert('Carrinho vazio!'); return; }
 
-      if (hasPhysicalItem() && !selectedShipping) {
-        alert('Selecione uma opção de frete antes de pagar.');
-        document.getElementById('cepInput').focus();
-        return;
+      if (hasPhysicalItem()) {
+        if (!selectedShipping) {
+          alert('Selecione uma opção de frete antes de pagar.');
+          document.getElementById('cepInput').focus();
+          return;
+        }
+        if (!validateAddress()) return;
       }
 
       var token = await getSupabaseToken();
