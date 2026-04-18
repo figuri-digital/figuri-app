@@ -95,7 +95,9 @@ export async function POST(request: NextRequest) {
         price_cents:   Math.round(parseFloat(s.price ?? '0') * 100),
         delivery_time: s.delivery_time,
         currency:      'BRL',
-      }));
+      }))
+      .sort((a, b) => a.price - b.price) // ordena do mais barato
+      .slice(0, 4);                       // pega só os 4 mais baratos
 
     return NextResponse.json({ options });
   } catch (error) {
