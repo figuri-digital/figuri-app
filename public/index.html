@@ -153,10 +153,22 @@
       inset: 0;
       background-image: url('/assets/Back.png');
       background-size: 100% auto;
-      background-position: center 55%;
+      background-position: right 55%;
       z-index: 0;
     }
-    .hero-overlay { display: none; }
+    .hero-overlay {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        to right,
+        #1a2b01 0%,
+        #1a2b01 30%,
+        rgba(26,43,1,0.75) 52%,
+        rgba(26,43,1,0.1) 100%
+      );
+    }
     .hero-content {
       position: relative;
       z-index: 2;
