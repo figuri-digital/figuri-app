@@ -7,10 +7,10 @@ const CEP_ORIGEM = '31710010';
 
 // Dimensões do envelope (cm) e peso (kg) por tipo de produto
 const PACKAGES: Record<string, { height: number; width: number; length: number; weight: number }> = {
-  digital: { height: 0,   width: 0,    length: 0,    weight: 0     }, // sem envio físico
-  fisica:  { height: 1,   width: 9,    length: 7,    weight: 0.02  }, // figurinha + envelope ~20g
-  moldura: { height: 3,   width: 14,   length: 14,   weight: 0.05  }, // acrílico 30g + embalagem 20g = 50g
-  pack:    { height: 3,   width: 14,   length: 14,   weight: 0.1   }, // pack com embalagem ~100g
+  digital: { height: 0,   width: 0,      length: 0,     weight: 0     }, // sem envio físico
+  fisica:  { height: 1,   width: 16.7,   length: 10.5,  weight: 0.02  }, // figurinha + envelope carta 16,7x10,5cm ~20g
+  moldura: { height: 3,   width: 16.7,   length: 16.7,  weight: 0.05  }, // acrílico 30g + embalagem 20g = 50g
+  pack:    { height: 3,   width: 16.7,   length: 16.7,  weight: 0.1   }, // pack com embalagem ~100g
 };
 
 export async function POST(request: NextRequest) {
