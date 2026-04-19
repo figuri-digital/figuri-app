@@ -141,7 +141,7 @@
     ─────────────────────────────────────── */
     .hero {
       position: relative;
-      min-height: calc(100vw * 0.88);
+      min-height: calc(100vw * 0.72);
       display: flex;
       align-items: flex-start;
       overflow: hidden;
@@ -153,7 +153,7 @@
       inset: 0;
       background-image: url('/assets/Back.png');
       background-size: 100% auto;
-      background-position: right 82%;
+      background-position: right 55%;
       z-index: 0;
     }
     .hero-overlay {
@@ -1143,7 +1143,13 @@
       .footer-right { justify-content: center; }
     }
     @media (max-width: 768px) {
-      .hero { min-height: auto; overflow: hidden; }
+      .hero {
+        min-height: calc(100vw * 0.88);
+        overflow: hidden;
+      }
+      .hero-bg {
+        background-position: right 82%;
+      }
       .hero-content {
         padding: 20px 16px 28px;
         grid-template-columns: 1fr;
