@@ -33,12 +33,15 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     code, description, discount_type, discount_value,
-    min_order_cents, max_uses, expires_at, first_purchase_only, active,
+    min_order_cents, max_uses, expires_at, first_purchase_only, active, applies_to,
   } = body;
 
   if (!code || !discount_type || discount_value === undefined) {
     return NextResponse.json({ error: 'Campos obrigatórios: code, discount_type, discount_value' }, { status: 400 });
   }
+
+  // applies_to: null = todos; array vazio também = todos
+  const appliesToVal = (Array.isArray(applies_to) && applies_to.length > 0) ? applies_to : null;
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const { data, error } = await supabase.from('coupons').insert({
@@ -51,6 +54,7 @@ export async function POST(req: NextRequest) {
     expires_at:          expires_at || null,
     first_purchase_only: !!first_purchase_only,
     active:              active !== false,
+    applies_to:          appliesToVal,
   }).select().single();
 
   if (error) {
@@ -78,6 +82,11 @@ export async function PUT(req: NextRequest) {
   if (fields.expires_at      !== undefined) updates.expires_at        = fields.expires_at || null;
   if (fields.first_purchase_only !== undefined) updates.first_purchase_only = !!fields.first_purchase_only;
   if (fields.active          !== undefined) updates.active            = !!fields.active;
+  if (fields.applies_to      !== undefined) {
+    updates.applies_to = (Array.isArray(fields.applies_to) && fields.applies_to.length > 0)
+      ? fields.applies_to
+      : null;
+  }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   const { data, error } = await supabase

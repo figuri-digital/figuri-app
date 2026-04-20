@@ -440,7 +440,12 @@
         var res  = await fetch('/api/coupons/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code, order_cents: orderCents, user_id: userId }),
+          body: JSON.stringify({
+            code:        code,
+            order_cents: orderCents,
+            user_id:     userId,
+            items:       items.map(function(i) { return { productType: i.productType, price: i.price }; }),
+          }),
         });
         var data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Cupom inválido');
@@ -455,6 +460,9 @@
         var discBRL = 'R$' + (data.discount_cents / 100).toFixed(2).replace('.', ',');
         var msg = '✅ Cupom <strong>' + data.code + '</strong> aplicado! Desconto: <strong>' + discBRL + '</strong>';
         if (data.description) msg += ' — ' + data.description;
+        if (data.applies_to_labels && data.applies_to_labels.length > 0) {
+          msg += '<br><span style="font-size:0.75rem;opacity:0.8;">Válido para: ' + data.applies_to_labels.join(', ') + '</span>';
+        }
         showCouponFeedback(msg, 'success');
         document.getElementById('couponInput').disabled = true;
         document.getElementById('btnApplyCoupon').style.display = 'none';

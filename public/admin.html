@@ -250,6 +250,14 @@
     .btn-cancel-edit { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.88rem; }
     .btn-cancel-edit:hover { border-color: var(--yellow); color: var(--yellow); }
     .coupon-status-msg { font-size: 0.82rem; margin-top: 8px; }
+    .applies-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 20px; cursor: pointer;
+      border: 1.5px solid var(--border); background: transparent;
+      color: var(--text-muted); font-size: 0.82rem; transition: all .15s; user-select: none;
+    }
+    .applies-chip:hover { border-color: var(--yellow); color: var(--text); }
+    .applies-chip.selected { border-color: var(--yellow); background: rgba(255,195,0,0.12); color: var(--yellow); font-weight: 700; }
     .badge-active   { background: rgba(148,221,45,0.15); color: var(--green-cta); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; }
     .badge-inactive { background: rgba(255,107,107,0.15); color: var(--red); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; }
     .badge-percent  { background: rgba(74,158,255,0.15); color: var(--blue); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; }
@@ -471,6 +479,32 @@
           </label>
         </div>
       </div>
+
+      <!-- Applies-to selector -->
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">
+          APLICA-SE A <span style="color:var(--text-muted);font-weight:400;text-transform:none;">(sem seleção = válido para todos os produtos)</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <label class="applies-chip" id="chip-digital">
+            <input type="checkbox" value="digital" onchange="updateAppliesChips()" style="display:none;">
+            <span>🖼️ Figurinha Digital</span>
+          </label>
+          <label class="applies-chip" id="chip-fisica">
+            <input type="checkbox" value="fisica" onchange="updateAppliesChips()" style="display:none;">
+            <span>📸 Figurinha Física</span>
+          </label>
+          <label class="applies-chip" id="chip-moldura">
+            <input type="checkbox" value="moldura" onchange="updateAppliesChips()" style="display:none;">
+            <span>🖼️ Com Moldura Premium</span>
+          </label>
+          <label class="applies-chip" id="chip-pack">
+            <input type="checkbox" value="pack" onchange="updateAppliesChips()" style="display:none;">
+            <span>📦 Pack de Figurinhas</span>
+          </label>
+        </div>
+        <div id="applies-preview" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;min-height:16px;"></div>
+      </div>
       <div class="coupon-actions">
         <button class="btn-save-coupon" onclick="saveCoupon()">💾 Salvar Cupom</button>
         <button class="btn-cancel-edit" id="btnCancelCouponEdit" style="display:none;" onclick="cancelCouponEdit()">✕ Cancelar edição</button>
@@ -489,6 +523,7 @@
               <th>Código</th>
               <th>Tipo</th>
               <th>Desconto</th>
+              <th>Aplica-se a</th>
               <th>Usos</th>
               <th>Mín. pedido</th>
               <th>Validade</th>
@@ -920,6 +955,46 @@ function renderBarChart(containerId, items, color) {
 
 // ── CUPONS ──────────────────────────────────────────────────────────────────
 
+const PRODUCT_NAMES_ADMIN = { digital:'Figurinha Digital', fisica:'Figurinha Física', moldura:'Com Moldura', pack:'Pack' };
+
+function updateAppliesChips() {
+  const types = ['digital','fisica','moldura','pack'];
+  const selected = types.filter(t => {
+    const chip = document.getElementById('chip-' + t);
+    return chip && chip.querySelector('input').checked;
+  });
+  types.forEach(t => {
+    const chip = document.getElementById('chip-' + t);
+    if (chip) chip.classList.toggle('selected', selected.includes(t));
+  });
+  const preview = document.getElementById('applies-preview');
+  if (preview) {
+    preview.textContent = selected.length === 0
+      ? '✅ Válido para todos os produtos'
+      : '🎯 Restrito a: ' + selected.map(t => PRODUCT_NAMES_ADMIN[t]).join(', ');
+  }
+}
+
+function getAppliesTo() {
+  return ['digital','fisica','moldura','pack'].filter(t => {
+    const chip = document.getElementById('chip-' + t);
+    return chip && chip.querySelector('input').checked;
+  });
+}
+
+function setAppliesTo(arr) {
+  const types = ['digital','fisica','moldura','pack'];
+  types.forEach(t => {
+    const chip = document.getElementById('chip-' + t);
+    if (chip) {
+      const checked = Array.isArray(arr) && arr.includes(t);
+      chip.querySelector('input').checked = checked;
+      chip.classList.toggle('selected', checked);
+    }
+  });
+  updateAppliesChips();
+}
+
 function updateDiscountPlaceholder() {
   const type  = document.getElementById('cf-discount-type').value;
   const label = document.getElementById('cf-discount-value-label');
@@ -980,10 +1055,14 @@ function renderCoupons() {
       : '<span class="badge-inactive">Inativo</span>';
     const toggleLabel = c.active ? 'Desativar' : 'Ativar';
     const toggleCls   = c.active ? 'btn-toggle-active deactivate' : 'btn-toggle-active';
+    const appliesToHtml = (c.applies_to && c.applies_to.length > 0)
+      ? c.applies_to.map(t => `<span style="display:inline-block;background:rgba(255,195,0,0.12);color:var(--yellow);border-radius:4px;padding:1px 6px;font-size:0.68rem;margin:1px;">${PRODUCT_NAMES_ADMIN[t] || t}</span>`).join('')
+      : '<span style="color:var(--text-muted);font-size:0.78rem;">Todos</span>';
     return `<tr>
       <td><strong style="color:var(--yellow);letter-spacing:1px;">${c.code}</strong>${c.description ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">${c.description}</div>` : ''}</td>
       <td>${typeBadge}</td>
       <td style="font-weight:700;">${discVal}</td>
+      <td>${appliesToHtml}</td>
       <td>${maxUses}</td>
       <td>${minOrder}</td>
       <td style="font-size:0.82rem;">${expires}</td>
@@ -1014,6 +1093,7 @@ function editCoupon(id) {
   document.getElementById('cf-expires-at').value = c.expires_at ? c.expires_at.slice(0, 16) : '';
   document.getElementById('cf-first-purchase').checked = !!c.first_purchase_only;
   document.getElementById('cf-active').checked         = !!c.active;
+  setAppliesTo(c.applies_to || []);
   document.getElementById('btnCancelCouponEdit').style.display = '';
   document.getElementById('couponStatusMsg').textContent = '';
   document.getElementById('couponFormBox').scrollIntoView({ behavior: 'smooth' });
@@ -1031,6 +1111,7 @@ function cancelCouponEdit() {
   document.getElementById('cf-expires-at').value = '';
   document.getElementById('cf-first-purchase').checked = false;
   document.getElementById('cf-active').checked = true;
+  setAppliesTo([]);
   document.getElementById('btnCancelCouponEdit').style.display = 'none';
   document.getElementById('couponStatusMsg').textContent = '';
   updateDiscountPlaceholder();
@@ -1059,6 +1140,7 @@ async function saveCoupon() {
     expires_at:  expiresAt ? new Date(expiresAt).toISOString() : null,
     first_purchase_only: document.getElementById('cf-first-purchase').checked,
     active: document.getElementById('cf-active').checked,
+    applies_to: getAppliesTo(),
   };
 
   const isEdit  = !!editingCouponId;
