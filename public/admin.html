@@ -185,6 +185,50 @@
       justify-content: center; gap: 4px; color: var(--text-muted); font-size: 0.72rem; transition: border-color 0.15s; flex-shrink: 0; }
     .opt-card-none:hover, .opt-card-none.selected { border-color: var(--yellow); color: var(--yellow); }
 
+    /* ── Pedidos ── */
+    .orders-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .orders-search { flex: 1; min-width: 180px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 9px 12px; font-family: inherit; font-size: 0.88rem; outline: none; transition: border-color .2s; }
+    .orders-search:focus { border-color: var(--green-cta); }
+    .orders-search::placeholder { color: var(--text-muted); }
+    .status-filter-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.82rem; transition: all .15s; }
+    .status-filter-btn:hover { border-color: var(--green-cta); color: var(--green-cta); }
+    .status-filter-btn.active { background: var(--yellow); color: var(--bg2); font-weight: 700; border-color: var(--yellow); }
+    .status-badge { border-radius: 5px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; }
+    .status-paid    { background: rgba(148,221,45,0.15); color: var(--green-cta); }
+    .status-pending { background: rgba(255,195,0,0.15); color: var(--yellow); }
+    .status-refunded{ background: rgba(255,107,107,0.15); color: var(--red); }
+    .status-cancelled{ background: rgba(255,255,255,0.06); color: var(--text-muted); }
+    .order-detail-row td { padding: 0 12px 12px !important; }
+    .order-detail-box { background: var(--bg3); border-radius: 8px; padding: 12px 16px; font-size: 0.78rem; line-height: 1.7; color: var(--text-muted); }
+    .order-detail-box strong { color: var(--text); }
+    .orders-pagination { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+    .page-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.82rem; transition: all .15s; }
+    .page-btn:hover { border-color: var(--green-cta); color: var(--green-cta); }
+    .page-btn.active { background: var(--green-cta); color: var(--bg2); font-weight: 700; border-color: var(--green-cta); }
+
+    /* ── Financeiro ── */
+    .period-btns { display: flex; gap: 8px; margin-bottom: 20px; }
+    .period-btn { padding: 7px 18px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.82rem; transition: all .15s; }
+    .period-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .period-btn.active { background: var(--blue); color: #fff; font-weight: 700; border-color: var(--blue); }
+    .fin-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+    .fin-s-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .fin-s-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; }
+    .fin-s-value { font-size: 1.55rem; font-weight: 800; margin-top: 6px; }
+    .fin-s-sub   { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+    .chart-area { height: 140px; display: flex; align-items: flex-end; gap: 4px; margin-top: 12px; }
+    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+    .chart-col .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .4s ease; min-height: 2px; }
+    .chart-col .c-label { font-size: 0.58rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: center; }
+    .chart-col .c-value { font-size: 0.6rem; color: var(--green-cta); font-weight: 700; }
+    .chart-col:hover .bar { opacity: 0.8; }
+    .product-bar-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .product-bar-row { display: flex; align-items: center; gap: 10px; }
+    .product-bar-label { width: 180px; flex-shrink: 0; font-size: 0.82rem; }
+    .product-bar-track { flex: 1; background: var(--bg3); border-radius: 4px; height: 22px; overflow: hidden; }
+    .product-bar-fill  { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.72rem; font-weight: 700; color: var(--bg2); transition: width .6s ease; }
+    .product-bar-val { width: 100px; text-align: right; font-size: 0.82rem; font-weight: 700; color: var(--yellow); flex-shrink: 0; }
+
     /* ── Cupons ── */
     .coupon-form {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px;
@@ -239,6 +283,8 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="tab-btn active" id="tab-stats" onclick="switchTab('stats')">📊 Dashboard</button>
+      <button class="tab-btn" id="tab-orders" onclick="switchTab('orders')">📦 Pedidos</button>
+      <button class="tab-btn" id="tab-financial" onclick="switchTab('financial')">💰 Financeiro</button>
       <button class="tab-btn" id="tab-coupons" onclick="switchTab('coupons')">🏷️ Cupons</button>
       <button class="tab-btn" id="tab-configs" onclick="switchTab('configs')">⚙️ Configurações</button>
       <button class="refresh" onclick="refreshCurrent()">Atualizar</button>
@@ -290,6 +336,89 @@
     </div>
   </div>
   </div><!-- /tab-content-stats -->
+
+  <!-- TAB: PEDIDOS -->
+  <div id="tab-content-orders" style="display:none;">
+    <div class="orders-toolbar">
+      <input class="orders-search" id="ordersSearch" type="text" placeholder="🔍 Buscar por ID de pagamento ou cupom..."
+        oninput="ordersSearchDebounce()" />
+      <button class="status-filter-btn active" id="sf-all"       onclick="setOrderFilter('')">Todos</button>
+      <button class="status-filter-btn"         id="sf-paid"      onclick="setOrderFilter('paid')">✅ Pagos</button>
+      <button class="status-filter-btn"         id="sf-pending"   onclick="setOrderFilter('pending')">⏳ Pendentes</button>
+      <button class="status-filter-btn"         id="sf-refunded"  onclick="setOrderFilter('refunded')">↩️ Reembolso</button>
+    </div>
+
+    <div id="orders-loading" class="loading" style="display:none;">Carregando pedidos...</div>
+    <div id="orders-summary-bar" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Total</th>
+            <th>Cupom</th>
+            <th>Frete</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </div>
+    <div id="orders-empty" style="display:none;text-align:center;padding:30px;color:var(--text-muted);">Nenhum pedido encontrado.</div>
+    <div class="orders-pagination" id="orders-pagination"></div>
+  </div><!-- /tab-content-orders -->
+
+  <!-- TAB: FINANCEIRO -->
+  <div id="tab-content-financial" style="display:none;">
+    <div class="period-btns">
+      <button class="period-btn active" id="pb-7"  onclick="setFinancialPeriod(7)">7 dias</button>
+      <button class="period-btn"        id="pb-30" onclick="setFinancialPeriod(30)">30 dias</button>
+      <button class="period-btn"        id="pb-90" onclick="setFinancialPeriod(90)">90 dias</button>
+    </div>
+
+    <div id="financial-loading" class="loading" style="display:none;">Carregando relatório...</div>
+    <div id="financial-content" style="display:none;">
+
+      <!-- Resumo cards -->
+      <div class="fin-summary-grid" id="fin-summary-grid"></div>
+
+      <!-- Gráfico diário -->
+      <div class="section">
+        <h2 id="fin-daily-title">Receita diária</h2>
+        <div class="chart-area" id="fin-daily-chart"></div>
+        <div style="height:20px;"></div>
+      </div>
+
+      <!-- Gráfico mensal -->
+      <div class="section">
+        <h2>Receita mensal (últimos 6 meses)</h2>
+        <div class="chart-area" id="fin-monthly-chart"></div>
+        <div style="height:20px;"></div>
+      </div>
+
+      <!-- Por tipo de produto -->
+      <div class="section">
+        <h2>Receita por produto</h2>
+        <div class="product-bar-wrap" id="fin-product-bars"></div>
+      </div>
+
+      <!-- Top cupons -->
+      <div class="section" id="fin-coupons-section">
+        <h2>Cupons mais usados</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Código</th><th>Usos</th><th>Total descontado</th></tr></thead>
+            <tbody id="fin-coupons-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /financial-content -->
+  </div><!-- /tab-content-financial -->
 
   <!-- TAB: CUPONS -->
   <div id="tab-content-coupons" style="display:none;">
@@ -489,22 +618,304 @@ function login() {
   loadStats();
 }
 
+const ALL_TABS = ['stats', 'orders', 'financial', 'coupons', 'configs'];
+
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('tab-content-stats').style.display   = tab === 'stats'   ? 'block' : 'none';
-  document.getElementById('tab-content-coupons').style.display = tab === 'coupons' ? 'block' : 'none';
-  document.getElementById('tab-content-configs').style.display = tab === 'configs' ? 'block' : 'none';
-  document.getElementById('tab-stats').className   = 'tab-btn' + (tab === 'stats'   ? ' active' : '');
-  document.getElementById('tab-coupons').className = 'tab-btn' + (tab === 'coupons' ? ' active' : '');
-  document.getElementById('tab-configs').className = 'tab-btn' + (tab === 'configs' ? ' active' : '');
-  if (tab === 'configs' && allConfigs.length === 0) loadConfigs();
-  if (tab === 'coupons') loadCoupons();
+  ALL_TABS.forEach(t => {
+    document.getElementById('tab-content-' + t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('tab-' + t).className = 'tab-btn' + (t === tab ? ' active' : '');
+  });
+  if (tab === 'configs'   && allConfigs.length === 0) loadConfigs();
+  if (tab === 'coupons')   loadCoupons();
+  if (tab === 'orders')    loadOrders();
+  if (tab === 'financial') loadFinancial();
 }
 
 function refreshCurrent() {
-  if (currentTab === 'stats')   loadStats();
-  else if (currentTab === 'coupons') loadCoupons();
+  if (currentTab === 'stats')     loadStats();
+  else if (currentTab === 'orders')    loadOrders(true);
+  else if (currentTab === 'financial') loadFinancial(true);
+  else if (currentTab === 'coupons')   loadCoupons();
   else loadConfigs();
+}
+
+// ── PEDIDOS ─────────────────────────────────────────────────────────────────
+
+let ordersPage       = 1;
+let ordersFilter     = '';
+let ordersSearchVal  = '';
+let ordersSearchTimer = null;
+let expandedOrderId  = null;
+
+const PRODUCT_LABELS_MAP = { digital:'Figurinha Digital', fisica:'Figurinha Física', moldura:'Com Moldura', pack:'Pack' };
+const STATUS_LABELS      = { paid:'Pago', pending:'Pendente', refunded:'Reembolsado', cancelled:'Cancelado', approved:'Aprovado' };
+
+function setOrderFilter(status) {
+  ordersFilter = status;
+  ordersPage   = 1;
+  ['all','paid','pending','refunded'].forEach(s => {
+    const btn = document.getElementById('sf-' + (s || 'all'));
+    if (btn) btn.className = 'status-filter-btn' + (s === status ? ' active' : '');
+  });
+  loadOrders();
+}
+
+function ordersSearchDebounce() {
+  if (ordersSearchTimer) clearTimeout(ordersSearchTimer);
+  ordersSearchTimer = setTimeout(function() {
+    ordersSearchVal = document.getElementById('ordersSearch').value.trim();
+    ordersPage = 1;
+    loadOrders();
+  }, 400);
+}
+
+async function loadOrders(forceRefresh) {
+  if (!forceRefresh && currentTab !== 'orders') return;
+  const loadEl = document.getElementById('orders-loading');
+  loadEl.style.display = 'block';
+  document.getElementById('orders-body').innerHTML = '';
+  document.getElementById('orders-empty').style.display = 'none';
+  document.getElementById('orders-pagination').innerHTML = '';
+  try {
+    let url = '/api/admin/orders?key=' + encodeURIComponent(adminKey) + '&page=' + ordersPage;
+    if (ordersFilter)    url += '&status=' + encodeURIComponent(ordersFilter);
+    if (ordersSearchVal) url += '&search=' + encodeURIComponent(ordersSearchVal);
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
+    renderOrders(data);
+  } catch (err) {
+    document.getElementById('orders-body').innerHTML =
+      `<tr><td colspan="8" style="color:var(--red);text-align:center;">❌ ${err.message}</td></tr>`;
+  } finally {
+    loadEl.style.display = 'none';
+  }
+}
+
+function renderOrders(data) {
+  const { orders, total, page, pages } = data;
+  document.getElementById('orders-summary-bar').textContent =
+    total + ' pedido' + (total !== 1 ? 's' : '') + ' encontrado' + (total !== 1 ? 's' : '') + (pages > 1 ? ` — página ${page} de ${pages}` : '');
+
+  if (!orders || orders.length === 0) {
+    document.getElementById('orders-empty').style.display = 'block';
+    return;
+  }
+
+  const tbody = document.getElementById('orders-body');
+  tbody.innerHTML = orders.map(o => {
+    const date = o.paid_at || o.created_at;
+    const dateStr = date ? new Date(date).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+    const types = (o.product_type || '').split(',').map(t => PRODUCT_LABELS_MAP[t.trim()] || t.trim()).join(', ');
+    const statusCls = 'status-' + (o.status || 'pending');
+    const statusLabel = STATUS_LABELS[o.status] || o.status;
+    const hasShipping = !!o.shipping_parsed;
+    const freightName = hasShipping ? (o.shipping_parsed.company || '') + ' ' + (o.shipping_parsed.name || '') : '—';
+    const coupon = o.coupon_code
+      ? `<span style="color:var(--yellow);font-size:0.78rem;font-weight:700;">${o.coupon_code}</span>${o.discount_cents ? '<br><span style="color:var(--green-cta);font-size:0.7rem;">−R$' + (o.discount_cents/100).toFixed(2).replace('.',',') + '</span>' : ''}`
+      : '<span style="color:var(--border)">—</span>';
+    return `<tr style="cursor:pointer;" onclick="toggleOrderDetail('${o.id}')">
+      <td style="color:var(--text-muted);font-size:0.75rem;">▶</td>
+      <td style="font-size:0.82rem;">${dateStr}</td>
+      <td style="font-size:0.82rem;">${o.user_name}<br><span style="color:var(--text-muted);font-size:0.7rem;">${o.payment_id.slice(0,12)}…</span></td>
+      <td style="font-size:0.82rem;">${types}</td>
+      <td style="font-weight:800;color:var(--yellow);">R$${(o.amount_cents/100).toFixed(2).replace('.',',')}</td>
+      <td>${coupon}</td>
+      <td style="font-size:0.78rem;color:var(--text-muted);">${freightName !== '— ' ? freightName : '—'}</td>
+      <td><span class="status-badge ${statusCls}">${statusLabel}</span></td>
+    </tr>
+    <tr id="detail-${o.id}" style="display:none;" class="order-detail-row">
+      <td colspan="8">
+        <div class="order-detail-box">
+          ${buildOrderDetailHtml(o)}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Paginação
+  if (pages > 1) {
+    const pgEl = document.getElementById('orders-pagination');
+    let html = '';
+    for (let p = 1; p <= pages; p++) {
+      html += `<button class="page-btn${p === page ? ' active' : ''}" onclick="goOrdersPage(${p})">${p}</button>`;
+    }
+    pgEl.innerHTML = html;
+  }
+}
+
+function buildOrderDetailHtml(o) {
+  let html = '';
+  html += `<strong>ID Pagamento:</strong> ${o.payment_id}<br>`;
+  html += `<strong>Usuário:</strong> ${o.user_name} (${o.user_id})<br>`;
+  html += `<strong>Criado em:</strong> ${o.created_at ? new Date(o.created_at).toLocaleString('pt-BR') : '—'}<br>`;
+  if (o.paid_at) html += `<strong>Pago em:</strong> ${new Date(o.paid_at).toLocaleString('pt-BR')}<br>`;
+
+  if (o.items_parsed && Array.isArray(o.items_parsed) && o.items_parsed.length > 0) {
+    html += `<strong>Itens:</strong> `;
+    html += o.items_parsed.map(item => `${item.id || '—'} (var.${item.variationIndex ?? '—'})`).join(', ') + '<br>';
+  }
+
+  if (o.shipping_parsed) {
+    const s = o.shipping_parsed;
+    html += `<strong>Frete:</strong> ${s.company || ''} ${s.name || ''} — `;
+    html += `R$${((s.price_cents||0)/100).toFixed(2).replace('.',',')} — ${s.delivery_time || '?'} dias`;
+    if (s.cep) html += ` — CEP: ${s.cep}`;
+    html += '<br>';
+  }
+
+  if (o.address_parsed) {
+    const a = o.address_parsed;
+    html += `<strong>Endereço:</strong> ${a.nome || ''} — ${a.rua || ''}, ${a.numero || ''}`;
+    if (a.complemento) html += ` ${a.complemento}`;
+    html += ` — ${a.bairro || ''}, ${a.cidade || ''} / ${a.estado || ''} — CEP ${a.cep || ''}<br>`;
+  }
+
+  if (o.coupon_code) {
+    html += `<strong>Cupom:</strong> ${o.coupon_code}`;
+    if (o.discount_cents) html += ` — desconto R$${(o.discount_cents/100).toFixed(2).replace('.',',')}`;
+    html += '<br>';
+  }
+
+  return html;
+}
+
+function toggleOrderDetail(id) {
+  const row = document.getElementById('detail-' + id);
+  if (!row) return;
+  const visible = row.style.display !== 'none';
+  // Fecha todos
+  document.querySelectorAll('[id^="detail-"]').forEach(r => { r.style.display = 'none'; });
+  // Reabre se era fechado
+  if (!visible) row.style.display = 'table-row';
+}
+
+function goOrdersPage(p) {
+  ordersPage = p;
+  loadOrders(true);
+  document.getElementById('tab-content-orders').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── FINANCEIRO ───────────────────────────────────────────────────────────────
+
+let financialPeriod = 7;
+let financialData   = null;
+
+function setFinancialPeriod(days) {
+  financialPeriod = days;
+  [7, 30, 90].forEach(d => {
+    const btn = document.getElementById('pb-' + d);
+    if (btn) btn.className = 'period-btn' + (d === days ? ' active' : '');
+  });
+  loadFinancial(true);
+}
+
+async function loadFinancial(forceRefresh) {
+  if (!forceRefresh && currentTab !== 'financial') return;
+  const loadEl   = document.getElementById('financial-loading');
+  const contentEl = document.getElementById('financial-content');
+  loadEl.style.display   = 'block';
+  contentEl.style.display = 'none';
+  try {
+    const res  = await fetch('/api/admin/financial?key=' + encodeURIComponent(adminKey) + '&period=' + financialPeriod);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
+    financialData = data;
+    renderFinancial(data);
+    contentEl.style.display = 'block';
+  } catch (err) {
+    contentEl.innerHTML = `<div class="error">❌ ${err.message}</div>`;
+    contentEl.style.display = 'block';
+  } finally {
+    loadEl.style.display = 'none';
+  }
+}
+
+function fmtBRL(cents) {
+  return 'R$ ' + (cents / 100).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function renderFinancial(d) {
+  const s = d.summary;
+  const p = d.period;
+
+  // Cards de resumo
+  document.getElementById('fin-summary-grid').innerHTML = [
+    { label: 'Receita total', value: fmtBRL(s.totalRevenue), cls: 'green-cta', sub: `${s.totalOrders} pedidos pagos` },
+    { label: `Receita (${p.days}d)`, value: fmtBRL(p.revenue), cls: 'yellow', sub: `${p.orders} pedido${p.orders !== 1 ? 's' : ''}` },
+    { label: 'Ticket médio (total)', value: fmtBRL(s.ticketMedio), cls: 'blue', sub: 'Valor médio por pedido' },
+    { label: `Ticket médio (${p.days}d)`, value: fmtBRL(p.ticket), cls: 'blue' },
+    { label: 'Desconto concedido', value: fmtBRL(s.totalDiscount), cls: 'red', sub: 'Total em cupons' },
+    { label: 'Pedidos pendentes', value: s.pendingOrders, cls: 'purple', sub: fmtBRL(s.pendingRevenue) + ' em aberto' },
+  ].map(c => `<div class="fin-s-card">
+    <div class="fin-s-label">${c.label}</div>
+    <div class="fin-s-value" style="color:var(--${c.cls})">${c.value}</div>
+    ${c.sub ? `<div class="fin-s-sub">${c.sub}</div>` : ''}
+  </div>`).join('');
+
+  // Gráfico diário
+  document.getElementById('fin-daily-title').textContent = `Receita diária (últimos ${p.days} dias)`;
+  renderBarChart('fin-daily-chart', d.dailyStats.map(s => ({
+    label: s.date.slice(5).replace('-', '/'),
+    value: s.revenue,
+    sub:   s.orders + ' pedido' + (s.orders !== 1 ? 's' : ''),
+  })), '#94DD2D');
+
+  // Gráfico mensal
+  renderBarChart('fin-monthly-chart', d.monthlyStats.map(s => ({
+    label: s.month.slice(5) + '/' + s.month.slice(2, 4),
+    value: s.revenue,
+    sub:   s.orders + ' pedido' + (s.orders !== 1 ? 's' : ''),
+  })), '#4A9EFF');
+
+  // Por produto
+  const productNames = { digital: 'Figurinha Digital', fisica: 'Figurinha Física', moldura: 'Com Moldura', pack: 'Pack' };
+  const productColors = { digital: '#94DD2D', fisica: '#FFC300', moldura: '#4A9EFF', pack: '#b39ddb' };
+  const products = Object.entries(d.byProduct).sort((a, b) => b[1].revenue - a[1].revenue);
+  const maxRev = products.length > 0 ? Math.max(...products.map(([, v]) => v.revenue)) : 1;
+  document.getElementById('fin-product-bars').innerHTML = products.map(([type, v]) => {
+    const pct = maxRev > 0 ? Math.round((v.revenue / maxRev) * 100) : 0;
+    const color = productColors[type] || '#94DD2D';
+    return `<div class="product-bar-row">
+      <div class="product-bar-label">${productNames[type] || type}<br><span style="color:var(--text-muted);font-size:0.7rem;">${v.orders} pedido${v.orders !== 1 ? 's' : ''}</span></div>
+      <div class="product-bar-track">
+        <div class="product-bar-fill" style="width:${pct}%;background:${color};">${pct > 12 ? fmtBRL(v.revenue) : ''}</div>
+      </div>
+      <div class="product-bar-val">${fmtBRL(v.revenue)}</div>
+    </div>`;
+  }).join('');
+  if (products.length === 0) document.getElementById('fin-product-bars').innerHTML = '<div style="color:var(--text-muted)">Sem dados.</div>';
+
+  // Cupons
+  const couponSection = document.getElementById('fin-coupons-section');
+  if (!d.topCoupons || d.topCoupons.length === 0) {
+    couponSection.style.display = 'none';
+  } else {
+    couponSection.style.display = 'block';
+    document.getElementById('fin-coupons-body').innerHTML = d.topCoupons.map(c =>
+      `<tr>
+        <td style="font-weight:700;color:var(--yellow);letter-spacing:1px;">${c.code}</td>
+        <td>${c.count} uso${c.count !== 1 ? 's' : ''}</td>
+        <td style="color:var(--green-cta);">${fmtBRL(c.discount_total)}</td>
+      </tr>`
+    ).join('');
+  }
+}
+
+function renderBarChart(containerId, items, color) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const maxVal = Math.max(...items.map(i => i.value), 1);
+  el.innerHTML = items.map(item => {
+    const hPct = Math.max((item.value / maxVal) * 100, item.value > 0 ? 3 : 0);
+    const valLabel = item.value > 0 ? fmtBRL(item.value).replace('R$ ', '') : '';
+    return `<div class="chart-col" title="${item.label}: ${item.sub || ''}">
+      <div class="c-value">${valLabel}</div>
+      <div class="bar" style="height:${hPct}%;background:${color};"></div>
+      <div class="c-label">${item.label}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── CUPONS ──────────────────────────────────────────────────────────────────
