@@ -81,6 +81,49 @@ export async function POST(request: NextRequest) {
       ? (PRODUCT_LABELS[items[0].productType] || 'Figurinha Figuri')
       : `Figuri – ${items.length} itens`;
 
+    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ── Pedido 100% gratuito (cupom cobre tudo) ─────────────────────────────
+    if (totalCents === 0) {
+      const freeOrderId = `free-${user.id}-${Date.now()}`;
+      try {
+        const { error: dbError } = await adminSupabase.from('orders').insert({
+          payment_id:       freeOrderId,
+          user_id:          user.id,
+          amount_cents:     0,
+          status:           'paid',
+          paid_at:          new Date().toISOString(),
+          product_type:     items.map(i => i.productType).join(','),
+          image_id:         JSON.stringify(items.map(i => ({
+            id: i.id,
+            imageId: i.imageId,
+            variationIndex: i.variationIndex,
+            hiresUrl: i.hiresUrl,
+          }))),
+          shipping_info:    shipping ? JSON.stringify(shipping) : null,
+          delivery_address: address  ? JSON.stringify(address)  : null,
+          coupon_code:      coupon?.code || null,
+          discount_cents:   discountCents || null,
+        });
+        if (dbError) console.error('[orders] free order insert error (non-fatal):', dbError.message);
+
+        if (coupon?.coupon_id) {
+          await adminSupabase.rpc('increment_coupon_uses', { coupon_id: coupon.coupon_id })
+            .then(({ error: rpcErr }) => {
+              if (rpcErr) console.error('[orders] increment_coupon_uses error (non-fatal):', rpcErr.message);
+            });
+        }
+      } catch (dbEx) {
+        console.error('[orders] free order exception (non-fatal):', dbEx);
+      }
+
+      return NextResponse.json({
+        order_id:    freeOrderId,
+        zero_value:  true,
+        total_cents: 0,
+      });
+    }
+
     // ── Verificação prévia das credenciais ──────────────────────────────────
     if (!process.env.MP_ACCESS_TOKEN) {
       console.error('[orders] MP_ACCESS_TOKEN não configurado nas variáveis de ambiente');
@@ -124,7 +167,6 @@ export async function POST(request: NextRequest) {
 
     // ── Salva pedido no banco ────────────────────────────────────────────────
     try {
-      const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
       const { error: dbError } = await adminSupabase.from('orders').insert({
         payment_id:    String(payment.id),
         user_id:       user.id,

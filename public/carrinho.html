@@ -704,6 +704,29 @@
       updateSummary();
     }
 
+    function calcTotal() {
+      var items = getCart().items || [];
+      var subtotal  = items.reduce(function(s, i) { return s + i.price; }, 0);
+      var frete     = selectedShipping ? selectedShipping.price_cents : 0;
+      var discount  = appliedCoupon ? appliedCoupon.discount_cents : 0;
+      return Math.max(0, subtotal + frete - discount);
+    }
+
+    function updatePaymentButtons() {
+      var isFree = calcTotal() === 0;
+      var btnPix  = document.getElementById('btnPayPix');
+      var tabCard = document.getElementById('tabCard');
+      if (btnPix) {
+        btnPix.textContent = isFree ? '🎁 Finalizar Pedido Grátis' : 'Pagar com PIX 🟢';
+        btnPix.className   = isFree ? 'btn-pay btn-pay-pix' : 'btn-pay btn-pay-pix';
+      }
+      // Esconde aba cartão quando o pedido é grátis
+      if (tabCard) tabCard.style.display = isFree ? 'none' : '';
+      if (isFree && document.getElementById('panelCard').classList.contains('active')) {
+        switchTab('pix');
+      }
+    }
+
     function updateSummary() {
       var items = getCart().items || [];
       var subtotal    = items.reduce(function(s, i) { return s + i.price; }, 0);
@@ -725,6 +748,7 @@
         ? '<div class="summary-row discount"><span>Desconto (' + appliedCoupon.code + ')</span><span>−' + formatPrice(discountCents) + '</span></div>'
         : '';
       sumEl.innerHTML = rows + freteRow + discountRow + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
+      updatePaymentButtons();
     }
 
     function removeItem(id) {
@@ -789,7 +813,15 @@
           body: JSON.stringify(payload),
         });
         var data = await res.json();
-        if (!res.ok || !data.qr_code) throw new Error(data.error || 'Erro ao gerar PIX');
+        if (!res.ok) throw new Error(data.error || 'Erro ao finalizar pedido');
+
+        // Pedido 100% grátis — pula modal PIX
+        if (data.zero_value) {
+          onPaymentApproved();
+          return;
+        }
+
+        if (!data.qr_code) throw new Error(data.error || 'Erro ao gerar PIX');
         openPixModal(data);
       } catch (err) {
         alert('Erro: ' + err.message);

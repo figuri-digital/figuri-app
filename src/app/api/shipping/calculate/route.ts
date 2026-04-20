@@ -109,8 +109,13 @@ export async function POST(request: NextRequest) {
       s.name.toLowerCase().includes('express')
     ).slice(0, 1);
 
-    // Carta Registrada — frete grátis (valor embutido no produto), prazo 15 dias
-    const cartaRegistrada = {
+    // Carta Registrada só aparece se NÃO houver moldura no pedido
+    // (moldura tem peso que inviabiliza carta registrada)
+    const hasMoldura = (items as ShipItem[] || []).some(
+      (i) => i.productType === 'moldura'
+    );
+
+    const cartaRegistrada = hasMoldura ? [] : [{
       id:            9999,
       name:          'Carta Registrada',
       company:       'Correios',
@@ -118,9 +123,9 @@ export async function POST(request: NextRequest) {
       price_cents:   0,
       delivery_time: 15,
       currency:      'BRL',
-    };
+    }];
 
-    const options = [...correios, ...loggiExpress, cartaRegistrada]
+    const options = [...correios, ...loggiExpress, ...cartaRegistrada]
       .sort((a, b) => a.price - b.price);
 
     return NextResponse.json({ options });

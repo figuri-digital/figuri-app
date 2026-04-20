@@ -229,6 +229,37 @@
     .product-bar-fill  { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.72rem; font-weight: 700; color: var(--bg2); transition: width .6s ease; }
     .product-bar-val { width: 100px; text-align: right; font-size: 0.82rem; font-weight: 700; color: var(--yellow); flex-shrink: 0; }
 
+    /* ── Imagens ── */
+    .images-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .img-filter-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.82rem; transition: all .15s; }
+    .img-filter-btn:hover { border-color: var(--green-cta); color: var(--green-cta); }
+    .img-filter-btn.active { background: var(--green-cta); color: var(--bg2); font-weight: 700; border-color: var(--green-cta); }
+    .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .img-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; transition: border-color .2s, transform .2s;
+    }
+    .img-card:hover { border-color: var(--yellow); transform: translateY(-2px); }
+    .img-card.purchased { border-color: rgba(148,221,45,0.4); }
+    .img-thumb-wrap { position: relative; aspect-ratio: 3/4; background: var(--bg3); overflow: hidden; }
+    .img-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; transition: transform .3s; }
+    .img-thumb-wrap img:hover { transform: scale(1.04); }
+    .img-var-btns { position: absolute; bottom: 6px; right: 6px; display: flex; gap: 4px; }
+    .img-var-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); color: #fff; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .img-var-btn:hover, .img-var-btn.active { background: var(--yellow); border-color: var(--yellow); color: var(--bg2); }
+    .img-badge-wrap { position: absolute; top: 6px; left: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .img-card-body { padding: 10px 12px 12px; }
+    .img-card-user { font-size: 0.82rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .img-card-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .img-card-order { margin-top: 8px; padding: 8px; background: var(--bg3); border-radius: 7px; font-size: 0.72rem; }
+    .img-card-order .order-label { color: var(--green-cta); font-weight: 700; margin-bottom: 3px; }
+    .img-card-order .order-info  { color: var(--text-muted); line-height: 1.5; }
+    .img-card-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .btn-dl-img { flex: 1; padding: 7px; border-radius: 7px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: all .15s; text-align: center; }
+    .btn-dl-img:hover { border-color: var(--green-cta); color: var(--green-cta); }
+    .btn-dl-img.primary { background: var(--green-cta); color: var(--bg2); border-color: var(--green-cta); font-weight: 700; }
+    .btn-dl-img.primary:hover { background: #a8f033; }
+
     /* ── Cupons ── */
     .coupon-form {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px;
@@ -293,6 +324,7 @@
       <button class="tab-btn active" id="tab-stats" onclick="switchTab('stats')">📊 Dashboard</button>
       <button class="tab-btn" id="tab-orders" onclick="switchTab('orders')">📦 Pedidos</button>
       <button class="tab-btn" id="tab-financial" onclick="switchTab('financial')">💰 Financeiro</button>
+      <button class="tab-btn" id="tab-images" onclick="switchTab('images')">🖼️ Imagens</button>
       <button class="tab-btn" id="tab-coupons" onclick="switchTab('coupons')">🏷️ Cupons</button>
       <button class="tab-btn" id="tab-configs" onclick="switchTab('configs')">⚙️ Configurações</button>
       <button class="refresh" onclick="refreshCurrent()">Atualizar</button>
@@ -427,6 +459,21 @@
 
     </div><!-- /financial-content -->
   </div><!-- /tab-content-financial -->
+
+  <!-- TAB: IMAGENS -->
+  <div id="tab-content-images" style="display:none;">
+    <div class="images-toolbar">
+      <button class="img-filter-btn active" id="if-all"       onclick="setImgFilter('')">Todas</button>
+      <button class="img-filter-btn"        id="if-preview"   onclick="setImgFilter('preview')">👁️ Preview</button>
+      <button class="img-filter-btn"        id="if-paid"      onclick="setImgFilter('paid')">✅ Compradas</button>
+      <button class="img-filter-btn"        id="if-in_cart"   onclick="setImgFilter('in_cart')">🛒 No carrinho</button>
+      <span style="margin-left:auto;font-size:0.82rem;color:var(--text-muted);" id="images-summary-bar"></span>
+    </div>
+    <div id="images-loading" class="loading" style="display:none;">Carregando imagens...</div>
+    <div class="images-grid" id="images-grid"></div>
+    <div id="images-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">Nenhuma imagem encontrada.</div>
+    <div class="orders-pagination" id="images-pagination" style="margin-top:20px;"></div>
+  </div><!-- /tab-content-images -->
 
   <!-- TAB: CUPONS -->
   <div id="tab-content-coupons" style="display:none;">
@@ -653,7 +700,7 @@ function login() {
   loadStats();
 }
 
-const ALL_TABS = ['stats', 'orders', 'financial', 'coupons', 'configs'];
+const ALL_TABS = ['stats', 'orders', 'financial', 'images', 'coupons', 'configs'];
 
 function switchTab(tab) {
   currentTab = tab;
@@ -665,14 +712,153 @@ function switchTab(tab) {
   if (tab === 'coupons')   loadCoupons();
   if (tab === 'orders')    loadOrders();
   if (tab === 'financial') loadFinancial();
+  if (tab === 'images')    loadImages();
 }
 
 function refreshCurrent() {
   if (currentTab === 'stats')     loadStats();
   else if (currentTab === 'orders')    loadOrders(true);
   else if (currentTab === 'financial') loadFinancial(true);
+  else if (currentTab === 'images')    loadImages(true);
   else if (currentTab === 'coupons')   loadCoupons();
   else loadConfigs();
+}
+
+// ── IMAGENS ──────────────────────────────────────────────────────────────────
+
+let imagesPage   = 1;
+let imagesFilter = '';
+const STYLE_NAMES = { sozinho: 'Sozinho', pet: 'Pet', casal: 'Casal' };
+const COUNTRY_FLAGS = { brasil:'🇧🇷', argentina:'🇦🇷', franca:'🇫🇷', alemanha:'🇩🇪', espanha:'🇪🇸', portugal:'🇵🇹', uruguai:'🇺🇾', colombia:'🇨🇴' };
+
+function setImgFilter(status) {
+  imagesFilter = status;
+  imagesPage   = 1;
+  ['all','preview','paid','in_cart'].forEach(s => {
+    const btn = document.getElementById('if-' + (s === 'all' ? 'all' : s));
+    if (btn) btn.className = 'img-filter-btn' + (s === (status || 'all') ? ' active' : '');
+  });
+  loadImages(true);
+}
+
+async function loadImages(forceRefresh) {
+  if (!forceRefresh && currentTab !== 'images') return;
+  document.getElementById('images-loading').style.display = 'block';
+  document.getElementById('images-grid').innerHTML = '';
+  document.getElementById('images-empty').style.display = 'none';
+  document.getElementById('images-pagination').innerHTML = '';
+  try {
+    let url = '/api/admin/images?key=' + encodeURIComponent(adminKey) + '&page=' + imagesPage;
+    if (imagesFilter) url += '&cart_status=' + encodeURIComponent(imagesFilter);
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
+    renderImages(data);
+  } catch (err) {
+    document.getElementById('images-grid').innerHTML =
+      `<div style="color:var(--red);padding:20px;">❌ ${err.message}</div>`;
+  } finally {
+    document.getElementById('images-loading').style.display = 'none';
+  }
+}
+
+function renderImages(data) {
+  const { images, total, page, pages } = data;
+  document.getElementById('images-summary-bar').textContent =
+    total + ' imagem' + (total !== 1 ? 'ns' : '') + (pages > 1 ? ` — página ${page} de ${pages}` : '');
+
+  if (!images || images.length === 0) {
+    document.getElementById('images-empty').style.display = 'block';
+    return;
+  }
+
+  const grid = document.getElementById('images-grid');
+  grid.innerHTML = images.map(img => {
+    const flag    = COUNTRY_FLAGS[img.country] || '';
+    const style   = STYLE_NAMES[img.style] || img.style || '';
+    const dateStr = img.created_at ? new Date(img.created_at).toLocaleDateString('pt-BR') : '—';
+    const isPaid  = img.cart_status === 'paid';
+    const cartBadge = isPaid
+      ? `<span style="background:rgba(148,221,45,0.85);color:#1a2b01;border-radius:4px;padding:2px 6px;font-size:0.65rem;font-weight:700;">✅ COMPRADA</span>`
+      : img.cart_status === 'in_cart'
+        ? `<span style="background:rgba(255,195,0,0.85);color:#1a2b01;border-radius:4px;padding:2px 6px;font-size:0.65rem;font-weight:700;">🛒 CARRINHO</span>`
+        : `<span style="background:rgba(255,255,255,0.15);color:#edfbd9;border-radius:4px;padding:2px 6px;font-size:0.65rem;">Preview</span>`;
+
+    // Variações: img.variations tem urls de -0.jpg e -1.jpg
+    const vars = img.variations || [img.generated_url];
+    const varBtns = vars.map((v, i) =>
+      `<button class="img-var-btn${i === 0 ? ' active' : ''}" onclick="switchImgVar('${img.id}',${i},'${v}')" title="Variação ${i+1}">${i+1}</button>`
+    ).join('');
+
+    // Info do pedido se comprada
+    let orderHtml = '';
+    if (img.order) {
+      const o = img.order;
+      const productTypes = (o.product_type || '').split(',').map(t => PRODUCT_LABELS_MAP[t.trim()] || t.trim()).join(', ');
+      orderHtml = `<div class="img-card-order">
+        <div class="order-label">Pedido</div>
+        <div class="order-info">
+          ${productTypes}<br>
+          R$${((o.amount_cents||0)/100).toFixed(2).replace('.',',')}
+          ${o.coupon_code ? '· 🏷️ ' + o.coupon_code : ''}
+          ${o.paid_at ? '<br>' + new Date(o.paid_at).toLocaleDateString('pt-BR') : ''}
+        </div>
+      </div>`;
+    }
+
+    const hiresUrl  = img.generated_url || '';
+    const dlAllUrl  = vars[0] || hiresUrl;
+
+    return `<div class="img-card${isPaid ? ' purchased' : ''}" id="imgcard-${img.id}">
+      <div class="img-thumb-wrap">
+        <img id="imgthumb-${img.id}" src="${img.watermark_url || img.generated_url}" alt="figurinha"
+          onclick="window.open('${hiresUrl}','_blank')" title="Clique para abrir em tamanho real" />
+        <div class="img-badge-wrap">${cartBadge}</div>
+        ${vars.length > 1 ? `<div class="img-var-btns">${varBtns}</div>` : ''}
+      </div>
+      <div class="img-card-body">
+        <div class="img-card-user">${img.user_name}</div>
+        <div class="img-card-meta">${flag} ${img.country || ''} · ${style} · ${dateStr}</div>
+        ${orderHtml}
+        <div class="img-card-actions">
+          <button class="btn-dl-img primary" onclick="downloadImg('${hiresUrl}','${img.user_name}',0)">⬇️ Hi-res</button>
+          ${vars.length > 1 ? `<button class="btn-dl-img" onclick="downloadImg('${vars[1]}','${img.user_name}',1)">Var 2</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Paginação
+  if (pages > 1) {
+    const pgEl = document.getElementById('images-pagination');
+    let html = '';
+    for (let p = 1; p <= pages; p++) {
+      html += `<button class="page-btn${p === page ? ' active' : ''}" onclick="goImagesPage(${p})">${p}</button>`;
+    }
+    pgEl.innerHTML = html;
+  }
+}
+
+function switchImgVar(imgId, varIdx, url) {
+  const thumb = document.getElementById('imgthumb-' + imgId);
+  if (thumb) thumb.src = url;
+  const card = document.getElementById('imgcard-' + imgId);
+  if (card) card.querySelectorAll('.img-var-btn').forEach((b, i) => b.classList.toggle('active', i === varIdx));
+}
+
+function downloadImg(url, userName, varIdx) {
+  if (!url) return;
+  const a = document.createElement('a');
+  a.href     = url;
+  a.download = 'figuri-' + (userName || 'cliente').replace(/\s+/g, '-').toLowerCase() + (varIdx ? '-v' + (varIdx+1) : '') + '.jpg';
+  a.target   = '_blank';
+  a.click();
+}
+
+function goImagesPage(p) {
+  imagesPage = p;
+  loadImages(true);
+  document.getElementById('tab-content-images').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ── PEDIDOS ─────────────────────────────────────────────────────────────────
