@@ -818,7 +818,7 @@ function renderImages(data) {
       </div>
       <div class="img-card-body">
         <div class="img-card-user">${img.user_name}</div>
-        <div class="img-card-meta">${flag} ${img.country || ''} · ${style} · ${dateStr}</div>
+        <div class="img-card-meta">${style} · ${dateStr}</div>
         ${orderHtml}
         <div class="img-card-actions">
           <button class="btn-dl-img primary" onclick="downloadImg('${hiresUrl}','${img.user_name}',0)">⬇️ Hi-res</button>

@@ -12,7 +12,6 @@ interface ImageRow {
   user_id:       string;
   status:        string;
   cart_status:   string;
-  country:       string;
   style:         string;
   generated_url: string;
   watermark_url: string;
@@ -48,7 +47,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('images')
-    .select('id, user_id, status, cart_status, country, style, generated_url, watermark_url, original_url, is_test, created_at', { count: 'exact' })
+    .select('id, user_id, status, cart_status, style, generated_url, watermark_url, original_url, is_test, created_at', { count: 'exact' })
     .eq('status', 'completed')
     .order('created_at', { ascending: false })
     .range((page - 1) * pageSize, page * pageSize - 1);
@@ -99,6 +98,7 @@ export async function GET(req: NextRequest) {
 
   const enriched = imageList.map(img => ({
     ...img,
+    country:   '', // not stored in images table
     user_name: profileMap[img.user_id] || img.user_id?.slice(0, 8) || '—',
     order:     orderMap[img.id] || null,
     // Gera URLs de todas as variações a partir do padrão de path
