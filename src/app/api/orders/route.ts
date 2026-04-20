@@ -36,6 +36,12 @@ interface ShippingInfo {
   cep:           string;
 }
 
+interface CouponInfo {
+  coupon_id:      string;
+  code:           string;
+  discount_cents: number;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // ── Auth ────────────────────────────────────────────────────────────────
@@ -57,15 +63,17 @@ export async function POST(request: NextRequest) {
     const items: CartItem[]             = body.items;
     const shipping: ShippingInfo | null = body.shipping || null;
     const address: Record<string, string> | null = body.address || null;
+    const coupon: CouponInfo | null     = body.coupon || null;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 });
     }
 
     const siteUrl      = process.env.NEXT_PUBLIC_SITE_URL || 'https://figuri.com.br';
-    const itemsCents   = items.reduce((sum, i) => sum + i.price, 0);
-    const freteCents   = shipping?.price_cents || 0;
-    const totalCents   = itemsCents + freteCents;
+    const itemsCents    = items.reduce((sum, i) => sum + i.price, 0);
+    const freteCents    = shipping?.price_cents || 0;
+    const discountCents = coupon?.discount_cents || 0;
+    const totalCents    = Math.max(0, itemsCents + freteCents - discountCents);
     const totalReais   = totalCents / 100;
 
     // Descrição resumida
@@ -129,11 +137,21 @@ export async function POST(request: NextRequest) {
           variationIndex: i.variationIndex,
           hiresUrl: i.hiresUrl,
         }))),
-        shipping_info: shipping ? JSON.stringify(shipping) : null,
-        delivery_address: address ? JSON.stringify(address) : null,
+        shipping_info:    shipping ? JSON.stringify(shipping) : null,
+        delivery_address: address  ? JSON.stringify(address)  : null,
+        coupon_code:      coupon?.code || null,
+        discount_cents:   discountCents || null,
       });
       if (dbError) {
         console.error('[orders] Supabase insert error (non-fatal):', dbError.message);
+      }
+
+      // Incrementa uses_count do cupom (non-fatal)
+      if (coupon?.coupon_id) {
+        await adminSupabase.rpc('increment_coupon_uses', { coupon_id: coupon.coupon_id })
+          .then(({ error: rpcErr }) => {
+            if (rpcErr) console.error('[orders] increment_coupon_uses error (non-fatal):', rpcErr.message);
+          });
       }
     } catch (dbEx) {
       console.error('[orders] Supabase insert exception (non-fatal):', dbEx);

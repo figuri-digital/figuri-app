@@ -140,6 +140,22 @@
     .card-success p { color: #94DD2D; font-weight: 700; }
     .card-error { display: none; padding: 12px 16px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.4); border-radius: 10px; color: #ff9999; font-size: 0.88rem; margin-top: 10px; }
 
+    /* ── COUPON SECTION ── */
+    .coupon-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(148,221,45,0.12); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+    .coupon-section h3 { font-size: 0.95rem; font-weight: 700; color: #edfbd9; margin-bottom: 12px; }
+    .coupon-row { display: flex; gap: 10px; }
+    .coupon-input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 0.95rem; outline: none; transition: border-color .2s; text-transform: uppercase; letter-spacing: 1px; }
+    .coupon-input:focus { border-color: #94DD2D; }
+    .coupon-input::placeholder { color: rgba(255,255,255,0.3); text-transform: none; letter-spacing: 0; }
+    .btn-apply-coupon { background: #94DD2D; color: #1a2b01; border: none; border-radius: 10px; padding: 11px 18px; font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
+    .btn-apply-coupon:disabled { opacity: 0.6; cursor: default; }
+    .btn-remove-coupon { background: transparent; color: #ff9999; border: 1px solid rgba(255,107,107,0.4); border-radius: 10px; padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: all .18s; }
+    .btn-remove-coupon:hover { background: rgba(255,107,107,0.1); }
+    .coupon-feedback { font-size: 0.82rem; margin-top: 8px; }
+    .coupon-feedback.success { color: #94DD2D; }
+    .coupon-feedback.error   { color: #ff9999; }
+    .summary-row.discount span:last-child { color: #94DD2D; }
+
     /* ── SHIPPING SECTION ── */
     .shipping-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(148,221,45,0.12); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
     .shipping-section h3 { font-size: 0.95rem; font-weight: 700; color: #edfbd9; margin-bottom: 14px; }
@@ -200,6 +216,21 @@
       <button class="btn-add-more" onclick="window.location.href='/gerar.html'">
         ➕ Gerar e adicionar outra figurinha
       </button>
+
+      <!-- ── COUPON SECTION ── -->
+      <div class="coupon-section">
+        <h3>🏷️ Cupom de desconto</h3>
+        <div class="coupon-row">
+          <input class="coupon-input" id="couponInput" type="text" placeholder="Digite o código do cupom" maxlength="32"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')applyCoupon()" />
+          <button class="btn-apply-coupon" id="btnApplyCoupon" onclick="applyCoupon()">Aplicar</button>
+        </div>
+        <div class="coupon-feedback" id="couponFeedback" style="display:none"></div>
+        <div id="couponApplied" style="display:none;margin-top:10px;">
+          <button class="btn-remove-coupon" onclick="removeCoupon()">✕ Remover cupom</button>
+        </div>
+      </div>
 
       <!-- ── SHIPPING SECTION ── -->
       <div class="shipping-section" id="shippingSection" style="display:none">
@@ -377,6 +408,85 @@
     function saveCart(c) { localStorage.setItem(CART_KEY, JSON.stringify(c)); }
     function clearCart() { localStorage.removeItem(CART_KEY); }
     function formatPrice(cents) { return 'R$' + (cents / 100).toFixed(2).replace('.', ','); }
+
+    // ── CUPOM ─────────────────────────────────────────────────────────────────
+    var appliedCoupon = null; // { coupon_id, code, discount_cents, description }
+
+    async function applyCoupon() {
+      var code = document.getElementById('couponInput').value.trim().toUpperCase();
+      if (!code) { showCouponFeedback('Digite o código do cupom.', 'error'); return; }
+
+      var btn = document.getElementById('btnApplyCoupon');
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      hideCouponFeedback();
+
+      try {
+        var items     = getCart().items || [];
+        var subtotal  = items.reduce(function(s, i) { return s + i.price; }, 0);
+        var frete     = selectedShipping ? selectedShipping.price_cents : 0;
+        var orderCents = subtotal + frete;
+
+        var token = await getSupabaseToken();
+        var userId = null;
+        if (token) {
+          try {
+            var payload64 = token.split('.')[1];
+            var pad = payload64.length % 4;
+            if (pad) payload64 += '==='.slice(0, 4 - pad);
+            userId = JSON.parse(atob(payload64)).sub || null;
+          } catch(_) {}
+        }
+
+        var res  = await fetch('/api/coupons/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code, order_cents: orderCents, user_id: userId }),
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Cupom inválido');
+
+        appliedCoupon = {
+          coupon_id:      data.coupon_id,
+          code:           data.code,
+          discount_cents: data.discount_cents,
+          description:    data.description || '',
+        };
+
+        var discBRL = 'R$' + (data.discount_cents / 100).toFixed(2).replace('.', ',');
+        var msg = '✅ Cupom <strong>' + data.code + '</strong> aplicado! Desconto: <strong>' + discBRL + '</strong>';
+        if (data.description) msg += ' — ' + data.description;
+        showCouponFeedback(msg, 'success');
+        document.getElementById('couponInput').disabled = true;
+        document.getElementById('btnApplyCoupon').style.display = 'none';
+        document.getElementById('couponApplied').style.display = 'block';
+        updateSummary();
+      } catch (err) {
+        showCouponFeedback(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Aplicar';
+      }
+    }
+
+    function removeCoupon() {
+      appliedCoupon = null;
+      document.getElementById('couponInput').value = '';
+      document.getElementById('couponInput').disabled = false;
+      document.getElementById('btnApplyCoupon').style.display = '';
+      document.getElementById('couponApplied').style.display = 'none';
+      hideCouponFeedback();
+      updateSummary();
+    }
+
+    function showCouponFeedback(msg, type) {
+      var el = document.getElementById('couponFeedback');
+      el.innerHTML = msg;
+      el.className = 'coupon-feedback ' + type;
+      el.style.display = 'block';
+    }
+    function hideCouponFeedback() {
+      var el = document.getElementById('couponFeedback');
+      if (el) el.style.display = 'none';
+    }
 
     // ── FRETE ─────────────────────────────────────────────────────────────────
     var selectedShipping = null; // { id, name, price_cents, delivery_time }
@@ -588,9 +698,10 @@
 
     function updateSummary() {
       var items = getCart().items || [];
-      var subtotal = items.reduce(function(s, i) { return s + i.price; }, 0);
-      var freteCents = selectedShipping ? selectedShipping.price_cents : 0;
-      var total = subtotal + freteCents;
+      var subtotal    = items.reduce(function(s, i) { return s + i.price; }, 0);
+      var freteCents  = selectedShipping ? selectedShipping.price_cents : 0;
+      var discountCents = appliedCoupon ? appliedCoupon.discount_cents : 0;
+      var total       = Math.max(0, subtotal + freteCents - discountCents);
       var sumEl = document.getElementById('cartSummary');
       if (!sumEl) return;
       var rows = items.map(function(i) {
@@ -599,10 +710,13 @@
       var freteRow = '';
       if (hasPhysicalItem()) {
         freteRow = selectedShipping
-          ? '<div class="summary-row frete"><span>Frete (' + selectedShipping.name + ')</span><span>' + formatPrice(freteCents) + '</span></div>'
-          : '<div class="summary-row frete"><span>Frete</span><span style="color:#aaa">Calcule acima</span></div>';
+          ? '<div class="summary-row frete"><span>Frete (' + selectedShipping.name + ')</span><span>' + (freteCents === 0 ? '<span style="color:#94DD2D">Grátis</span>' : formatPrice(freteCents)) + '</span></div>'
+          : '<div class="summary-row frete"><span>Frete</span><span style="color:#aaa">Calcule abaixo</span></div>';
       }
-      sumEl.innerHTML = rows + freteRow + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
+      var discountRow = appliedCoupon
+        ? '<div class="summary-row discount"><span>Desconto (' + appliedCoupon.code + ')</span><span>−' + formatPrice(discountCents) + '</span></div>'
+        : '';
+      sumEl.innerHTML = rows + freteRow + discountRow + '<div class="summary-row total"><span>Total</span><span>' + formatPrice(total) + '</span></div>';
     }
 
     function removeItem(id) {
@@ -659,6 +773,7 @@
             cep:           document.getElementById('cepInput').value.replace(/\D/g,''),
           } : null,
           address: hasPhysicalItem() ? getAddressData() : null,
+          coupon: appliedCoupon || null,
         };
         var res  = await fetch('/api/orders', {
           method: 'POST',
@@ -680,9 +795,10 @@
 
     function openPixModal(data) {
       currentOrderId = data.order_id;
-      var subtotal = getCart().items.reduce(function(s,i){return s+i.price;},0);
-      var frete    = selectedShipping ? selectedShipping.price_cents : 0;
-      document.getElementById('pixAmount').textContent = formatPrice(subtotal + frete);
+      var subtotal  = getCart().items.reduce(function(s,i){return s+i.price;},0);
+      var frete     = selectedShipping ? selectedShipping.price_cents : 0;
+      var discount  = appliedCoupon ? appliedCoupon.discount_cents : 0;
+      document.getElementById('pixAmount').textContent = formatPrice(Math.max(0, subtotal + frete - discount));
       var qrImg = document.getElementById('pixQrImg');
       if (data.qr_code_base64) { qrImg.src = 'data:image/png;base64,' + data.qr_code_base64; }
       else { qrImg.src = ''; qrImg.alt = 'Copie o código abaixo'; }
