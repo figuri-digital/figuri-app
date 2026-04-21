@@ -1402,6 +1402,31 @@
   }
 
   /* ────────── GENERATE ────────── */
+
+  // Fetch com timeout + retry automático (até maxRetries tentativas)
+  async function fetchWithRetry(url, options, maxRetries, timeoutMs) {
+    timeoutMs  = timeoutMs  || 90000;
+    maxRetries = maxRetries || 2;
+    var lastErr;
+    for (var attempt = 0; attempt <= maxRetries; attempt++) {
+      var ctrl = new AbortController();
+      var tid  = setTimeout(function(c){ return function(){ c.abort(); }; }(ctrl), timeoutMs);
+      try {
+        var r = await fetch(url, Object.assign({}, options, { signal: ctrl.signal }));
+        clearTimeout(tid);
+        return r;
+      } catch (e) {
+        clearTimeout(tid);
+        lastErr = e;
+        if (attempt < maxRetries) {
+          btnGerar.innerHTML = '<span class="spinner"></span> Reconectando (' + (attempt + 1) + ')…';
+          await new Promise(function(res){ setTimeout(res, 1200 * (attempt + 1)); });
+        }
+      }
+    }
+    throw lastErr;
+  }
+
   async function startGeneration() {
     btnGerar.disabled = true;
     btnGerar.innerHTML = '<span class="spinner"></span> Enviando...';
@@ -1419,19 +1444,26 @@
 
     let res, data;
     try {
-      res  = await fetch('/api/generate', {
+      res  = await fetchWithRetry('/api/generate', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + session.access_token },
         body: fd,
-      });
+      }, 2, 90000);
       data = await res.json();
     } catch (err) {
-      showError('Falha ao conectar. Verifique sua internet e tente novamente.');
+      var msg = (err && err.name === 'AbortError')
+        ? 'A conexão demorou muito. Verifique sua internet e tente novamente.'
+        : 'Falha ao conectar. Verifique sua internet e tente novamente.';
+      showError(msg);
+      btnGerar.disabled = false;
+      btnGerar.innerHTML = '⚡ Gerar Figurinha';
       return;
     }
 
     if (!res.ok || !data.success) {
       showError(data.error || 'Erro ao iniciar a geração. Tente novamente.');
+      btnGerar.disabled = false;
+      btnGerar.innerHTML = '⚡ Gerar Figurinha';
       return;
     }
 
@@ -1456,11 +1488,14 @@
     'Finalizando suas opções...',
     'Só mais um instante...',
   ];
-  let statusIdx = 0;
+  let statusIdx       = 0;
+  let pollErrCount    = 0; // consecutive poll errors (network/504)
+  const MAX_POLL_ERRS = 8; // falha definitiva só após 8 erros seguidos
 
   function startLoadingPhase() {
-    pollCount  = 0;
-    currentPct = 0;
+    pollCount    = 0;
+    pollErrCount = 0;
+    currentPct   = 0;
     setProgress(0);
 
     statusIdx = 0;
@@ -1495,7 +1530,8 @@
 
   async function doPoll() {
     pollCount++;
-    if (pollCount > 80) {
+    // Até 120 tentativas = ~6 minutos (Flux 2 Pro pode demorar bastante)
+    if (pollCount > 120) {
       stopLoadingPhase();
       showError('A geração demorou mais do que o esperado. Por favor, tente novamente.');
       return;
@@ -1511,12 +1547,35 @@
 
     let data;
     try {
-      const res = await fetch('/api/generate/status?' + params.toString(), {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(function(){ ctrl.abort(); }, 58000); // 58s — just under Vercel limit
+      const res  = await fetch('/api/generate/status?' + params.toString(), {
         headers: { 'Authorization': 'Bearer ' + session.access_token },
+        signal:  ctrl.signal,
       });
-      if (!res.ok) return;
+      clearTimeout(tid);
+
+      // 5xx / gateway errors são transientes — ignore e continue tentando
+      if (!res.ok) {
+        pollErrCount++;
+        if (pollErrCount >= MAX_POLL_ERRS) {
+          stopLoadingPhase();
+          showError('Falha de conexão durante a geração. Verifique sua internet e tente novamente.');
+        }
+        return;
+      }
+
+      pollErrCount = 0; // reset ao obter resposta bem-sucedida
       data = await res.json();
-    } catch (_) { return; }
+    } catch (_) {
+      // Erro de rede / AbortError — conta como erro transiente
+      pollErrCount++;
+      if (pollErrCount >= MAX_POLL_ERRS) {
+        stopLoadingPhase();
+        showError('Falha de conexão durante a geração. Verifique sua internet e tente novamente.');
+      }
+      return;
+    }
 
     if (data.status === 'completed') {
       stopLoadingPhase();

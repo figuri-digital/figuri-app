@@ -110,11 +110,15 @@ export async function GET(req: NextRequest) {
           }
           const genBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-          // Upload hi-res
+          // Upload hi-res — upsert:true evita erro "already exists" se o poll repetir
           const hiresPath = `generated/${userId}/${imageId}-${index}.jpg`;
-          await supabase.storage.from('images').upload(hiresPath, genBuffer, {
+          const { error: hiresErr } = await supabase.storage.from('images').upload(hiresPath, genBuffer, {
             contentType: 'image/jpeg',
+            upsert: true,
           });
+          if (hiresErr) {
+            console.error(`[status] hi-res upload error (task ${index}):`, hiresErr.message);
+          }
           const { data: hiresUrlData } = supabase.storage.from('images').getPublicUrl(hiresPath);
 
           // Apply watermark + upload preview (fallback to hi-res if watermark fails)
@@ -124,6 +128,7 @@ export async function GET(req: NextRequest) {
             const previewPath = `previews/${userId}/${imageId}-${index}.jpg`;
             await supabase.storage.from('images').upload(previewPath, watermarkedBuffer, {
               contentType: 'image/jpeg',
+              upsert: true,
             });
             const { data: previewUrlData } = supabase.storage.from('images').getPublicUrl(previewPath);
             previewUrl = previewUrlData.publicUrl;
@@ -147,8 +152,10 @@ export async function GET(req: NextRequest) {
         // IN_QUEUE or IN_PROGRESS
         return { index, taskId, status: 'processing' };
       } catch (err) {
-        console.error(`Task ${index} error:`, err);
-        return { index, taskId, status: 'failed' };
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error(`Task ${index} transient error (will retry):`, errMsg);
+        // Erro de rede/timeout = transiente → retorna 'processing' para o poll continuar
+        return { index, taskId, status: 'processing' };
       }
     });
 
