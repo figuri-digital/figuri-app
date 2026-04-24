@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
 
     // Parse form data
     const formData = await req.formData();
-    const file = formData.get('photo') as File | null;
+    const file  = formData.get('photo')  as File | null;
+    const file2 = formData.get('photo2') as File | null; // segunda pessoa (casal)
     const style = (formData.get('style') as string) || 'sozinho';
     const name = (formData.get('name') as string) || '';
     const birth = (formData.get('birth') as string) || '';
@@ -116,12 +117,15 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json({ error: 'Envie uma foto' }, { status: 400 });
     }
+    if (style === 'familia' && !file2) {
+      return NextResponse.json({ error: 'Para o estilo casal envie as duas fotos' }, { status: 400 });
+    }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const imageId = uuidv4();
 
-    // Upload original to Supabase Storage
+    // Upload foto principal (pessoa 1 / sozinho / pet)
     const originalPath = `originals/${user.id}/${imageId}.jpg`;
     const { error: uploadError } = await supabase.storage
       .from('images')
@@ -135,6 +139,23 @@ export async function POST(req: NextRequest) {
     const { data: originalUrlData } = supabase.storage
       .from('images')
       .getPublicUrl(originalPath);
+
+    // Upload foto da segunda pessoa (casal)
+    let photo2PublicUrl: string | null = null;
+    if (style === 'familia' && file2) {
+      const bytes2  = await file2.arrayBuffer();
+      const buffer2 = Buffer.from(bytes2);
+      const path2   = `originals/${user.id}/${imageId}-2.jpg`;
+      const { error: uploadError2 } = await supabase.storage
+        .from('images')
+        .upload(path2, buffer2, { contentType: file2.type || 'image/jpeg' });
+      if (uploadError2) {
+        console.error('Upload photo2 error:', uploadError2);
+        return NextResponse.json({ error: 'Erro ao salvar segunda foto' }, { status: 500 });
+      }
+      const { data: url2Data } = supabase.storage.from('images').getPublicUrl(path2);
+      photo2PublicUrl = url2Data.publicUrl;
+    }
 
     // Get layout URL — try DB config first, fallback to hardcoded
     const host = req.headers.get('host') || 'figuri-app.vercel.app';
@@ -182,6 +203,13 @@ export async function POST(req: NextRequest) {
     console.log(`Submitting ${NUM_VARIATIONS} Flux 2 Pro tasks via fal.ai...`);
     console.log('Country:', country, '| Style:', style, '| Test:', isTestUser);
 
+    // Monta image_urls:
+    // - sozinho/pet: [foto_pessoa, layout]
+    // - casal:       [foto_pessoa1, foto_pessoa2, layout]
+    const imageUrls = style === 'familia' && photo2PublicUrl
+      ? [originalUrlData.publicUrl, photo2PublicUrl, layoutUrl]
+      : [originalUrlData.publicUrl, layoutUrl];
+
     const taskPromises = Array.from({ length: NUM_VARIATIONS }, () =>
       fetch(FAL_FLUX_URL, {
         method: 'POST',
@@ -191,7 +219,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           prompt,
-          image_urls: [originalUrlData.publicUrl, layoutUrl],
+          image_urls: imageUrls,
           image_size: 'portrait_4_3',
           output_format: 'jpeg',
           safety_tolerance: '3',
@@ -319,14 +347,245 @@ const PET_PROMPTS: Record<string, string> = {
 };
 
 const CASAL_PROMPTS: Record<string, string> = {
-  brasil:    'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face and appearance to the corresponding position in the original image. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Brazil national team yellow jerseys exactly as they are, including logo, texture, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching skin tones, lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  argentina: 'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Argentina national team jersey exactly as it is, including stripes, logo, texture, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  colombia:  'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Colombia national team yellow jersey exactly as it is, including logo, number, texture, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  uruguai:   'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Uruguay national team light blue jersey exactly as it is, including logo, texture, collar, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  franca:    'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the France national team blue jersey exactly as it is, including logo, texture, patterns, collar, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  alemanha:  'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Germany national team jersey exactly as it is, including colors, stripes, logo, texture, patterns, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  espanha:   'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Spain national team red jersey exactly as it is, including colors, stripes, logo, texture, patterns, collar, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
-  portugal:  'Replace the couple in the image using the two provided reference photos (one for each person). Match each reference face precisely to the corresponding position in the original image. The new faces must be highly faithful to the reference images, preserving identity, facial features, proportions, skin tone, and expression as accurately as possible. Keep the exact same pose, body position, facial direction, framing, and proportions. Preserve the Portugal national team red jersey exactly as it is, including logo, patterns, texture, collar details, folds, and lighting. Do not change the clothing. Maintain the original background, colors, shapes, and layout completely unchanged. Ensure realistic blending, matching lighting, shadows, and perspective so the new couple looks naturally integrated into the original scene.',
+  brasil: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Brazil national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge, blend, or average the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and natural pose from the template
+• Preserve body proportions, shoulder alignment, and the subtle tilt/angle of each person
+• Keep the same crop and overall composition
+
+DESIGN — DO NOT ALTER:
+• Brazil national team yellow jerseys with green collar and CBF crest — preserve colors, texture, folds, and badge exactly
+• Green background with layered abstract shapes and large white number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon, illustrated, or AI-artifact appearance
+• Natural hair rendering and realistic anatomical proportions for both people`,
+
+  argentina: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Argentina national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Argentina national team white jersey with light blue vertical stripes, black collar, and AFA crest — preserve exactly
+• Blue background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  colombia: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Colombia national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Colombia national team yellow jersey with red and dark blue trim details and FCF crest — preserve colors, texture, and badge exactly
+• Yellow/gold background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  uruguai: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Uruguay national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Uruguay national team sky-blue (celeste) jersey with white collar, subtle trim, and AUF crest — preserve colors, texture, and badge exactly
+• Light blue background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  franca: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = France national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• France national team dark navy blue jersey with subtle texture pattern, white collar detail, and FFF rooster crest — preserve colors, texture, and badge exactly
+• Deep blue background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  alemanha: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Germany national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Germany national team white jersey with black and red-gold details, three-stripe shoulder accents, and DFB eagle crest — preserve colors, texture, and badge exactly
+• Dark gray/charcoal background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  espanha: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Spain national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Spain national team red jersey with dark navy blue sleeve panels, yellow trim details, and RFEF crest — preserve colors, texture, and badge exactly
+• Vivid red background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
+
+  portugal: `Three images are provided:
+• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
+• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 3] = Portugal national team sports card template — use as the immutable base layout
+
+TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+
+FACE & IDENTITY — CRITICAL PRIORITY:
+• Reproduce each person's face with maximum fidelity to their reference photo
+• Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
+• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
+• Do not merge or blend the two faces — each must remain a distinct individual
+
+POSE & COMPOSITION — DO NOT CHANGE:
+• Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
+• Keep body proportions, shoulder alignment, and the angle of each person
+• Preserve the same crop and composition
+
+DESIGN — DO NOT ALTER:
+• Portugal national team deep red jersey with green shoulder trim, white collar details, and FPF crest — preserve colors, texture, and badge exactly
+• Deep red background with abstract layered shapes and large number behind the figures
+• All typographic elements, decorative shapes, and layout spacing
+
+REALISM & INTEGRATION:
+• Match studio lighting direction and soft shadows from the template to both faces
+• Seamless blending at the face-neck-jersey boundary for each person
+• Consistent skin tone rendering under the scene lighting
+• Photorealistic quality — no cartoon or AI-artifact appearance
+• Natural hair and realistic anatomical proportions for both people`,
 };
 
 function buildPrompt(style: string, data: StickerData): string {
