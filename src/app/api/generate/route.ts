@@ -348,17 +348,19 @@ const PET_PROMPTS: Record<string, string> = {
 
 const CASAL_PROMPTS: Record<string, string> = {
   brasil: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Brazil national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge, blend, or average the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and natural pose from the template
@@ -378,21 +380,23 @@ REALISM & INTEGRATION:
 • Natural hair rendering and realistic anatomical proportions for both people`,
 
   argentina: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Argentina national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -408,21 +412,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   colombia: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Colombia national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -438,21 +444,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   uruguai: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Uruguay national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -468,21 +476,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   franca: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = France national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -498,21 +508,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   alemanha: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Germany national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -528,21 +540,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   espanha: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Spain national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:
@@ -558,21 +572,23 @@ REALISM & INTEGRATION:
 • Natural hair and realistic anatomical proportions for both people`,
 
   portugal: `Three images are provided:
-• [Image 1] = reference photo of PERSON 1 — place on the LEFT side of the final image
-• [Image 2] = reference photo of PERSON 2 — place on the RIGHT side of the final image
+• [Image 1] = reference photo of THE MAN — ALWAYS place him on the LEFT side of the final image
+• [Image 2] = reference photo of THE WOMAN — ALWAYS place her on the RIGHT side of the final image
 • [Image 3] = Portugal national team sports card template — use as the immutable base layout
 
-TASK: Replace the couple in the sports card template by inserting Person 1 (left) and Person 2 (right) using their respective reference photos. Keep every design element of the template exactly as it is.
+TASK: Replace the couple in the sports card template — the MAN from [Image 1] goes on the LEFT, the WOMAN from [Image 2] goes on the RIGHT. This left/right positioning is mandatory. Keep every design element of the template exactly as it is.
 
 FACE & IDENTITY — CRITICAL PRIORITY:
 • Reproduce each person's face with maximum fidelity to their reference photo
 • Preserve facial structure, eye shape/color, nose, lips, skin tone, hair color and texture
-• Both people must be immediately and unmistakably recognizable compared to [Image 1] and [Image 2]
-• Do not merge or blend the two faces — each must remain a distinct individual
+• The man ([Image 1]) must be immediately recognizable — placed on the LEFT
+• The woman ([Image 2]) must be immediately recognizable — placed on the RIGHT
+• Do not swap, merge, or blend the two faces — each must remain a distinct individual
+• The man must always appear on the LEFT side; the woman must always appear on the RIGHT side
 
 POSE & COMPOSITION — DO NOT CHANGE:
 • Maintain the exact chest-up framing, side-by-side positioning, and pose from the template
-• Keep body proportions, shoulder alignment, and the angle of each person
+• Keep body proportions, shoulder alignment, and the angle of each person (man left, woman right)
 • Preserve the same crop and composition
 
 DESIGN — DO NOT ALTER:

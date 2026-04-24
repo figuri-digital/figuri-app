@@ -366,6 +366,19 @@
       pointer-events: none;
       z-index: 2;
     }
+    .upload-side-hint {
+      position: absolute;
+      bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--btn-cta);
+      opacity: 0.75;
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
     .upload-preview {
       position: absolute; inset: 0;
       object-fit: cover;
@@ -950,15 +963,17 @@
       <div class="upload-row hidden" id="upload-casal">
         <div class="upload-box" id="box-casal1">
           <input type="file" id="file-casal1" accept="image/*" />
-          <div class="upload-person-tag">Pessoa 1</div>
-          <div class="upload-icon-wrap">👤</div>
-          <div class="upload-label">Foto da<br />Pessoa 1</div>
+          <div class="upload-person-tag">👨 Homem</div>
+          <div class="upload-icon-wrap">👨</div>
+          <div class="upload-label">Foto do<br />Homem</div>
+          <div class="upload-side-hint">← esquerda</div>
         </div>
         <div class="upload-box" id="box-casal2">
           <input type="file" id="file-casal2" accept="image/*" />
-          <div class="upload-person-tag">Pessoa 2</div>
-          <div class="upload-icon-wrap">👤</div>
-          <div class="upload-label">Foto da<br />Pessoa 2</div>
+          <div class="upload-person-tag">👩 Mulher</div>
+          <div class="upload-icon-wrap">👩</div>
+          <div class="upload-label">Foto da<br />Mulher</div>
+          <div class="upload-side-hint">direita →</div>
         </div>
       </div>
 
