@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Figuri — Design Original v02</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/fav.svg" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    /* ───────────────────────────────────────
+       RESET & BASE
+    ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #1A2B01;
+      color: #EDFBD9;
+      overflow-x: hidden;
+    }
+
+    /* ───────────────────────────────────────
+       CSS VARIABLES
+    ─────────────────────────────────────── */
+    :root {
+      --verde-escuro:    #1A2B01;
+      --verde-principal: #396100;
+      --verde-claro:     #EDFBD9;
+      --verde-alpha:     rgba(237,251,217,0.08);
+      --amarelo:         #FFC300;
+      --btn-claro:       #F9FFF1;
+      --btn-cta:         #94DD2D;
+      --btn-cta-hover:   #a8f033;
+      --radius:          12px;
+    }
+
+    /* ───────────────────────────────────────
+       TICKER
+    ─────────────────────────────────────── */
+    .ticker {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 7px 0;
+    }
+    .ticker-track {
+      display: inline-flex;
+      gap: 0;
+      animation: ticker-scroll 22s linear infinite;
+    }
+    .ticker-item {
+      padding: 0 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ticker-item::after {
+      content: '⚽';
+      margin-left: 1.5rem;
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ───────────────────────────────────────
+       NAVBAR
+    ─────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--verde-escuro);
+      border-bottom: 1px solid rgba(237,251,217,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 64px;
+    }
+    .navbar-logo img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-entrar {
+      background: transparent;
+      border: 1.5px solid var(--verde-claro);
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      padding: 0.45rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-entrar:hover { background: var(--verde-alpha); }
+    .btn-cta {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-cta:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
+
+    /* ───────────────────────────────────────
+       HERO
+    ─────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('/v02-assets/estadio.png');
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(0.55) saturate(1.2);
+      z-index: 0;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(26,43,1,0.45) 0%,
+        rgba(26,43,1,0.75) 60%,
+        rgba(26,43,1,0.98) 100%
+      );
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5% 5% 6%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero-left {}
+    .hero-tag {
+      display: inline-block;
+      background: var(--amarelo);
+      color: var(--verde-escuro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      padding: 0.3rem 0.9rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 7vw, 6.5rem);
+      line-height: 0.95;
+      color: var(--verde-claro);
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+    .hero-title span {
+      color: var(--verde-escuro);
+      background-image: url('/v02-assets/fundo-texto.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: inline-block;
+      padding: 0 0.3em;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(237,251,217,0.80);
+      max-width: 440px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+    .hero-stat {
+      background-image: url('/v02-assets/fundotext.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 100px;
+    }
+    .hero-stat-value {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #FFD23D;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .hero-stat-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #396100;
+      line-height: 1.3;
+      text-transform: lowercase;
+    }
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-hero-cta {
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(148,221,45,0.35);
+    }
+    .btn-hero-cta:hover {
+      background: var(--btn-cta-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(148,221,45,0.45);
+    }
+    .hero-note {
+      font-size: 0.8rem;
+      color: rgba(237,251,217,0.55);
+    }
+
+    /* Hero right — card */
+    .hero-card {
+      background: rgba(26,43,1,0.75);
+      border: 1px solid rgba(237,251,217,0.14);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 1.75rem;
+    }
+    .hero-card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      color: var(--verde-escuro);
+      margin-bottom: 1.25rem;
+      text-align: center;
+      display: block;
+      background-image: url('/v02-assets/fundo-texto.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding: 0.5rem 2rem;
+    }
+    .hero-steps-mini {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+    }
+    .hero-step-dot.active { background: var(--amarelo); color: var(--verde-escuro); }
+    .hero-step-dot.done   { background: var(--btn-cta); color: var(--verde-escuro); }
+    .hero-step-dot.idle   { background: var(--verde-alpha); border: 1px solid rgba(237,251,217,0.2); color: rgba(237,251,217,0.5); }
+    .hero-step-line {
+      width: 24px; height: 2px;
+      background: rgba(237,251,217,0.15);
+      align-self: center;
+    }
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(237,251,217,0.5);
+      margin-bottom: 0.6rem;
+    }
+    .type-selector {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .type-btn {
+      flex: 1;
+      background: rgba(237,251,217,0.08);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      overflow: hidden;
+      padding: 0;
+    }
+    .type-btn-img {
+      background: rgba(57,97,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+    .type-btn img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      transition: transform 0.2s;
+    }
+    .type-btn-label {
+      background: var(--verde-principal);
+      color: var(--verde-claro);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-align: center;
+      padding: 0.35rem 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .type-btn.active {
+      border-color: var(--amarelo);
+    }
+    .type-btn.active .type-btn-img { background: rgba(57,97,0,0.5); }
+    .type-btn.active .type-btn-label {
+      background: var(--amarelo);
+      color: var(--verde-escuro);
+    }
+    .type-btn.active img { transform: scale(1.06); }
+    .type-btn:hover:not(.active) {
+      border-color: rgba(237,251,217,0.3);
+    }
+    .type-btn:hover:not(.active) img { transform: scale(1.04); }
+    .preview-info {
+      background: var(--verde-alpha);
+      border: 1px solid rgba(148,221,45,0.2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .preview-icon {
+      width: 32px; height: 32px;
+      background: rgba(148,221,45,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .preview-text { font-size: 0.78rem; line-height: 1.4; color: rgba(237,251,217,0.75); }
+    .preview-text strong { color: var(--btn-cta); }
+    .preview-counter {
+      font-size: 0.72rem;
+      color: rgba(237,251,217,0.45);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .btn-card-cta {
+      width: 100%;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .btn-card-cta:hover { background: var(--btn-cta-hover); transform: translateY(-1px); }
+
+    /* ───────────────────────────────────────
+       SECTION BASE
+    ─────────────────────────────────────── */
+    .section { padding: 5rem 5%; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--btn-cta);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+    .section-title .highlight { color: var(--amarelo); }
+
+    /* ───────────────────────────────────────
+       COMO CRIAR — 3 PASSOS
+    ─────────────────────────────────────── */
+    .steps-section {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+    }
+    .steps-section .section-tag {
+      color: var(--btn-cta);
+      text-align: center;
+      display: block;
+    }
+    .steps-section .section-title {
+      color: var(--verde-claro);
+      text-align: center;
+    }
+    .steps-section .section-title .highlight {
+      color: var(--btn-cta);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+    }
+    .steps-section .section-title strong {
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .step-card {
+      background: var(--verde-claro);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.5rem 1.75rem;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    .step-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .step-icon {
+      width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-icon img {
+      width: 72px; height: 72px;
+      object-fit: contain;
+    }
+    .step-num {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 3rem;
+      line-height: 1;
+      color: rgba(57,97,0,0.25);
+    }
+    .step-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--verde-escuro);
+      margin-bottom: 0.6rem;
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      line-height: 1.65;
+      color: #3a4f10;
+    }
+    .step-badge {
+      display: inline-block;
+      background: var(--btn-cta);
+      color: var(--verde-escuro);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-top: 0.75rem;
+    }
+
+    /* ───────────────────────────────────────
+       GALERIA
+    ─────────────────────────────────────── */
+    .gallery-section {
+      background: var(--verde-escuro);
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .gallery-img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* ───────────────────────────────────────
+       PRODUTOS
+    ─────────────────────────────────────── */
+    .products-section { background: #F9FFF1; }
+    .products-section .section-tag { color: var(--verde-principal); text-align: center; display: block; }
+    .products-section .section-title { color: var(--verde-escuro); text-align: center; }
+    .products-section .section-title .highlight { color: var(--btn-cta); }
+    .products-header { text-align: center; margin-bottom: 0.5rem; }
+    .products-sub {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--verde-principal);
+      margin-bottom: 2.5rem;
+    }
+    .products-sub strong { color: var(--verde-principal); }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(57,97,0,0.10);
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 36px rgba(57,97,0,0.18);
+    }
+    .product-img-wrap {
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .product-card:hover .product-img-wrap img { transform: scale(1.04); }
+    .product-info {
+      padding: 0.9rem 1rem 1rem;
+      width: 100%;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .product-name {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--verde-escuro);
+      margin-bottom: 0.5rem;
+    }
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-price {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--verde-principal);
+      line-height: 1;
+    }
+    .btn-add-cart {
+      width: 38px; height: 38px;
+      background: var(--verde-principal);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-add-cart:hover { background: var(--btn-cta); color: var(--verde-escuro); transform: scale(1.1); }
+    .products-cta { text-align: center; margin-top: 2.5rem; }
+    .btn-lg-cta {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      padding: 0.9rem 2.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(26,43,1,0.25);
+    }
+    .btn-lg-cta:hover { background: var(--verde-principal); transform: translateY(-2px); }
+
+    /* ───────────────────────────────────────
+       DEPOIMENTOS
+    ─────────────────────────────────────── */
+    .testimonials-section { background: var(--verde-escuro); }
+    .testimonials-header { text-align: center; margin-bottom: 2.5rem; }
+    .testimonials-count {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      color: var(--verde-claro);
+      line-height: 1;
+    }
+    .testimonials-count span { color: var(--amarelo); }
+    .testimonials-label {
+      font-size: 0.95rem;
+      color: rgba(237,251,217,0.55);
+      margin-top: 0.25rem;
+    }
+    .carousel-wrap {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .testimonials-grid {
+      display: flex;
+      gap: 1.25rem;
+    }
+    .testimonial-card {
+      background: rgba(57,97,0,0.2);
+      border: 1px solid rgba(237,251,217,0.10);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+      flex: 0 0 calc((100% - 2.5rem) / 3);
+      min-width: 0;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(255,195,0,0.3);
+      transform: translateY(-3px);
+    }
+    .carousel-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.75rem;
+    }
+    .carousel-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(57,97,0,0.35);
+      border: 1px solid rgba(237,251,217,0.18);
+      color: var(--verde-claro);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      line-height: 1;
+    }
+    .carousel-btn:hover { background: var(--verde-principal); border-color: var(--amarelo); }
+    .carousel-btn:disabled { opacity: 0.3; cursor: default; }
+    .carousel-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .carousel-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(237,251,217,0.2);
+      transition: background 0.2s, transform 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .carousel-dot.active { background: var(--amarelo); transform: scale(1.3); }
+    .stars {
+      color: var(--amarelo);
+      font-size: 0.9rem;
+      margin-bottom: 0.85rem;
+    }
+    .testimonial-text {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: rgba(237,251,217,0.80);
+      margin-bottom: 1.25rem;
+      font-style: italic;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+    .author-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--verde-principal);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      color: var(--verde-claro);
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid rgba(255,195,0,0.35);
+    }
+    .author-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .author-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--verde-claro);
+    }
+    .author-city {
+      font-size: 0.75rem;
+      color: rgba(237,251,217,0.45);
+    }
+
+    /* ───────────────────────────────────────
+       FAQ
+    ─────────────────────────────────────── */
+    .faq-section {
+      background: var(--verde-claro);
+      color: var(--verde-escuro);
+    }
+    .faq-section .section-tag { color: var(--verde-principal); }
+    .faq-section .section-title { color: var(--verde-escuro); }
+    .faq-list { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .faq-item {
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(57,97,0,0.06);
+    }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.5rem;
+      cursor: pointer;
+      text-align: left;
+      gap: 1rem;
+    }
+    .faq-q-text {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--verde-escuro);
+    }
+    .faq-icon {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--verde-claro);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--verde-principal);
+      transition: background 0.2s, transform 0.3s;
+    }
+    .faq-item.open .faq-icon {
+      background: var(--verde-principal);
+      color: #fff;
+      transform: rotate(45deg);
+    }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 1.5rem;
+    }
+    .faq-item.open .faq-a {
+      max-height: 200px;
+      padding: 0 1.5rem 1.1rem;
+    }
+    .faq-a p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #4a5a2a;
+    }
+
+    /* ───────────────────────────────────────
+       CTA FINAL
+    ─────────────────────────────────────── */
+    .cta-final-section {
+      background: var(--amarelo);
+      padding: 0 5%;
+      overflow: hidden;
+    }
+    .cta-final-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+      gap: 2rem;
+      min-height: 480px;
+    }
+    .cta-final-img {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 100%;
+    }
+    .cta-final-img img {
+      max-height: 480px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 16px 40px rgba(26,43,1,0.3));
+    }
+    .cta-final-text {
+      padding: 4rem 0;
+    }
+    .cta-final-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 0.95;
+      color: var(--verde-escuro);
+      margin-bottom: 1.25rem;
+    }
+    .cta-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .cta-bullets li {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--verde-escuro);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cta-bullets li::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px; height: 20px;
+      background: var(--verde-escuro);
+      color: var(--amarelo);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .cta-final-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-cta-dark {
+      background: var(--verde-escuro);
+      color: var(--verde-claro);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-cta-dark:hover { background: var(--verde-principal); transform: translateY(-2px); }
+
+    /* ───────────────────────────────────────
+       FOOTER
+    ─────────────────────────────────────── */
+    .footer {
+      background: var(--verde-escuro);
+      border-top: 1px solid rgba(237,251,217,0.08);
+      padding: 2rem 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-logo img { height: 28px; opacity: 0.75; }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .footer-links a {
+      font-size: 0.8rem;
+      color: rgba(237,251,217,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--verde-claro); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(237,251,217,0.3);
+    }
+
+    /* ───────────────────────────────────────
+       RESPONSIVE
+    ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        padding: 6% 5% 5%;
+      }
+      .hero-card { max-width: 480px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .testimonial-card { flex: 0 0 100%; }
+      .cta-final-inner { grid-template-columns: 1fr; }
+      .cta-final-img { display: none; }
+      .footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+    @media (max-width: 520px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 0.5rem; }
+      .navbar-logo img { height: 28px; }
+    }
+
+    /* ───────────────────────────────────────
+       USER MENU (logged in state)
+    ─────────────────────────────────────── */
+    .user-menu {
+      position: relative;
+      display: none;
+    }
+    .user-menu.visible { display: flex; align-items: center; }
+    .user-avatar-btn {
+      background: var(--verde-alpha);
+      border: 1.5px solid rgba(237,251,217,0.25);
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .user-avatar-btn:hover { border-color: var(--btn-cta); }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1f3302;
+      border: 1px solid rgba(237,251,217,0.15);
+      border-radius: 10px;
+      min-width: 170px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      padding: 0.4rem 0;
+      display: none;
+      z-index: 200;
+    }
+    .user-dropdown.open { display: block; }
+    .user-dropdown a, .user-dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--verde-claro);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .user-dropdown a:hover, .user-dropdown button:hover { background: var(--verde-alpha); }
+    .user-dropdown .logout-btn { color: #ff6b6b; }
+
+    /* ───────────────────────────────────────
+       LOGIN MODAL
+    ─────────────────────────────────────── */
+    .login-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(4px);
+    }
+    .login-overlay.open { opacity: 1; pointer-events: all; }
+    .login-box {
+      background: #1f3302;
+      border: 1px solid rgba(237,251,217,0.14);
+      border-radius: 18px;
+      padding: 2.5rem 2rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    .login-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none;
+      color: rgba(237,251,217,0.5);
+      font-size: 1.3rem; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .login-close:hover { color: var(--verde-claro); }
+    .login-logo {
+      display: flex; justify-content: center; margin-bottom: 1.5rem;
+    }
+    .login-logo img { height: 36px; }
+    .login-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.1em;
+      color: var(--verde-claro);
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+    .login-sub {
+      font-size: 0.82rem;
+      color: rgba(237,251,217,0.6);
+      text-align: center;
+      margin-bottom: 1.75rem;
+      line-height: 1.5;
+    }
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.7rem;
+      background: #fff;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .btn-google:hover { background: #f0f0f0; transform: translateY(-1px); }
+    .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .login-error {
+      display: none;
+      background: rgba(255,100,100,0.12);
+      border: 1px solid rgba(255,100,100,0.3);
+      border-radius: 6px;
+      color: #ff8080;
+      font-size: 0.8rem;
+      padding: 0.6rem 0.9rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .login-divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1.25rem 0;
+      color: rgba(237,251,217,0.3);
+      font-size: 0.75rem;
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: rgba(237,251,217,0.12);
+    }
+    .login-terms {
+      font-size: 0.72rem;
+      color: rgba(237,251,217,0.35);
+      text-align: center;
+      margin-top: 1.25rem;
+      line-height: 1.6;
+    }
+    .login-terms a { color: rgba(237,251,217,0.55); }
+  </style>
+</head>
+<body>
+
+  <!-- ── TICKER ── -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+      <span class="ticker-item">⚡ PREVIEW GRATUITO EM 30 SEGUNDOS</span>
+    </div>
+  </div>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <a href="#" class="navbar-logo">
+      <img src="/v02-assets/logo.png" alt="Figuri" />
+    </a>
+    <div class="navbar-actions" id="navActions">
+      <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">ENTRAR</button>
+      <button class="btn-cta" id="btnCriarNav" onclick="criarFigurinha()">✦ CRIAR FIGURINHA</button>
+      <div class="user-menu" id="userMenu">
+        <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="/pedidos">Meus Pedidos</a>
+          <button class="logout-btn" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+
+      <div class="hero-left">
+        <h1 class="hero-title">
+          VIRE UM<br />
+          <span>JOGADOR</span><br />
+          DA COPA
+        </h1>
+        <p class="hero-subtitle">
+          Envie qualquer foto e nós transformamos você, seu pet ou
+          alguém especial em uma <strong>figurinha oficial da Copa.</strong>
+          <span style="color: #FFD23D; font-weight: 700;">Preview grátis antes de comprar.</span>
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-value">30s</span>
+            <span class="hero-stat-label">gere na<br>hora</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">R$19</span>
+            <span class="hero-stat-label">preço<br>inicial</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">100%</span>
+            <span class="hero-stat-label">preview<br>grátis</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-card">
+          <p class="hero-card-title">GERE NA HORA</p>
+          <div class="hero-steps-mini">
+            <div class="hero-step-dot done">1</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot active">2</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot idle">3</div>
+            <div class="hero-step-line"></div>
+            <div class="hero-step-dot idle">4</div>
+          </div>
+
+          <p class="card-label">Escolha o tipo</p>
+          <p style="font-size:0.78rem;color:rgba(237,251,217,0.5);margin-bottom:0.6rem;">Quem vai virar figurinha?</p>
+          <div class="type-selector">
+            <button class="type-btn active" onclick="criarFigurinha('sozinho')">
+              <div class="type-btn-img"><img src="/v02-assets/sozinho.png" alt="Sozinho" /></div>
+              <div class="type-btn-label">SOZINHO</div>
+            </button>
+            <button class="type-btn" onclick="criarFigurinha('pet')">
+              <div class="type-btn-img"><img src="/v02-assets/pet.png" alt="PET" /></div>
+              <div class="type-btn-label">PET</div>
+            </button>
+            <button class="type-btn" onclick="criarFigurinha('casal')">
+              <div class="type-btn-img"><img src="/v02-assets/casal.png" alt="CASAL" /></div>
+              <div class="type-btn-label">CASAL</div>
+            </button>
+          </div>
+
+          <div class="preview-info">
+            <div class="preview-icon">👁️</div>
+            <div class="preview-text">
+              <strong>Preview gratuito</strong> com marca d'água<br />
+              Pague só se gostar
+            </div>
+          </div>
+
+          <p class="preview-counter">0 de 5 previews usados</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── COMO CRIAR ── -->
+  <section class="section steps-section">
+    <div class="section-inner">
+      <span class="section-tag">COMO CRIAR</span>
+      <h2 class="section-title"><span class="highlight">3 passos,</span> <strong>Simples assim</strong></h2>
+      <div class="steps-grid">
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="/v02-assets/icon-camera.png" alt="Câmera" /></div>
+            <span class="step-num">01</span>
+          </div>
+          <h3 class="step-title">Suba sua foto</h3>
+          <p class="step-desc">
+            Qualquer foto do celular ou galeria. Funciona com selfie, pet
+            ou foto de alguém especial. Quanto mais nítido o rosto, melhor
+            o resultado.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="/v02-assets/icon-pessoa.png" alt="Preview" /></div>
+            <span class="step-num">02</span>
+          </div>
+          <h3 class="step-title">Preview em 30s</h3>
+          <p class="step-desc">
+            Você vê o preview da sua figurinha com marca d'água. Escolha
+            o estilo: jogador, pet mascote, casal ou figurinha rara brilhante.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-top">
+            <div class="step-icon"><img src="/v02-assets/icon-entrega.png" alt="Entrega" /></div>
+            <span class="step-num">03</span>
+          </div>
+          <h3 class="step-title">Receba em casa</h3>
+          <p class="step-desc">
+            Gostou? É só baixar a versão paga. E se quiser sua figurinha
+            física, a gente imprime e entrega com moldura acrílica premium.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GALERIA ── -->
+  <div class="gallery-section">
+    <img class="gallery-img" src="/v02-assets/fotos.png" alt="Figurinhas da Copa" />
+  </div>
+
+  <!-- ── PRODUTOS ── -->
+  <section class="section products-section">
+    <div class="section-inner">
+      <div class="products-header">
+        <span class="section-tag">NOSSAS FIGURINHAS</span>
+        <h2 class="section-title"><span class="highlight">Compre agora,</span> personalize depois</h2>
+      </div>
+      <p class="products-sub">
+        <strong>PREVIEW É SEMPRE GRATUITO.</strong> PAGUE SÓ QUANDO QUISER O ARQUIVO COMPLETO.
+      </p>
+      <div class="products-grid">
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="/v02-assets/figurinha-digital.png" alt="Figurinha Digital" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha Digital</p>
+            <div class="product-bottom">
+              <p class="product-price">R$19,90</p>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="/v02-assets/figurinha-fisica.png" alt="Figurinha Física" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha Fisica</p>
+            <div class="product-bottom">
+              <p class="product-price">R$24,90</p>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="/v02-assets/fiurinha-com-moldura.png" alt="Figurinha com Moldura" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Figurinha com Moldura</p>
+            <div class="product-bottom">
+              <p class="product-price">R$49,90</p>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="/v02-assets/pack-de-figurinhas.png" alt="Pack de Figurinhas" />
+          </div>
+          <div class="product-info">
+            <p class="product-name">Pack de Figurinhas</p>
+            <div class="product-bottom">
+              <p class="product-price">R$69,90</p>
+              <button class="btn-add-cart" onclick="criarFigurinha()">🛒</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="products-cta">
+        <button class="btn-lg-cta" onclick="criarFigurinha()">✦ CRIAR FIGURINHA GRÁTIS</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEPOIMENTOS ── -->
+  <section class="section testimonials-section">
+    <div class="section-inner">
+      <div class="testimonials-header">
+        <span class="section-tag">O que dizem por aí</span>
+        <div class="testimonials-count">
+          <span>+3.200</span> figurinhas
+        </div>
+        <p class="testimonials-label">geradas e amadas</p>
+      </div>
+
+      <div class="carousel-wrap">
+        <div class="testimonials-grid" id="carouselTrack">
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/pedro.jpeg" alt="Pedro Rosa" /></div>
+              <div>
+                <p class="author-name">Pedro Rosa</p>
+                <p class="author-city">Belo Horizonte • MG</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Eu ameiii muitoo, fiz várias figurinhas com meus pets e eles ficaram lindos demais."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/fernanda d.jpeg" alt="Fernanda Dias" /></div>
+              <div>
+                <p class="author-name">Fernanda Dias</p>
+                <p class="author-city">Curitiba • PR</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/matheus.png" alt="Matheus Fonseca" /></div>
+              <div>
+                <p class="author-name">Matheus Fonseca</p>
+                <p class="author-city">São Paulo • SP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Fiz de surpresa pra minha mãe e ela chorou de emoção! A qualidade da impressão ficou incrível, superou minhas expectativas."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/amanda F.jpeg" alt="Amanda Ferreira" /></div>
+              <div>
+                <p class="author-name">Amanda Ferreira</p>
+                <p class="author-city">São Paulo • SP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Processo super simples, em menos de 1 minuto já tava com o preview na tela. Comprei na hora, não tinha como não comprar!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/guilherme.png" alt="Guilherme Santos" /></div>
+              <div>
+                <p class="author-name">Guilherme Santos</p>
+                <p class="author-city">Rio de Janeiro • RJ</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Presenteei meu namorado e ele ficou sem acreditar! A moldura acrílica é premium mesmo, dá pra ver a diferença na hora."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/karina.png" alt="Karina Oliveira" /></div>
+              <div>
+                <p class="author-name">Karina Oliveira</p>
+                <p class="author-city">Salvador • BA</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p class="testimonial-text">"Muito fácil de usar e o resultado ficou idêntico a uma figurinha de verdade. Todo mundo achou que era oficial!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar"><img src="/v02-assets/depoimentos/Yohano C.jpeg" alt="Yohano Costa" /></div>
+              <div>
+                <p class="author-name">Yohano Costa</p>
+                <p class="author-city">Fortaleza • CE</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="carousel-nav">
+          <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)" aria-label="Anterior">&#8592;</button>
+          <div class="carousel-dots" id="carouselDots"></div>
+          <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)" aria-label="Próximo">&#8594;</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section class="section faq-section">
+    <div class="section-inner">
+      <span class="section-tag">Perguntas &amp; Respostas</span>
+      <h2 class="section-title">Ficou com <span class="highlight">dúvida?</span></h2>
+      <div class="faq-list">
+
+        <div class="faq-item open">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">O preview realmente é gratuito?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Sim, 100%. Você envia a foto e, ao gerar a figurinha, vê o resultado com marca d'água antes de decidir. Só paga se gostar — sem surpresa.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Que tipo de foto funciona melhor?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Fotos com rosto nítido, boa iluminação e fundo simples garantem o melhor resultado. Selfies do celular funcionam muito bem!</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Como funciona a entrega digital?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Após o pagamento, você recebe um link para download da figurinha em alta resolução, pronta para compartilhar ou imprimir.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">A figurinha impressa fica do tamanho real?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Sim! A figurinha impressa tem o tamanho padrão de figurinhas da Copa, com opção de moldura acrílica premium.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Posso fazer a figurinha do meu pet?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Com certeza! Temos o tipo "PET" especialmente para isso. Seu bichinho vira um mascote oficial da Copa!</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Tem desconto para mais de uma figurinha?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Sim! O Pack de Figurinhas oferece o melhor custo-benefício para quem quer fazer múltiplas figurinhas.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">E se eu não gostar do resultado?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Não tem problema! O preview é gratuito justamente para você ver antes de pagar. Se não gostar, não cobra nada.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA FINAL ── -->
+  <section class="cta-final-section">
+    <div class="cta-final-inner">
+      <div class="cta-final-img">
+        <img src="/v02-assets/imagem-segurando-figuri.png" alt="Jogador segurando figurinha" />
+      </div>
+      <div class="cta-final-text">
+        <h2 class="cta-final-title">
+          A FIGURINHA<br />QUE FALTAVA<br />ERA A SUA
+        </h2>
+        <ul class="cta-bullets">
+          <li>Preview gratuito em 30 segundos</li>
+          <li>Funciona com selfie no celular</li>
+          <li>Pague só se gostar</li>
+        </ul>
+        <div class="cta-final-btns">
+          <button class="btn-cta-dark" onclick="criarFigurinha()">✦ CRIAR FIGURINHA GRÁTIS</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-logo">
+      <img src="/v02-assets/logo.png" alt="Figuri" />
+    </div>
+    <div class="footer-links">
+      <a href="/termos.html">Termos de uso</a>
+      <a href="/privacidade.html">Privacidade</a>
+    </div>
+    <p class="footer-copy">© 2026 FIGURI · Todos os direitos reservados</p>
+  </footer>
+
+  <!-- ── LOGIN MODAL ── -->
+  <div class="login-overlay" id="loginOverlay" onclick="handleOverlayClick(event)">
+    <div class="login-box">
+      <button class="login-close" onclick="closeLogin()" aria-label="Fechar">✕</button>
+      <div class="login-logo">
+        <img src="/v02-assets/logo.png" alt="Figuri" />
+      </div>
+      <h2 class="login-title">ENTRAR</h2>
+      <p class="login-sub">
+        Acesse sua conta para gerar e gerenciar<br />suas figurinhas da Copa.
+      </p>
+      <button class="btn-google" id="btnGoogle" onclick="loginWithGoogle()">
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        Continuar com Google
+      </button>
+      <div id="loginError" class="login-error"></div>
+      <p class="login-terms">
+        Ao entrar você concorda com os
+        <a href="#">Termos de Uso</a> e a
+        <a href="#">Política de Privacidade</a>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── SCRIPTS ── -->
+  <script>
+    /* ── SUPABASE AUTH ── */
+    const SUPABASE_URL      = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let isLoggedIn = false;
+
+    /* Open / Close modal */
+    function openLogin() {
+      hideLoginError();
+      document.getElementById('loginOverlay').classList.add('open');
+    }
+    function closeLogin() {
+      document.getElementById('loginOverlay').classList.remove('open');
+    }
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('loginOverlay')) closeLogin();
+    }
+
+    /* Google OAuth */
+    async function loginWithGoogle() {
+      const btn = document.getElementById('btnGoogle');
+      btn.disabled = true;
+      btn.textContent = 'Redirecionando…';
+      hideLoginError();
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/gerar.html' }
+      });
+      if (error) {
+        showLoginError('Erro ao entrar com Google. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> Continuar com Google';
+      }
+    }
+
+    function showLoginError(msg) {
+      const el = document.getElementById('loginError');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    function hideLoginError() {
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    /* Logout */
+    async function doLogout() {
+      await sb.auth.signOut();
+      isLoggedIn = false;
+      resetUI();
+      closeUserDropdown();
+    }
+
+    /* User dropdown */
+    function toggleUserDropdown() {
+      document.getElementById('userDropdown').classList.toggle('open');
+    }
+    function closeUserDropdown() {
+      document.getElementById('userDropdown').classList.remove('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('userMenu');
+      if (menu && !menu.contains(e.target)) closeUserDropdown();
+    });
+
+    /* Set UI state based on login */
+    function setLoggedIn(user) {
+      isLoggedIn = true;
+      document.getElementById('btnEntrar').style.display = 'none';
+      document.getElementById('btnCriarNav').style.display = 'none';
+      const userMenu = document.getElementById('userMenu');
+      userMenu.classList.add('visible');
+      if (user && user.user_metadata && user.user_metadata.avatar_url) {
+        const btn = document.getElementById('userAvatarBtn');
+        btn.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+      }
+    }
+    function resetUI() {
+      document.getElementById('btnEntrar').style.display = '';
+      document.getElementById('btnCriarNav').style.display = '';
+      document.getElementById('userMenu').classList.remove('visible');
+      document.getElementById('userAvatarBtn').innerHTML = '👤';
+    }
+
+    /* Guard: must be logged in to create */
+    function criarFigurinha(tipo) {
+      if (!isLoggedIn) {
+        openLogin();
+        return;
+      }
+      const t = tipo || 'sozinho';
+      window.location.href = '/gerar.html?tipo=' + t;
+    }
+
+    /* Check session on load */
+    (async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) {
+        setLoggedIn(session.user);
+      }
+      sb.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+          setLoggedIn(session.user);
+          closeLogin();
+        } else {
+          isLoggedIn = false;
+          resetUI();
+        }
+      });
+    })();
+
+    function selectType(btn) {
+      btn.closest('.type-selector').querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // Navbar scroll shadow
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      navbar.style.boxShadow = window.scrollY > 10
+        ? '0 4px 24px rgba(0,0,0,0.35)'
+        : 'none';
+    });
+
+    // Carousel
+    (function () {
+      const track    = document.getElementById('carouselTrack');
+      const dotsWrap = document.getElementById('carouselDots');
+      const prevBtn  = document.getElementById('prevBtn');
+      const nextBtn  = document.getElementById('nextBtn');
+      const cards    = Array.from(track.querySelectorAll('.testimonial-card'));
+      const total    = cards.length;
+      let perView    = window.innerWidth <= 900 ? 1 : 3;
+      let current    = 0;
+
+      function pages() { return Math.ceil(total / perView); }
+
+      function buildDots() {
+        dotsWrap.innerHTML = '';
+        for (let i = 0; i < pages(); i++) {
+          const d = document.createElement('button');
+          d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+          d.setAttribute('aria-label', 'Página ' + (i + 1));
+          d.addEventListener('click', () => goTo(i));
+          dotsWrap.appendChild(d);
+        }
+      }
+
+      function goTo(page) {
+        current = Math.max(0, Math.min(page, pages() - 1));
+        const firstCard = cards[current * perView];
+        const offset    = firstCard ? firstCard.offsetLeft : 0;
+        track.style.transition = 'transform 0.4s cubic-bezier(.4,0,.2,1)';
+        track.style.transform  = `translateX(-${offset}px)`;
+        dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) =>
+          d.classList.toggle('active', i === current)
+        );
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current >= pages() - 1;
+      }
+
+      window.moveCarousel = function (dir) { goTo(current + dir); };
+
+      window.addEventListener('resize', () => {
+        perView  = window.innerWidth <= 900 ? 1 : 3;
+        current  = 0;
+        track.style.transition = 'none';
+        track.style.transform  = 'translateX(0)';
+        buildDots();
+        setTimeout(() => goTo(0), 50);
+      });
+
+      buildDots();
+      goTo(0);
+    })();
+  </script>
+
+</body>
+</html>
