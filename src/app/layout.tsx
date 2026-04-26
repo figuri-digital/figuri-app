@@ -5,7 +5,12 @@ export const metadata: Metadata = {
   title: "FIGURI — Vire Jogador da Copa",
   description: "Transforme sua foto em figurinha oficial da Copa 2026",
   icons: {
-    icon: "/fav.svg",
+    icon: [
+      { url: "/fav.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico",  sizes: "any" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/fav.svg",
   },
 };
 
