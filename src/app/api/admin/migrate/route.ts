@@ -10,6 +10,15 @@ const supabaseServiceKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || 'figuri-admin-2026';
 
+const MIGRATION_SQL = `-- Cole este SQL no Supabase SQL Editor e execute:
+-- https://supabase.com/dashboard/project/ytzkwhozesiomcvmkgyl/sql/new
+
+ALTER TABLE figurinha_configs
+  ADD COLUMN IF NOT EXISTS text_colors JSONB NOT NULL
+  DEFAULT '{"01":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"02":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"03":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"04":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"}}'::jsonb;
+
+ALTER TABLE figurinha_configs DROP COLUMN IF EXISTS text_color;`;
+
 export async function POST(req: NextRequest) {
   const key = req.nextUrl.searchParams.get('key');
   if (key !== ADMIN_KEY) {
@@ -17,94 +26,115 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const steps: { step: string; ok: boolean; detail?: string }[] = [];
 
-  // 1. Verifica se a coluna text_colors já existe
-  const { data: cols, error: colErr } = await supabase
+  // 1. Detecta se a coluna text_colors existe tentando lê-la
+  const { error: readErr } = await supabase
     .from('figurinha_configs')
-    .select('text_colors')
+    .select('id, text_colors')
     .limit(1);
 
-  const colExists = !colErr || !colErr.message?.includes('text_colors');
+  const colMissing = !!readErr && (
+    readErr.message?.includes('text_colors') ||
+    readErr.code === '42703'
+  );
 
-  steps.push({
-    step: 'Verificar coluna text_colors',
-    ok: colExists,
-    detail: colExists ? 'Coluna existe' : `Coluna ausente: ${colErr?.message}`,
-  });
+  if (colMissing) {
+    // Coluna não existe — retorna o SQL para o usuário executar manualmente
+    return NextResponse.json({
+      ok: false,
+      needs_manual_sql: true,
+      sql: MIGRATION_SQL,
+      supabase_url: `https://supabase.com/dashboard/project/${supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1]}/sql/new`,
+      message: 'A coluna text_colors não existe no banco. Execute o SQL abaixo no Supabase Dashboard.',
+    }, { status: 200 });
+  }
 
-  if (!colExists) {
-    // 2. Adiciona a coluna via rpc exec_sql (requer pg_net ou função customizada)
-    // Alternativa: usar a API REST do Supabase Management
-    // Como o JS client não suporta DDL diretamente, usamos o endpoint de management
-    const projectId = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1];
-    const serviceKey = supabaseServiceKey;
+  if (readErr) {
+    return NextResponse.json({
+      ok: false,
+      needs_manual_sql: false,
+      message: `Erro ao ler tabela: ${readErr.message}`,
+    }, { status: 500 });
+  }
 
-    const ddl = `
-      ALTER TABLE figurinha_configs
-        ADD COLUMN IF NOT EXISTS text_colors JSONB NOT NULL
-        DEFAULT '{"01":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"02":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"03":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"},"04":{"name":"#FFFFFF","birth":"#FFFFFF","height":"#FFFFFF"}}'::jsonb;
-      ALTER TABLE figurinha_configs DROP COLUMN IF EXISTS text_color;
-    `;
+  // 2. Coluna existe — migra linhas com formato legado (string → objeto)
+  const { data: rows, error: rowsErr } = await supabase
+    .from('figurinha_configs')
+    .select('id, text_colors');
 
-    try {
-      const mgmtRes = await fetch(
-        `https://api.supabase.com/v1/projects/${projectId}/database/query`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${serviceKey}`,
-          },
-          body: JSON.stringify({ query: ddl }),
-        }
-      );
+  if (rowsErr) {
+    return NextResponse.json({ ok: false, message: `Erro ao listar linhas: ${rowsErr.message}` }, { status: 500 });
+  }
 
-      if (mgmtRes.ok) {
-        steps.push({ step: 'Criar coluna text_colors', ok: true, detail: 'Coluna criada com sucesso' });
+  const DEFAULT_COLORS = {
+    '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' },
+    '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' },
+    '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' },
+    '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' },
+  };
+
+  let migrated = 0;
+  for (const row of (rows || [])) {
+    const tc = row.text_colors;
+    if (!tc) {
+      await supabase.from('figurinha_configs').update({ text_colors: DEFAULT_COLORS }).eq('id', row.id);
+      migrated++;
+      continue;
+    }
+    const needsMigration = typeof tc === 'string' || Object.values(tc).some(v => typeof v === 'string');
+    if (needsMigration) {
+      const fixed: Record<string, { name: string; birth: string; height: string }> = {};
+      const source = typeof tc === 'string' ? {} : tc;
+      for (const m of ['01', '02', '03', '04']) {
+        const val = source[m];
+        if (!val) fixed[m] = { ...DEFAULT_COLORS['01'] };
+        else if (typeof val === 'string') fixed[m] = { name: val, birth: val, height: val };
+        else fixed[m] = val as { name: string; birth: string; height: string };
+      }
+      await supabase.from('figurinha_configs').update({ text_colors: fixed }).eq('id', row.id);
+      migrated++;
+    }
+  }
+
+  // 3. Faz um teste de escrita e leitura para confirmar que o save funciona
+  const testRow = rows?.[0];
+  let writeTestOk = true;
+  let writeTestDetail = 'Sem linhas para testar';
+
+  if (testRow) {
+    const currentColors = testRow.text_colors || DEFAULT_COLORS;
+    const { error: writeErr } = await supabase
+      .from('figurinha_configs')
+      .update({ text_colors: currentColors })
+      .eq('id', testRow.id);
+
+    if (writeErr) {
+      writeTestOk = false;
+      writeTestDetail = `Falha ao escrever text_colors: ${writeErr.message}`;
+    } else {
+      // Lê de volta para confirmar
+      const { data: readBack, error: readBackErr } = await supabase
+        .from('figurinha_configs')
+        .select('text_colors')
+        .eq('id', testRow.id)
+        .single();
+
+      if (readBackErr || !readBack?.text_colors) {
+        writeTestOk = false;
+        writeTestDetail = `Escreveu mas não leu de volta: ${readBackErr?.message}`;
       } else {
-        const errText = await mgmtRes.text();
-        steps.push({ step: 'Criar coluna text_colors', ok: false, detail: errText.slice(0, 200) });
+        writeTestDetail = 'Escrita e leitura de text_colors funcionando corretamente ✅';
       }
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : String(e);
-      steps.push({ step: 'Criar coluna text_colors', ok: false, detail: message });
     }
   }
 
-  // 3. Migra linhas existentes com formato legado (text_color string → text_colors JSONB)
-  if (colExists) {
-    const DEFAULT_COLORS = { '01': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '02': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '03': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' }, '04': { name: '#FFFFFF', birth: '#FFFFFF', height: '#FFFFFF' } };
-
-    const { data: rows } = await supabase.from('figurinha_configs').select('id, text_colors');
-    let migrated = 0;
-
-    for (const row of (rows || [])) {
-      const tc = row.text_colors;
-      if (!tc) {
-        await supabase.from('figurinha_configs').update({ text_colors: DEFAULT_COLORS }).eq('id', row.id);
-        migrated++;
-        continue;
-      }
-      // Check if any value is a string (legacy format)
-      const needsMigration = Object.values(tc).some(v => typeof v === 'string');
-      if (needsMigration) {
-        const fixed: Record<string, { name: string; birth: string; height: string }> = {};
-        for (const [k, v] of Object.entries(tc)) {
-          if (typeof v === 'string') {
-            fixed[k] = { name: v as string, birth: v as string, height: v as string };
-          } else {
-            fixed[k] = v as { name: string; birth: string; height: string };
-          }
-        }
-        await supabase.from('figurinha_configs').update({ text_colors: fixed }).eq('id', row.id);
-        migrated++;
-      }
-    }
-
-    steps.push({ step: 'Migrar linhas legadas', ok: true, detail: `${migrated} linhas migradas` });
-  }
-
-  const allOk = steps.every(s => s.ok);
-  return NextResponse.json({ ok: allOk, steps }, { status: allOk ? 200 : 500 });
+  return NextResponse.json({
+    ok: writeTestOk,
+    needs_manual_sql: false,
+    migrated_rows: migrated,
+    write_test: { ok: writeTestOk, detail: writeTestDetail },
+    message: writeTestOk
+      ? `Banco OK. ${migrated} linhas migradas. ${writeTestDetail}`
+      : writeTestDetail,
+  });
 }
