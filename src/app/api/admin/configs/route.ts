@@ -180,10 +180,10 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // 3. Verifica que a linha existe de fato
+  // 3. Verifica que a linha existe e que text_colors foi salvo corretamente
   const { data: verify, error: verifyError } = await supabase
     .from('figurinha_configs')
-    .select('id, style, country, updated_at')
+    .select('id, style, country, updated_at, text_colors')
     .eq('style', style)
     .eq('country', country)
     .single();
@@ -191,6 +191,18 @@ export async function PUT(req: NextRequest) {
   if (verifyError || !verify) {
     return NextResponse.json({
       error: `Gravado sem erro mas linha não encontrada. Verifique RLS/service key. Detalhe: ${verifyError?.message}`,
+    }, { status: 500 });
+  }
+
+  // Verifica se text_colors foi realmente persistido
+  const savedColors = verify.text_colors;
+  const sentColors = fields.text_colors;
+  const colorsMismatch = JSON.stringify(savedColors) !== JSON.stringify(sentColors);
+
+  if (colorsMismatch) {
+    console.warn('text_colors mismatch! Sent:', JSON.stringify(sentColors), 'Saved:', JSON.stringify(savedColors));
+    return NextResponse.json({
+      error: 'As cores foram enviadas mas não foram salvas no banco. A coluna text_colors pode estar ausente. Clique em "Corrigir banco" no painel e tente novamente.',
     }, { status: 500 });
   }
 

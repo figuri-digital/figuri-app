@@ -594,6 +594,15 @@
 
       <div id="db-diag" style="margin-bottom:10px;font-size:0.78rem;font-family:monospace;"></div>
 
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button onclick="runMigration()"
+          style="background:#2a2a18;border:1px solid #F5C518;color:#F5C518;font-size:0.78rem;font-weight:700;padding:6px 14px;border-radius:6px;cursor:pointer;"
+          title="Aplica a migração de banco (adiciona coluna text_colors se não existir)">
+          🔧 Corrigir banco (text_colors)
+        </button>
+        <span id="migrate-status" style="font-size:0.78rem;font-family:monospace;"></span>
+      </div>
+
       <div style="margin-bottom:16px;color:var(--text-muted);font-size:0.85rem;">
         Clique em <strong style="color:#F5C518;">✏️ Editar</strong> em qualquer linha para alterar o layout, moldura ou prompt daquele país/estilo.
         As mudanças entram em vigor imediatamente na geração.
@@ -1387,6 +1396,29 @@ function showCouponMsg(msg, color) {
 }
 
 // ── CONFIGS ─────────────────────────────────────────────────────────────────
+
+async function runMigration() {
+  const statusEl = document.getElementById('migrate-status');
+  statusEl.style.color = '#F5C518';
+  statusEl.textContent = '⏳ Aplicando migração...';
+  try {
+    const res = await fetch('/api/admin/migrate?key=' + encodeURIComponent(adminKey), { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.style.color = '#94DD2D';
+      statusEl.textContent = '✅ ' + data.steps.map(s => s.detail).join(' | ');
+      // Recarrega configs após migração
+      setTimeout(loadConfigs, 600);
+    } else {
+      const failed = data.steps.filter(s => !s.ok).map(s => s.step + ': ' + s.detail).join(' | ');
+      statusEl.style.color = '#FF6B6B';
+      statusEl.textContent = '❌ ' + failed;
+    }
+  } catch (err) {
+    statusEl.style.color = '#FF6B6B';
+    statusEl.textContent = '❌ ' + err.message;
+  }
+}
 
 async function loadConfigs() {
   document.getElementById('configs-loading').style.display = 'block';
