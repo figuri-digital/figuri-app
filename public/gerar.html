@@ -1184,6 +1184,7 @@
   // Phase C
   let resultPayload     = null;
   let selectedVariation = null;
+  let generatedTextColors = null; // capturado da resposta inicial do /api/generate
 
   /* ────────── DOM ────────── */
   function q(id) { return document.getElementById(id); }
@@ -1311,12 +1312,13 @@
       const saved = sessionStorage.getItem('figuri_result');
       if (saved) {
         const s = JSON.parse(saved);
-        resultPayload   = s.payload;
-        imageId         = s.imageId;
-        selectedCountry = s.country;
-        currentTipo     = s.tipo || currentTipo;
-        creditsUsed     = s.creditsUsed  || creditsUsed;
-        creditsLimit    = s.creditsLimit || creditsLimit;
+        resultPayload       = s.payload;
+        imageId             = s.imageId;
+        selectedCountry     = s.country;
+        currentTipo         = s.tipo || currentTipo;
+        creditsUsed         = s.creditsUsed  || creditsUsed;
+        creditsLimit        = s.creditsLimit || creditsLimit;
+        generatedTextColors = s.textColors   || null;
         updateCreditsUI();
         showResults(resultPayload);
         return;
@@ -1534,11 +1536,12 @@
       return;
     }
 
-    taskIds          = data.taskIds      || [];
-    imageId          = data.imageId      || null;
-    userId           = data.userId       || userId;
-    pollStatusUrls   = data.statusUrls   || [];
-    pollResponseUrls = data.responseUrls || [];
+    taskIds             = data.taskIds      || [];
+    imageId             = data.imageId      || null;
+    userId              = data.userId       || userId;
+    pollStatusUrls      = data.statusUrls   || [];
+    pollResponseUrls    = data.responseUrls || [];
+    generatedTextColors = data.textColors   || null; // salva as cores do banco ANTES do polling
 
     showPhase('loading');
     startLoadingPhase();
@@ -1725,17 +1728,22 @@
         tipo:         currentTipo,
         creditsUsed:  creditsUsed,
         creditsLimit: creditsLimit,
+        textColors:   generatedTextColors,
       }));
     } catch(_) {}
 
     const defaultColors = {'01':'#FFFFFF','02':'#FFFFFF','03':'#FFFFFF','04':'#FFFFFF'};
+    // Prioridade: (1) capturado da resposta inicial do POST /api/generate
+    //             (2) restaurado do sessionStorage
+    //             (3) default branco
+    const finalTextColors = generatedTextColors || resultPayload?.textColors || defaultColors;
     const qs = new URLSearchParams({
       imageUrl,
       hiresUrl,
       imageId:    imageId         || '',
       country:    selectedCountry || '',
       type:       currentTipo === 'casal' ? 'familia' : currentTipo,
-      textColors: JSON.stringify(resultPayload?.textColors || defaultColors),
+      textColors: JSON.stringify(finalTextColors),
     });
     window.location.href = '/editor.html?' + qs.toString();
   }
