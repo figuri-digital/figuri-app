@@ -194,5 +194,15 @@ export async function PUT(req: NextRequest) {
     }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, saved: { id: verify.id, style: verify.style, country: verify.country, updated_at: verify.updated_at } });
+  return NextResponse.json({
+    ok: true,
+    using_service_key: isUsingServiceKey,
+    saved: {
+      id: verify.id,
+      style: verify.style,
+      country: verify.country,
+      updated_at: verify.updated_at,
+      text_colors: verify.text_colors,   // devolve o que foi de fato gravado no DB
+    },
+  });
 }

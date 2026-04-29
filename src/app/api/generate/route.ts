@@ -41,7 +41,10 @@ async function getConfig(style: string, country: string): Promise<ConfigRow | nu
       configCache.set(cacheKey, { data, ts: Date.now() });
       return data;
     }
-  } catch { /* fallback to hardcoded */ }
+    console.warn(`[getConfig] no row found for style=${style} country=${country}`);
+  } catch (err) {
+    console.error(`[getConfig] error for style=${style} country=${country}:`, err);
+  }
   return null;
 }
 

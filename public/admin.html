@@ -1878,14 +1878,43 @@ async function saveConfig() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro ' + res.status);
 
+    // Avisa se não está usando service key (RLS pode bloquear saves)
+    if (data.using_service_key === false) {
+      status.style.color = '#FFC300';
+      status.textContent = '⚠️ Usando anon key — RLS pode bloquear saves. Configure SUPABASE_SERVICE_ROLE_KEY no Vercel.';
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar';
+      return;
+    }
+
+    // Verifica se text_colors foi de fato salvo no DB
+    const savedColors = data.saved?.text_colors;
+    const sentMoldura01Name = payload.text_colors?.['01']?.name;
+    const dbMoldura01Name   = savedColors?.['01']?.name;
+    const colorsMatch = !sentMoldura01Name || sentMoldura01Name === dbMoldura01Name;
+
+    if (!colorsMatch) {
+      status.style.color = '#FF6B6B';
+      status.textContent = `❌ Cores NÃO salvas no DB! Enviado: ${sentMoldura01Name} / DB retornou: ${dbMoldura01Name || 'vazio'}. Verifique a coluna text_colors.`;
+      btn.disabled = false;
+      btn.textContent = '💾 Salvar';
+      return;
+    }
+
     status.style.color = '#00E05A';
     status.textContent = '✅ Salvo com sucesso!';
     btn.textContent = '✅ Salvo';
 
-    // Update local cache
+    // Update local cache with confirmed DB data
     const idx = allConfigs.findIndex(c => c.style === payload.style && c.country === payload.country);
     if (idx >= 0) {
-      allConfigs[idx] = { ...allConfigs[idx], ...payload, from_db: true, updated_at: new Date().toISOString() };
+      allConfigs[idx] = {
+        ...allConfigs[idx],
+        ...payload,
+        text_colors: savedColors || payload.text_colors,  // usa o que o DB confirmou
+        from_db: true,
+        updated_at: new Date().toISOString(),
+      };
     }
     renderConfigs();
     setTimeout(closeModal, 1200);
