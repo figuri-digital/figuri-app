@@ -814,9 +814,11 @@
 
     if (layoutImg.complete && layoutImg.naturalWidth) {
       var sc = Math.max(CANVAS_W / layoutImg.naturalWidth, CANVAS_H / layoutImg.naturalHeight);
+      // Sobe a imagem 200px para que a pessoa fique acima da área branca da moldura
+      var imgOffsetY = -200;
       ctx.drawImage(layoutImg,
         (CANVAS_W - layoutImg.naturalWidth  * sc) / 2,
-        (CANVAS_H - layoutImg.naturalHeight * sc) / 2,
+        (CANVAS_H - layoutImg.naturalHeight * sc) / 2 + imgOffsetY,
         layoutImg.naturalWidth * sc, layoutImg.naturalHeight * sc);
     }
 
