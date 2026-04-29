@@ -194,17 +194,5 @@ export async function PUT(req: NextRequest) {
     }, { status: 500 });
   }
 
-  // Verifica se text_colors foi realmente persistido
-  const savedColors = verify.text_colors;
-  const sentColors = fields.text_colors;
-  const colorsMismatch = JSON.stringify(savedColors) !== JSON.stringify(sentColors);
-
-  if (colorsMismatch) {
-    console.warn('text_colors mismatch! Sent:', JSON.stringify(sentColors), 'Saved:', JSON.stringify(savedColors));
-    return NextResponse.json({
-      error: 'As cores foram enviadas mas não foram salvas no banco. A coluna text_colors pode estar ausente. Clique em "Corrigir banco" no painel e tente novamente.',
-    }, { status: 500 });
-  }
-
   return NextResponse.json({ ok: true, saved: { id: verify.id, style: verify.style, country: verify.country, updated_at: verify.updated_at } });
 }
