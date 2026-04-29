@@ -742,10 +742,15 @@
   /* ── CANVAS ───────────────────────────────── */
   var CANVAS_W = 1543, CANVAS_H = 2047;
 
+  var DEFAULT_NAME_COLOR = '#000000'; // nome sempre preto por padrão (visível em molduras brancas)
+
   function getColor(moldura, field) {
     var m = paramTextColors[moldura];
-    if (!m) return legacyColor;
-    return typeof m === 'string' ? m : (m[field] || legacyColor);
+    if (!m) return field === 'name' ? DEFAULT_NAME_COLOR : legacyColor;
+    if (typeof m === 'string') return m;
+    // Se o campo name não tiver cor definida, usa preto; demais campos usam branco
+    var fallback = field === 'name' ? DEFAULT_NAME_COLOR : legacyColor;
+    return m[field] || fallback;
   }
 
   var TC = {
