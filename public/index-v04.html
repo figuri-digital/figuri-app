@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Figuri — Vire um Jogador da Copa</title>
+<link rel="icon" type="image/svg+xml" href="/fav.svg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg-primary:   #FAFAF7;
+    --bg-secondary: #F2F0EB;
+    --surface:      #FFFFFF;
+    --dark:         #0D0D0B;
+    --dark-mid:     #1A1A17;
+    --dark-muted:   #2A2A26;
+    --text-heading: #111110;
+    --text-body:    #444440;
+    --text-muted:   #888880;
+    --text-light:   rgba(255,255,255,0.85);
+    --text-light-muted: rgba(255,255,255,0.45);
+    --verde:        #00A651;
+    --verde-escuro: #007A3A;
+    --verde-neon:   #00E05A;
+    --ouro:         #C9960A;
+    --ouro-claro:   #F5C518;
+    --border-light: rgba(0,0,0,0.08);
+    --border-mid:   rgba(0,0,0,0.14);
+    --border-dark:  rgba(255,255,255,0.1);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; overflow-x:hidden; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--bg-primary);
+    color: var(--text-body);
+    overflow-x: hidden;
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--verde-escuro);
+    overflow: hidden;
+    padding: 10px 0;
+    border-bottom: 2px solid var(--ouro);
+  }
+  .ticker-track {
+    display: flex;
+    animation: ticker 26s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 36px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+  .ticker-item span { color: var(--ouro-claro); }
+  @keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: fixed;
+    top:0; left:0; right:0;
+    z-index:100;
+    padding: 14px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(13,13,11,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(201,150,10,0.2);
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 3px;
+    color: var(--ouro-claro);
+    text-decoration: none;
+  }
+  .logo span { color: var(--verde-neon); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .btn-entrar {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-entrar:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
+
+  .header-cta {
+    background: var(--verde);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-cta:hover { background: var(--verde-escuro); transform: translateY(-1px); }
+
+  /* User menu */
+  .user-menu {
+    position: relative;
+    display: none;
+  }
+  .user-menu.visible { display: flex; align-items: center; }
+  .user-avatar-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 50%;
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: border-color 0.2s;
+  }
+  .user-avatar-btn:hover { border-color: var(--verde-neon); }
+
+  .user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #1f3302;
+    border: 1px solid rgba(237,251,217,0.15);
+    border-radius: 10px;
+    min-width: 170px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    padding: 0.4rem 0;
+    display: none;
+    z-index: 200;
+  }
+  .user-dropdown.open { display: block; }
+  .user-dropdown a, .user-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: rgba(237,251,217,0.85);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 18px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(255,255,255,0.06); }
+  .user-dropdown .logout-btn { color: #ff6b6b; }
+
+  /* Cart button */
+  .nav-cart-link {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,224,90,0.08);
+    border: 1.5px solid rgba(0,224,90,0.28);
+    color: #edfbd9;
+    border-radius: 10px;
+    padding: 6px 12px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .nav-cart-link:hover { background: rgba(0,224,90,0.16); border-color: var(--verde-neon); }
+  .nav-cart-link.has-items { display: flex; }
+  .nav-cart-badge {
+    background: var(--verde-neon);
+    color: #0D0D0B;
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .nav-cart-total { color: var(--ouro-claro); font-weight: 800; }
+
+  @media(max-width:600px){
+    .btn-entrar { display: none; }
+    .header-cta { display: none; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--dark);
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 100px 32px 80px;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 65% 40%, rgba(0,166,81,0.14) 0%, transparent 55%),
+      radial-gradient(ellipse at 15% 75%, rgba(201,150,10,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 56px 56px;
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1160px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,166,81,0.15);
+    border: 1px solid rgba(0,166,81,0.35);
+    color: var(--verde-neon);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content:'';
+    width:7px; height:7px;
+    background: var(--verde-neon);
+    border-radius:50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(60px, 7.5vw, 104px);
+    line-height: 0.88;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+  }
+  .hero-title .l1 { display:block; color:#fff; }
+  .hero-title .l2 { display:block; color: var(--ouro-claro); text-shadow: 0 0 48px rgba(245,197,24,0.35); }
+  .hero-title .l3 { display:block; color: var(--verde-neon); }
+
+  .hero-sub {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 460px;
+  }
+  .hero-sub strong { color: rgba(255,255,255,0.9); }
+
+  .hero-stats {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--ouro-claro);
+    display: block;
+  }
+  .stat-lbl {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* Upload box */
+  .upload-box {
+    background: rgba(255,255,255,0.05);
+    border: 1.5px dashed rgba(201,150,10,0.4);
+    border-radius: 16px;
+    padding: 36px 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    backdrop-filter: blur(8px);
+  }
+  .upload-box:hover {
+    border-color: var(--ouro-claro);
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+  }
+  .upload-icon { font-size: 44px; margin-bottom: 14px; display:block; text-align:center; }
+  .upload-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight:700;
+    color: #fff;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .upload-sub { font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:22px; text-align:center; }
+
+  .style-picker { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; }
+  .style-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.55);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight:700;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .style-btn:hover, .style-btn.active {
+    background: rgba(201,150,10,0.15);
+    border-color: var(--ouro-claro);
+    color: var(--ouro-claro);
+  }
+
+  .btn-upload {
+    display:block; width:100%;
+    background: linear-gradient(135deg, var(--verde), var(--verde-escuro));
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight:900; font-size:18px;
+    letter-spacing:1px; text-transform:uppercase;
+    padding: 16px;
+    border-radius: 8px; border:none; cursor:pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,166,81,0.3);
+  }
+  .btn-upload:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,166,81,0.5); }
+  .upload-note { font-size:11px; color:rgba(255,255,255,0.25); margin-top:14px; text-align:center; }
+  .upload-input { display:none; }
+
+  .credits-bar {
+    margin-top: 12px;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.5px;
+  }
+  .credits-progress {
+    display: none;
+    margin: 8px auto 0;
+    max-width: 220px;
+    height: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .credits-progress-fill {
+    height: 100%;
+    background: var(--verde-neon);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .credits-text-logged { display: none; }
+  .credits-text-guest { display: inline; }
+
+  /* ── SECTION BASE ── */
+  .section { padding: 96px 32px; }
+  .container { max-width:1160px; margin:0 auto; }
+
+  .sec-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size:11px; font-weight:700;
+    letter-spacing:4px; text-transform:uppercase;
+    color: var(--verde);
+    margin-bottom:14px; display:block;
+  }
+  .sec-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px,5vw,64px);
+    line-height:1; letter-spacing:1px;
+    color: var(--text-heading);
+    margin-bottom: 16px;
+  }
+  .sec-title em { color: var(--ouro); font-style:normal; }
+  .sec-sub { font-size:15px; color: var(--text-muted); line-height:1.75; max-width:500px; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section { background: var(--bg-primary); }
+
+  .steps-grid {
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:24px;
+    margin-top:56px;
+  }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 40px 32px;
+    position:relative;
+    transition: all 0.3s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .step:hover {
+    border-color: rgba(0,166,81,0.25);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+  }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size:88px; line-height:1;
+    color: rgba(0,166,81,0.06);
+    position:absolute; top:12px; right:20px;
+  }
+  .step-icon {
+    width: 90px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom:20px;
+  }
+  .step-icon img { width: 90px; height: 80px; object-fit: contain; }
+  .step-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size:22px; font-weight:700;
+    color: var(--text-heading);
+    margin-bottom:10px;
+  }
+  .step-desc { font-size:14px; color: var(--text-muted); line-height:1.7; }
+
+  /* ── GALLERY ── */
+  .gallery-section {
+    background: var(--bg-secondary);
+    padding: 96px 0 0;
+    overflow: hidden;
+  }
+  .gallery-section-header {
+    padding: 0 32px 48px;
+  }
+  .gallery-track-wrap {
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  }
+  .gallery-slide {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+  .gallery-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+  .gallery-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(13,13,11,0.65);
+    border: 1.5px solid rgba(201,150,10,0.4);
+    color: #fff;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+  }
+  .gallery-arrow:hover { background: var(--verde-escuro); border-color: var(--ouro-claro); }
+  .gallery-arrow.prev { left: 16px; }
+  .gallery-arrow.next { right: 16px; }
+  .gallery-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+  .gallery-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .gallery-dot.active { background: var(--ouro-claro); transform: scale(1.3); }
+
+  /* ── PRICING ── */
+  .pricing-section { background: var(--surface); }
+
+  .pricing-grid {
+    display:grid;
+    grid-template-columns: repeat(4,1fr);
+    gap:20px;
+    margin-top:56px;
+    align-items:start;
+  }
+  .plan {
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border-mid);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+    position:relative;
+  }
+  .plan:hover {
+    border-color: rgba(0,166,81,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+  }
+  .plan.featured {
+    background: var(--dark);
+    border-color: var(--verde);
+    box-shadow: 0 16px 56px rgba(0,0,0,0.2);
+    transform: translateY(-8px);
+  }
+  .plan.featured:hover { transform: translateY(-12px); }
+
+  .plan-img-wrap {
+    width: 100%;
+    aspect-ratio: 270/291;
+    overflow: hidden;
+  }
+  .plan-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s;
+    display: block;
+  }
+  .plan:hover .plan-img-wrap img { transform: scale(1.04); }
+
+  .plan-body { padding: 24px 20px 28px; }
+
+  .plan-badge {
+    display:inline-block;
+    background: var(--verde);
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:11px; font-weight:700;
+    letter-spacing:2px; text-transform:uppercase;
+    padding:4px 14px; border-radius:100px;
+    color:#fff; margin-bottom:16px;
+  }
+
+  .plan-name {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:13px; font-weight:700;
+    letter-spacing:3px; text-transform:uppercase;
+    color: var(--text-muted);
+    margin-bottom:8px;
+  }
+  .plan.featured .plan-name { color:rgba(255,255,255,0.45); }
+
+  .plan-price {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:52px; line-height:1;
+    color: var(--text-heading);
+    margin-bottom:4px;
+  }
+  .plan-price span { font-size:22px; color: var(--text-muted); }
+  .plan.featured .plan-price { color:#fff; }
+  .plan.featured .plan-price span { color:rgba(255,255,255,0.4); }
+
+  .plan-desc { font-size:13px; color: var(--text-muted); margin-bottom:20px; }
+  .plan.featured .plan-desc { color:rgba(255,255,255,0.45); }
+
+  .btn-plan {
+    display:block; text-align:center; width:100%;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:900; font-size:16px;
+    letter-spacing:1px; text-transform:uppercase;
+    padding:14px; border-radius:8px;
+    cursor:pointer; border:none;
+    transition: all 0.3s; text-decoration:none;
+  }
+  .btn-plan-outline {
+    background:transparent;
+    border:1.5px solid var(--border-mid);
+    color: var(--text-heading);
+  }
+  .btn-plan-outline:hover { border-color: var(--verde); color: var(--verde); }
+  .btn-plan-primary {
+    background:linear-gradient(135deg, var(--verde), var(--verde-escuro));
+    color:#fff;
+    box-shadow:0 8px 28px rgba(0,166,81,0.35);
+  }
+  .btn-plan-primary:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,166,81,0.5); }
+
+  /* ── COUNTDOWN ── */
+  .countdown-section {
+    background: var(--dark);
+    padding:80px 32px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .countdown-section::before {
+    content:'⚽';
+    position:absolute;
+    font-size:360px; opacity:0.04;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .cd-label {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:13px; font-weight:700;
+    letter-spacing:4px; text-transform:uppercase;
+    color:rgba(255,255,255,0.35);
+    margin-bottom:10px; display:block;
+  }
+  .cd-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(32px,5vw,60px);
+    color:#fff; margin-bottom:48px;
+  }
+  .cd-title span { color: var(--ouro-claro); }
+  .cd-grid { display:flex; justify-content:center; gap:12px; margin-bottom:48px; flex-wrap:wrap; }
+  .cd-unit {
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;
+    padding:18px 28px; min-width:90px;
+  }
+  .cd-num {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:52px; line-height:1;
+    color: var(--ouro-claro); display:block;
+  }
+  .cd-unit-lbl {
+    font-size:10px; text-transform:uppercase;
+    letter-spacing:2px; color:rgba(255,255,255,0.35);
+    margin-top:4px; display:block;
+    font-family:'Barlow Condensed',sans-serif;
+  }
+  .btn-cd {
+    background:linear-gradient(135deg, var(--ouro-claro), #E5A800);
+    color: var(--dark);
+    font-family:'Bebas Neue',sans-serif;
+    font-size:22px; letter-spacing:2px;
+    padding:18px 56px; border-radius:8px;
+    border:none; cursor:pointer;
+    box-shadow:0 12px 48px rgba(245,197,24,0.3);
+    transition:all 0.3s; text-decoration:none;
+    display:inline-block;
+  }
+  .btn-cd:hover { transform:translateY(-3px); box-shadow:0 20px 64px rgba(245,197,24,0.45); }
+
+  /* ── REVIEWS ── */
+  .reviews-section { background: var(--bg-primary); }
+
+  .reviews-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .reviews-title-wrap { text-align: center; }
+
+  .carousel-nav { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .carousel-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--verde);
+    color: var(--verde-neon);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .carousel-btn:hover { background: var(--verde); }
+  .carousel-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .carousel-wrap { overflow: hidden; }
+  .reviews-grid {
+    display: flex;
+    gap: 20px;
+  }
+  .review {
+    background: var(--surface);
+    border:1px solid var(--border-light);
+    border-radius:14px; padding:28px;
+    transition:all 0.3s;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    flex: 0 0 calc((100% - 40px) / 3);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .review:hover { border-color:rgba(0,166,81,0.2); box-shadow:0 12px 36px rgba(0,0,0,0.08); transform:translateY(-4px); }
+  .review-stars { color: var(--ouro); font-size:15px; margin-bottom:14px; letter-spacing:2px; }
+  .review-text {
+    font-family:'Lora',serif;
+    font-size:14px; color: var(--text-body);
+    line-height:1.75; margin-bottom:20px;
+    font-style:italic; flex-grow: 1;
+  }
+  .reviewer { display:flex; align-items:center; gap:12px; }
+  .reviewer-avatar {
+    width:56px; height:56px; border-radius:50%;
+    background: var(--bg-secondary);
+    overflow: hidden;
+    border:2px solid rgba(0,166,81,0.15);
+    flex-shrink:0;
+  }
+  .reviewer-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+  .reviewer-name {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:16px; font-weight:700;
+    color: var(--text-heading);
+  }
+  .reviewer-info { font-size:12px; color: var(--text-muted); }
+
+  .carousel-dots { display:flex; justify-content:center; gap:0.4rem; margin-top: 28px; }
+  .carousel-dot {
+    width:8px; height:8px; border-radius:50%;
+    background: rgba(0,166,81,0.2);
+    transition: background 0.2s, transform 0.2s;
+    cursor: pointer; border: none;
+  }
+  .carousel-dot.active { background: var(--verde); transform: scale(1.3); }
+
+  /* ── FAQ ── */
+  .faq-section { background: var(--bg-secondary); }
+  .faq-list { max-width:700px; margin:56px auto 0; }
+  .faq-item {
+    background: var(--surface);
+    border:1px solid var(--border-light);
+    border-radius:10px; margin-bottom:8px;
+    overflow:hidden;
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  }
+  .faq-q {
+    display:flex; justify-content:space-between;
+    align-items:center;
+    padding:20px 24px; cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:17px; font-weight:700;
+    color: var(--text-heading);
+    transition:color 0.2s;
+    background:none; border:none; width:100%;
+    text-align:left; gap:16px;
+  }
+  .faq-q:hover { color: var(--verde); }
+  .faq-icon {
+    font-family:monospace; font-weight:900;
+    color: var(--verde); font-size:20px;
+    flex-shrink:0; transition:transform 0.3s;
+  }
+  .faq-a {
+    font-size:14px; color: var(--text-body);
+    line-height:1.75; padding:0 24px 20px;
+    display:none;
+  }
+  .faq-item.open .faq-a { display:block; }
+  .faq-item.open .faq-icon { transform:rotate(45deg); }
+  .faq-item.open .faq-q { color: var(--verde); }
+
+  /* ── CTA FINAL ── */
+  .cta-section {
+    background: var(--dark-mid);
+    padding:120px 32px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .cta-section::before {
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 60%, rgba(0,166,81,0.1) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  .cta-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(52px,8vw,100px);
+    line-height:0.9; margin-bottom:24px;
+    position:relative; z-index:1;
+  }
+  .cta-title .ct1 { display:block; color:#fff; }
+  .cta-title .ct2 { display:block; color: var(--ouro-claro); }
+  .cta-title .ct3 { display:block; color: var(--verde-neon); }
+  .cta-sub {
+    font-size:17px; color:rgba(255,255,255,0.5);
+    margin-bottom:44px; max-width:460px;
+    margin-left:auto; margin-right:auto;
+    line-height:1.7; position:relative; z-index:1;
+  }
+  .btn-cta-big {
+    background:linear-gradient(135deg, var(--verde), var(--verde-escuro));
+    color:#fff;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:26px; letter-spacing:2px;
+    padding:20px 64px; border-radius:8px;
+    border:none; cursor:pointer;
+    box-shadow:0 16px 56px rgba(0,166,81,0.35);
+    transition:all 0.3s; text-decoration:none;
+    display:inline-block; position:relative; z-index:1;
+  }
+  .btn-cta-big:hover { transform:translateY(-4px); box-shadow:0 24px 72px rgba(0,166,81,0.5); }
+  .guarantee {
+    display:flex; align-items:center;
+    justify-content:center; gap:8px;
+    margin-top:22px; font-size:12px;
+    color:rgba(255,255,255,0.3);
+    position:relative; z-index:1;
+    font-family:'Barlow Condensed',sans-serif;
+    letter-spacing:0.5px;
+  }
+
+  /* ── FLOATING BTN ── */
+  .floating-cta {
+    position:fixed; bottom:24px; right:24px; z-index:90;
+    background: var(--verde);
+    color:#fff;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:900; font-size:14px;
+    letter-spacing:1px; text-transform:uppercase;
+    padding:13px 24px; border-radius:100px;
+    border:none; cursor:pointer;
+    box-shadow:0 8px 28px rgba(0,166,81,0.4);
+    transition:all 0.3s;
+    display:flex; align-items:center; gap:8px;
+    text-decoration:none;
+    animation:floatbtn 3s ease-in-out infinite;
+  }
+  @keyframes floatbtn { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
+  .floating-cta:hover { animation:none; transform:scale(1.06); box-shadow:0 12px 40px rgba(0,166,81,0.55); }
+
+  /* ── LOGIN MODAL ── */
+  .login-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.72);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(4px);
+  }
+  .login-overlay.open { opacity: 1; pointer-events: all; }
+  .login-box {
+    background: #1f3302;
+    border: 1px solid rgba(237,251,217,0.14);
+    border-radius: 18px;
+    padding: 2.5rem 2rem 2rem;
+    width: 100%;
+    max-width: 400px;
+    margin: 1rem;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .login-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none;
+    color: rgba(237,251,217,0.5);
+    font-size: 1.3rem; cursor: pointer;
+    transition: color 0.2s;
+  }
+  .login-close:hover { color: rgba(237,251,217,0.9); }
+  .login-logo { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+  .login-logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 4px;
+    color: var(--ouro-claro);
+  }
+  .login-logo-text span { color: var(--verde-neon); }
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.1em;
+    color: rgba(237,251,217,0.9);
+    text-align: center;
+    margin-bottom: 0.4rem;
+  }
+  .login-sub {
+    font-size: 0.82rem;
+    color: rgba(237,251,217,0.6);
+    text-align: center;
+    margin-bottom: 1.75rem;
+    line-height: 1.5;
+  }
+  .btn-google {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.7rem;
+    background: #fff;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-google:hover { background: #f0f0f0; transform: translateY(-1px); }
+  .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .login-error {
+    display: none;
+    background: rgba(255,100,100,0.12);
+    border: 1px solid rgba(255,100,100,0.3);
+    border-radius: 6px;
+    color: #ff8080;
+    font-size: 0.8rem;
+    padding: 0.6rem 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .login-terms {
+    font-size: 0.72rem;
+    color: rgba(237,251,217,0.35);
+    text-align: center;
+    margin-top: 1.25rem;
+    line-height: 1.6;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .login-terms a { color: rgba(237,251,217,0.55); }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--dark);
+    border-top:1px solid rgba(255,255,255,0.06);
+    padding:40px 32px; text-align:center;
+  }
+  .footer-logo {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:28px; color: var(--ouro-claro);
+    margin-bottom:16px; display:block;
+  }
+  .footer-logo span { color: var(--verde-neon); }
+  .footer-links {
+    display:flex; justify-content:center;
+    gap:28px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .footer-links a {
+    font-size:13px; color:rgba(255,255,255,0.3);
+    text-decoration:none; transition:color 0.2s;
+    font-family:'Barlow Condensed',sans-serif;
+    letter-spacing:0.5px;
+  }
+  .footer-links a:hover { color:rgba(255,255,255,0.7); }
+  .footer-copy { font-size:11px; color:rgba(255,255,255,0.15); font-family:'Barlow Condensed',sans-serif; }
+
+  /* ── FADE UP ── */
+  .fade-up {
+    opacity:0; transform:translateY(28px);
+    transition:opacity 0.65s ease, transform 0.65s ease;
+  }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width:900px){
+    .hero-content { grid-template-columns:1fr; gap:40px; }
+    .steps-grid   { grid-template-columns:1fr; }
+    .pricing-grid { grid-template-columns:repeat(2,1fr); }
+    .plan.featured { transform:none; }
+    .review { flex:0 0 100%; }
+    .section { padding:72px 20px; }
+    .gallery-section { padding-top: 72px; }
+  }
+  @media (max-width:600px){
+    .pricing-grid { grid-template-columns:1fr; }
+    .hero { padding:90px 20px 60px; }
+    .header { padding:12px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
+    <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
+    <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
+    <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
+    <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
+    <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
+    <div class="ticker-item">⚽ <span>+3.200</span> figurinhas geradas essa semana</div>
+    <div class="ticker-item">🏆 Copa do Mundo <span>2026</span></div>
+    <div class="ticker-item">⭐ Avaliação <span>4.9/5</span> no Google</div>
+    <div class="ticker-item">🐶 Seu pet merece uma <span>figurinha oficial</span></div>
+    <div class="ticker-item">⚡ Preview gratuito em <span>30 segundos</span></div>
+    <div class="ticker-item">📦 Entrega para todo o <span>Brasil</span></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <a href="#" class="logo">FIGURI <span>IA</span></a>
+  <div class="header-right">
+    <button class="btn-entrar" id="btnEntrar" onclick="openLogin()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Entrar
+    </button>
+    <div class="user-menu" id="userMenu">
+      <button class="user-avatar-btn" onclick="toggleUserDropdown()" id="userAvatarBtn" title="Minha conta">👤</button>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="/pedidos">Meus Pedidos</a>
+        <button class="logout-btn" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+    <a id="homeCartBtn" href="/carrinho.html" class="nav-cart-link" title="Ver carrinho">
+      🛒
+      <span id="homeCartBadge" class="nav-cart-badge">0</span>
+      <span id="homeCartTotal" class="nav-cart-total">R$0</span>
+    </a>
+    <button class="header-cta" id="btnCriarNav" onclick="criarFigurinha()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z"/></svg>
+      Criar Figurinha
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-glow"></div>
+  <div class="hero-grid-bg"></div>
+  <div class="hero-content">
+
+    <div>
+      <div class="hero-badge">⚽ Ativo durante a Copa 2026</div>
+      <h1 class="hero-title">
+        <span class="l1">VIRE UM</span>
+        <span class="l2">JOGADOR</span>
+        <span class="l3">DA COPA</span>
+      </h1>
+      <p class="hero-sub">
+        Envie qualquer foto e nós transformamos você, seu pet ou alguém especial em uma <strong>figurinha oficial da Copa</strong> — em 30 segundos. Preview grátis antes de comprar.
+      </p>
+      <div class="hero-stats">
+        <div><span class="stat-num">30s</span><span class="stat-lbl">pra ver o resultado</span></div>
+        <div><span class="stat-num">R$19</span><span class="stat-lbl">preço inicial</span></div>
+        <div><span class="stat-num">100%</span><span class="stat-lbl">preview grátis</span></div>
+      </div>
+    </div>
+
+    <div id="upload">
+      <div class="upload-box" onclick="requireAuth(function(){ document.getElementById('fileInput').click(); })">
+        <span class="upload-icon">📸</span>
+        <div class="upload-title">Suba sua foto aqui</div>
+        <div class="upload-sub">JPG, PNG ou WEBP · Funciona com selfie do celular</div>
+        <div class="style-picker" onclick="event.stopPropagation()">
+          <button class="style-btn active" onclick="setStyle(this)">⚽ Jogador</button>
+          <button class="style-btn" onclick="setStyle(this)">🐶 Pet</button>
+          <button class="style-btn" onclick="setStyle(this)">👨‍👩‍👧 Família</button>
+          <button class="style-btn" onclick="setStyle(this)">✨ Rara</button>
+        </div>
+        <button class="btn-upload" onclick="event.stopPropagation(); requireAuth(function(){ document.getElementById('fileInput').click(); })">
+          ⚽ Gerar minha figurinha grátis
+        </button>
+        <input type="file" id="fileInput" class="upload-input" accept="image/*">
+        <div class="upload-note">Preview gratuito com marca d'água · Pague só se gostar</div>
+        <div class="credits-bar">
+          <span class="credits-text-guest">⚡ 5 previews gratuitos disponíveis</span>
+          <span class="credits-text-logged"></span>
+          <div class="credits-progress"><div class="credits-progress-fill" id="creditsFill"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section">
+  <div class="container">
+    <div class="fade-up" style="text-align:center">
+      <span class="sec-label">Como funciona</span>
+      <h2 class="sec-title">Simples assim, <em>3 passos</em></h2>
+    </div>
+    <div class="steps-grid fade-up">
+
+      <div class="step">
+        <span class="step-num">01</span>
+        <div class="step-icon"><img src="icon-camera.png" alt="Câmera"></div>
+        <div class="step-title">Suba sua foto</div>
+        <div class="step-desc">Qualquer foto do celular ou galeria. Funciona com selfie, pet ou foto de alguém especial. Quanto mais nítido o rosto, melhor o resultado.</div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">02</span>
+        <div class="step-icon"><img src="icon-pessoa.png" alt="Preview"></div>
+        <div class="step-title">Preview em 30s</div>
+        <div class="step-desc">Você vê o preview da sua figurinha com marca d'água. Escolha o estilo: jogador, pet mascote, casal ou figurinha rara brilhante.</div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">03</span>
+        <div class="step-icon"><img src="icon-entrega.png" alt="Entrega"></div>
+        <div class="step-title">Receba em casa</div>
+        <div class="step-desc">Gostou? Pague e receba o arquivo hi-res. Quer físico? A gente imprime e entrega com moldura acrílica premium em até 7 dias.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-section">
+  <div class="container gallery-section-header fade-up">
+    <span class="sec-label">Galeria de exemplos</span>
+    <h2 class="sec-title">Você no <em>álbum</em></h2>
+    <p class="sec-sub">Veja como fica — pessoas, pets, famílias e figurinhas raras holográficas.</p>
+  </div>
+  <div class="gallery-track-wrap">
+    <div class="gallery-track" id="galleryTrack">
+      <div class="gallery-slide"><img src="fotos.png" alt="Figurinhas da Copa" /></div>
+    </div>
+    <button class="gallery-arrow prev" onclick="galleryMove(-1)" aria-label="Anterior">&#8592;</button>
+    <button class="gallery-arrow next" onclick="galleryMove(1)" aria-label="Próximo">&#8594;</button>
+    <div class="gallery-dots" id="galleryDots"></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section pricing-section" id="precos">
+  <div class="container">
+    <div class="fade-up" style="text-align:center">
+      <span class="sec-label">Nossas figurinhas</span>
+      <h2 class="sec-title">Escolha o <em>seu</em></h2>
+      <p class="sec-sub" style="margin:0 auto">Preview sempre gratuito. Pague só quando quiser o arquivo completo.</p>
+    </div>
+    <div class="pricing-grid fade-up">
+
+      <div class="plan">
+        <div class="plan-img-wrap">
+          <img src="figurinha-digital.png" alt="Figurinha Digital">
+        </div>
+        <div class="plan-body">
+          <div class="plan-name">Figurinha Digital</div>
+          <div class="plan-price"><span>R$</span>19,90</div>
+          <div class="plan-desc">Arquivo de alta resolução para download imediato</div>
+          <button class="btn-plan btn-plan-outline" onclick="criarFigurinha()">Começar grátis</button>
+        </div>
+      </div>
+
+      <div class="plan">
+        <div class="plan-img-wrap">
+          <img src="figurinha-fisica.png" alt="Figurinha Física">
+        </div>
+        <div class="plan-body">
+          <div class="plan-name">Figurinha Física</div>
+          <div class="plan-price"><span>R$</span>24,90</div>
+          <div class="plan-desc">Impressa no tamanho padrão 5,5×7,5 cm</div>
+          <button class="btn-plan btn-plan-outline" onclick="criarFigurinha()">Pedir agora</button>
+        </div>
+      </div>
+
+      <div class="plan featured">
+        <div class="plan-img-wrap">
+          <img src="fiurinha-com-moldura.png" alt="Figurinha com Moldura">
+        </div>
+        <div class="plan-body">
+          <div class="plan-badge">⭐ Mais Popular</div>
+          <div class="plan-name">Com Moldura</div>
+          <div class="plan-price"><span>R$</span>49,90</div>
+          <div class="plan-desc">Print + moldura acrílica 35PT UV premium</div>
+          <button class="btn-plan btn-plan-primary" onclick="criarFigurinha()">Quero esse ⚽</button>
+        </div>
+      </div>
+
+      <div class="plan">
+        <div class="plan-img-wrap">
+          <img src="pack-de-figurinhas.png" alt="Pack de Figurinhas">
+        </div>
+        <div class="plan-body">
+          <div class="plan-name">Pack de Figurinhas</div>
+          <div class="plan-price"><span>R$</span>69,90</div>
+          <div class="plan-desc">Melhor custo-benefício para múltiplas figurinhas</div>
+          <button class="btn-plan btn-plan-outline" onclick="criarFigurinha()">Montar pack</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COUNTDOWN -->
+<section class="countdown-section fade-up">
+  <span class="cd-label">Faltam para a Copa 2026</span>
+  <h2 class="cd-title">⏱ Sua figurinha ainda <span>dá tempo</span></h2>
+  <div class="cd-grid">
+    <div class="cd-unit"><span class="cd-num" id="d-days">--</span><span class="cd-unit-lbl">Dias</span></div>
+    <div class="cd-unit"><span class="cd-num" id="d-hours">--</span><span class="cd-unit-lbl">Horas</span></div>
+    <div class="cd-unit"><span class="cd-num" id="d-mins">--</span><span class="cd-unit-lbl">Minutos</span></div>
+    <div class="cd-unit"><span class="cd-num" id="d-secs">--</span><span class="cd-unit-lbl">Segundos</span></div>
+  </div>
+  <a href="#upload" class="btn-cd">⚽ Criar minha figurinha agora</a>
+</section>
+
+<!-- REVIEWS -->
+<section class="section reviews-section" id="avaliacoes">
+  <div class="container">
+    <div class="fade-up reviews-header">
+      <div class="reviews-title-wrap">
+        <span class="sec-label">O que estão dizendo</span>
+        <h2 class="sec-title">+3.200 figurinhas <em>geradas e amadas</em></h2>
+      </div>
+      <div class="carousel-nav">
+        <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)" aria-label="Anterior">&#8592;</button>
+        <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)" aria-label="Próximo">&#8594;</button>
+      </div>
+    </div>
+
+    <div class="carousel-wrap fade-up">
+      <div class="reviews-grid" id="carouselTrack">
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Sensacional, recomendo muito! Minha noiva amou o presente e o acrílico tem muita qualidade."</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/pedro.jpeg" alt="Pedro Rosa"></div>
+            <div>
+              <div class="reviewer-name">Pedro Rosa</div>
+              <div class="reviewer-info">Belo Horizonte · MG</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Eu ameiii muitoo, fiz várias figurinhas com meus pets e eles ficaram lindos demais."</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/fernanda d.jpeg" alt="Fernanda Dias"></div>
+            <div>
+              <div class="reviewer-name">Fernanda Dias</div>
+              <div class="reviewer-info">Curitiba · PR</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Rápido, fácil e o resultado foi além do esperado. Mostrei pra galera do trabalho e todo mundo quis fazer a sua também."</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/matheus.png" alt="Matheus Fonseca"></div>
+            <div>
+              <div class="reviewer-name">Matheus Fonseca</div>
+              <div class="reviewer-info">São Paulo · SP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Fiz de surpresa pra minha mãe e ela chorou de emoção! A qualidade da impressão ficou incrível, superou minhas expectativas."</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/amanda F.jpeg" alt="Amanda Ferreira"></div>
+            <div>
+              <div class="reviewer-name">Amanda Ferreira</div>
+              <div class="reviewer-info">São Paulo · SP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Processo super simples, em menos de 1 minuto já tava com o preview na tela. Comprei na hora, não tinha como não comprar!"</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/guilherme.png" alt="Guilherme Santos"></div>
+            <div>
+              <div class="reviewer-name">Guilherme Santos</div>
+              <div class="reviewer-info">Rio de Janeiro · RJ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Presenteei meu namorado e ele ficou sem acreditar! A moldura acrílica é premium mesmo, dá pra ver a diferença na hora."</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/karina.png" alt="Karina Oliveira"></div>
+            <div>
+              <div class="reviewer-name">Karina Oliveira</div>
+              <div class="reviewer-info">Salvador · BA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review">
+          <div class="review-stars">★★★★★</div>
+          <div class="review-text">"Muito fácil de usar e o resultado ficou idêntico a uma figurinha de verdade. Todo mundo achou que era oficial!"</div>
+          <div class="reviewer">
+            <div class="reviewer-avatar"><img src="depoimentos/Yohano C.jpeg" alt="Yohano Costa"></div>
+            <div>
+              <div class="reviewer-name">Yohano Costa</div>
+              <div class="reviewer-info">Fortaleza · CE</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="carousel-dots" id="carouselDots"></div>
+
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section" id="faq">
+  <div class="container">
+    <div class="fade-up" style="text-align:center">
+      <span class="sec-label">Dúvidas frequentes</span>
+      <h2 class="sec-title">Perguntas <em>&amp; Respostas</em></h2>
+    </div>
+    <div class="faq-list fade-up">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">O preview realmente é gratuito?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Sim, 100%. Você envia a foto e, ao gerar a figurinha, vê o resultado com marca d'água antes de decidir. Só paga se gostar — sem surpresa.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Que tipo de foto funciona melhor?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Fotos com rosto nítido, boa iluminação e fundo simples garantem o melhor resultado. Selfies do celular funcionam muito bem. Evite fotos escuras ou desfocadas.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Como funciona a entrega digital?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Após o pagamento (Pix ou cartão), você recebe o arquivo hi-res por e-mail. O download fica disponível quantas vezes precisar.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">A figurinha impressa fica do tamanho real?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Sim! Imprimimos no tamanho exato: 5,5 × 7,5 cm. A moldura acrílica 35PT com proteção UV é a mesma usada para cards colecionáveis premium.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Posso fazer a figurinha do meu pet?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Com certeza! Pets são um dos estilos mais populares. Sube uma foto do seu cachorro, gato ou qualquer bichinho — fica absurdamente fofo.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Tem desconto para mais de uma figurinha?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Sim! O Pack de Figurinhas oferece o melhor custo-benefício para quem quer fazer múltiplas figurinhas. Para pedidos corporativos (10+) fale no WhatsApp para preço especial.</div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">E se eu não gostar do resultado?<span class="faq-icon">+</span></button>
+        <div class="faq-a">O preview é gratuito justamente para você ver antes de pagar. Se mesmo assim não ficar satisfeito, oferecemos 1 regeneração gratuita sem custo adicional.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2 class="cta-title fade-up">
+    <span class="ct1">A FIGURINHA</span>
+    <span class="ct2">QUE FALTAVA</span>
+    <span class="ct3">ERA A SUA</span>
+  </h2>
+  <p class="cta-sub fade-up">Preview gratuito em 30 segundos. Sem cadastro. Funciona no celular.</p>
+  <button class="btn-cta-big fade-up" onclick="criarFigurinha()">⚽ Criar Minha Figurinha Grátis</button>
+  <div class="guarantee fade-up">
+    <span>🔒</span>
+    <span>Pagamento seguro · Pague só se gostar · Entrega garantida</span>
+  </div>
+</section>
+
+<!-- FLOATING BTN -->
+<a href="#upload" class="floating-cta">⚽ Criar figurinha grátis</a>
+
+<!-- LOGIN MODAL -->
+<div class="login-overlay" id="loginOverlay" onclick="handleOverlayClick(event)">
+  <div class="login-box">
+    <button class="login-close" onclick="closeLogin()" aria-label="Fechar">✕</button>
+    <div class="login-logo">
+      <span class="login-logo-text">FIGURI <span>IA</span></span>
+    </div>
+    <h2 class="login-title">ENTRAR</h2>
+    <p class="login-sub">
+      Acesse sua conta para gerar e gerenciar<br>suas figurinhas da Copa.
+    </p>
+    <button class="btn-google" id="btnGoogle" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+      </svg>
+      Continuar com Google
+    </button>
+    <div id="loginError" class="login-error"></div>
+    <p class="login-terms">
+      Ao entrar você concorda com os
+      <a href="/termos-e-condicoes">Termos de Uso</a> e a
+      <a href="/politica-de-privacidade">Política de Privacidade</a>.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span class="footer-logo">FIGURI <span>IA</span></span>
+  <div class="footer-links">
+    <a href="#precos">Preços</a>
+    <a href="#avaliacoes">Avaliações</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://wa.me/5531982668673" target="_blank" rel="noopener">WhatsApp</a>
+    <a href="/termos-e-condicoes">Termos de uso</a>
+    <a href="/politica-de-privacidade">Privacidade</a>
+  </div>
+  <div class="footer-copy">© 2026 FIGURI IA · Arte personalizada por IA · Todos os direitos reservados</div>
+</footer>
+
+<script>
+  /* ── SUPABASE AUTH ── */
+  const SUPABASE_URL      = 'https://ytzkwhozesiomcvmkgyl.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emt3aG96ZXNpb21jdm1rZ3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzA5NDgsImV4cCI6MjA4OTQ0Njk0OH0.jTlhLYMEhs3NA1t1PAExGvdIikSxz2ssL7IWjoMSWNE';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let isLoggedIn = false;
+
+  /* ── LOGIN MODAL ── */
+  function openLogin() {
+    hideLoginError();
+    document.getElementById('loginOverlay').classList.add('open');
+  }
+  function closeLogin() {
+    document.getElementById('loginOverlay').classList.remove('open');
+  }
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('loginOverlay')) closeLogin();
+  }
+
+  /* Google OAuth */
+  async function loginWithGoogle() {
+    const btn = document.getElementById('btnGoogle');
+    btn.disabled = true;
+    btn.textContent = 'Redirecionando…';
+    hideLoginError();
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/gerar.html' }
+    });
+    if (error) {
+      showLoginError('Erro ao entrar com Google. Tente novamente.');
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> Continuar com Google`;
+    }
+  }
+
+  function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hideLoginError() {
+    document.getElementById('loginError').style.display = 'none';
+  }
+
+  /* ── LOGOUT ── */
+  async function doLogout() {
+    await sb.auth.signOut();
+    isLoggedIn = false;
+    localStorage.removeItem('figuri_cart');
+    sessionStorage.removeItem('figuri_result');
+    resetUI();
+    clearCartUI();
+    closeUserDropdown();
+  }
+
+  function clearCartUI() {
+    var btn   = document.getElementById('homeCartBtn');
+    var badge = document.getElementById('homeCartBadge');
+    var ttl   = document.getElementById('homeCartTotal');
+    if (btn)   btn.classList.remove('has-items');
+    if (badge) badge.textContent = '0';
+    if (ttl)   ttl.textContent   = 'R$0';
+  }
+
+  /* ── USER DROPDOWN ── */
+  function toggleUserDropdown() {
+    document.getElementById('userDropdown').classList.toggle('open');
+  }
+  function closeUserDropdown() {
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('userMenu');
+    if (menu && !menu.contains(e.target)) closeUserDropdown();
+  });
+
+  /* ── AUTH STATE ── */
+  function setLoggedIn(user) {
+    isLoggedIn = true;
+    document.getElementById('btnEntrar').style.display = 'none';
+    document.getElementById('btnCriarNav').style.display = 'none';
+    const userMenu = document.getElementById('userMenu');
+    userMenu.classList.add('visible');
+    if (user && user.user_metadata && user.user_metadata.avatar_url) {
+      const btn = document.getElementById('userAvatarBtn');
+      btn.innerHTML = '<img src="' + user.user_metadata.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />';
+    }
+    // Update credits bar
+    document.querySelector('.credits-text-guest').style.display = 'none';
+    const loggedText = document.querySelector('.credits-text-logged');
+    loggedText.style.display = 'inline';
+    loggedText.textContent = 'Sessão ativa';
+    updateHomeCart();
+  }
+
+  function resetUI() {
+    document.getElementById('btnEntrar').style.display = '';
+    document.getElementById('btnCriarNav').style.display = '';
+    document.getElementById('userMenu').classList.remove('visible');
+    document.getElementById('userAvatarBtn').innerHTML = '👤';
+    document.querySelector('.credits-text-guest').style.display = 'inline';
+    document.querySelector('.credits-text-logged').style.display = 'none';
+    clearCartUI();
+  }
+
+  /* ── CRIAR FIGURINHA ── */
+  function criarFigurinha(tipo) {
+    if (!isLoggedIn) {
+      openLogin();
+      return;
+    }
+    const t = tipo || 'sozinho';
+    window.location.href = '/gerar.html?tipo=' + t;
+  }
+
+  function requireAuth(callback) {
+    if (!isLoggedIn) { openLogin(); return; }
+    if (callback) callback();
+  }
+
+  /* ── SESSION CHECK ── */
+  (async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      setLoggedIn(session.user);
+    }
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        setLoggedIn(session.user);
+        closeLogin();
+      } else {
+        isLoggedIn = false;
+        resetUI();
+      }
+    });
+  })();
+
+  /* ── CART NAV ── */
+  function updateHomeCart() {
+    try {
+      var cart  = JSON.parse(localStorage.getItem('figuri_cart') || '{"items":[]}');
+      var items = cart.items || [];
+      if (items.length === 0) return;
+      var total = items.reduce(function(s, i) { return s + (i.price || 0); }, 0);
+      var btn   = document.getElementById('homeCartBtn');
+      var badge = document.getElementById('homeCartBadge');
+      var ttl   = document.getElementById('homeCartTotal');
+      if (btn)   btn.classList.add('has-items');
+      if (badge) badge.textContent = items.length;
+      if (ttl)   ttl.textContent   = 'R$' + (total / 100).toFixed(2).replace('.', ',');
+    } catch(_) {}
+  }
+
+  /* ── FILE INPUT ── */
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+      if (!isLoggedIn) { openLogin(); e.target.value = ''; return; }
+      const box = document.querySelector('.upload-box');
+      box.querySelector('.upload-title').textContent = '✅ ' + e.target.files[0].name;
+      box.querySelector('.upload-sub').textContent = 'Gerando seu preview... aguarde 30 segundos';
+      box.style.borderColor = 'var(--verde-neon)';
+    }
+  });
+
+  /* ── STYLE PICKER ── */
+  function setStyle(btn) {
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  /* ── FAQ ── */
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const was = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!was) item.classList.add('open');
+  }
+
+  /* ── COUNTDOWN ── */
+  function updateCountdown() {
+    const copa = new Date('2026-06-11T17:00:00');
+    const diff = copa - new Date();
+    if (diff <= 0) return;
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('d-days').textContent  = String(d).padStart(2, '0');
+    document.getElementById('d-hours').textContent = String(h).padStart(2, '0');
+    document.getElementById('d-mins').textContent  = String(m).padStart(2, '0');
+    document.getElementById('d-secs').textContent  = String(s).padStart(2, '0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  /* ── GALLERY CAROUSEL ── */
+  (function () {
+    const track    = document.getElementById('galleryTrack');
+    const dotsWrap = document.getElementById('galleryDots');
+    if (!track) return;
+    const slides = Array.from(track.querySelectorAll('.gallery-slide'));
+    let cur = 0;
+    function buildDots() {
+      dotsWrap.innerHTML = '';
+      slides.forEach((_, i) => {
+        const d = document.createElement('button');
+        d.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+        d.addEventListener('click', () => goTo(i));
+        dotsWrap.appendChild(d);
+      });
+    }
+    function goTo(idx) {
+      cur = (idx + slides.length) % slides.length;
+      track.style.transform = 'translateX(-' + (cur * 100) + '%)';
+      dotsWrap.querySelectorAll('.gallery-dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+    }
+    window.galleryMove = function(dir) { goTo(cur + dir); };
+    buildDots();
+    if (slides.length <= 1) {
+      const pa = document.querySelector('.gallery-arrow.prev');
+      const na = document.querySelector('.gallery-arrow.next');
+      if (pa) pa.style.display = 'none';
+      if (na) na.style.display = 'none';
+      dotsWrap.style.display = 'none';
+    }
+  })();
+
+  /* ── TESTIMONIALS CAROUSEL ── */
+  (function () {
+    const track    = document.getElementById('carouselTrack');
+    const dotsWrap = document.getElementById('carouselDots');
+    const prevBtn  = document.getElementById('prevBtn');
+    const nextBtn  = document.getElementById('nextBtn');
+    const cards    = Array.from(track.querySelectorAll('.review'));
+    const total    = cards.length;
+    let perView    = window.innerWidth <= 900 ? 1 : 3;
+    let current    = 0;
+
+    function pages() { return Math.ceil(total / perView); }
+
+    function buildDots() {
+      dotsWrap.innerHTML = '';
+      for (let i = 0; i < pages(); i++) {
+        const d = document.createElement('button');
+        d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        d.setAttribute('aria-label', 'Página ' + (i + 1));
+        d.addEventListener('click', () => goTo(i));
+        dotsWrap.appendChild(d);
+      }
+    }
+
+    function goTo(page) {
+      current = Math.max(0, Math.min(page, pages() - 1));
+      const firstCard = cards[current * perView];
+      const offset    = firstCard ? firstCard.offsetLeft : 0;
+      track.style.transition = 'transform 0.4s cubic-bezier(.4,0,.2,1)';
+      track.style.transform  = `translateX(-${offset}px)`;
+      dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) =>
+        d.classList.toggle('active', i === current)
+      );
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current >= pages() - 1;
+    }
+
+    window.moveCarousel = function(dir) { goTo(current + dir); };
+
+    window.addEventListener('resize', () => {
+      perView  = window.innerWidth <= 900 ? 1 : 3;
+      current  = 0;
+      track.style.transition = 'none';
+      track.style.transform  = 'translateX(0)';
+      buildDots();
+      setTimeout(() => goTo(0), 50);
+    });
+
+    buildDots();
+    goTo(0);
+  })();
+
+  /* ── SCROLL ANIMATIONS (fade-up) ── */
+  const fadeObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => fadeObs.observe(el));
+</script>
+</body>
+</html>
